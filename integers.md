@@ -1,164 +1,164 @@
-# Integers
+# Entiers
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/integers)**
+**[Vous pouvez trouver tout le code de ce chapitre ici](https://github.com/quii/learn-go-with-tests/tree/main/integers)**
 
-Integers work as you would expect. Let's write an `Add` function to try things out. Create a test file called `adder_test.go` and write this code.
+Les entiers fonctionnent comme vous vous y attendriez. Écrivons une fonction `Additionner` pour tester les choses. Créez un fichier de test appelé `additionneurs_test.go` et écrivez ce code.
 
-**Note:** Go source files can only have one `package` per directory. Make sure that your files are organised into their own packages. [Here is a good explanation on this.](https://dave.cheney.net/2014/12/01/five-suggestions-for-setting-up-a-go-project)
+**Note :** Les fichiers sources Go ne peuvent avoir qu'un seul `package` par répertoire. Assurez-vous que vos fichiers sont organisés dans leurs propres packages. [Voici une bonne explication sur ce sujet.](https://dave.cheney.net/2014/12/01/five-suggestions-for-setting-up-a-go-project)
 
-Your project directory might look something like this:
+Votre répertoire de projet pourrait ressembler à quelque chose comme ceci :
 
 ```
-learnGoWithTests
+apprendreGoAvecTests
     |
-    |-> helloworld
-    |    |- hello.go
-    |    |- hello_test.go
+    |-> bonjourmonde
+    |    |- bonjour.go
+    |    |- bonjour_test.go
     |
-    |-> integers
-    |    |- adder_test.go
+    |-> entiers
+    |    |- additionneurs_test.go
     |
     |- go.mod
     |- README.md
 ```
 
-## Write the test first
+## Écrivez le test d'abord
 
 ```go
-package integers
+package entiers
 
 import "testing"
 
-func TestAdder(t *testing.T) {
-	sum := Add(2, 2)
-	expected := 4
+func TestAdditionneurs(t *testing.T) {
+	somme := Additionner(2, 2)
+	attendu := 4
 
-	if sum != expected {
-		t.Errorf("expected '%d' but got '%d'", expected, sum)
+	if somme != attendu {
+		t.Errorf("attendu '%d' mais reçu '%d'", attendu, somme)
 	}
 }
 ```
 
-You will notice that we're using `%d` as our format strings rather than `%q`. That's because we want it to print an integer rather than a string.
+Vous remarquerez que nous utilisons `%d` comme chaînes de format plutôt que `%q`. C'est parce que nous voulons qu'il imprime un entier plutôt qu'une chaîne.
 
-Also note that we are no longer using the main package, instead we've defined a package named `integers`, as the name suggests this will group functions for working with integers such as `Add`.
+Notez aussi que nous n'utilisons plus le package main, au lieu de cela nous avons défini un package nommé `entiers`, comme le nom le suggère, cela regroupera les fonctions pour travailler avec les entiers telles que `Additionner`.
 
-## Try and run the test
+## Essayez d'exécuter le test
 
-Run the test `go test`
+Exécutez le test `go test`
 
-Inspect the compilation error
+Inspectez l'erreur de compilation
 
-`./adder_test.go:6:9: undefined: Add`
+`./additionneurs_test.go:6:10: undefined: Additionner`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
 
-Write enough code to satisfy the compiler _and that's all_ - remember we want to check that our tests fail for the correct reason.
+Écrivez assez de code pour satisfaire le compilateur _et c'est tout_ - rappelez-vous que nous voulons vérifier que nos tests échouent pour la bonne raison.
 
 ```go
-package integers
+package entiers
 
-func Add(x, y int) int {
+func Additionner(x, y int) int {
 	return 0
 }
 ```
 
-Remember, when you have more than one argument of the same type \(in our case two integers\) rather than having `(x int, y int)` you can shorten it to `(x, y int)`.
+Rappelez-vous, quand vous avez plus d'un argument du même type \(dans notre cas deux entiers\) plutôt que d'avoir `(x int, y int)` vous pouvez le raccourcir à `(x, y int)`.
 
-Now run the tests, and we should be happy that the test is correctly reporting what is wrong.
+Maintenant exécutez les tests, et nous devrions être heureux que le test rapporte correctement ce qui ne va pas.
 
-`adder_test.go:10: expected '4' but got '0'`
+`additionneurs_test.go:10: attendu '4' mais reçu '0'`
 
-If you have noticed we learnt about _named return value_ in the [last](hello-world.md#one...last...refactor?) section but aren't using the same here. It should generally be used when the meaning of the result isn't clear from context, in our case it's pretty much clear that `Add` function will add the parameters. You can refer [this](https://go.dev/wiki/CodeReviewComments#named-result-parameters) wiki for more details.
+Si vous avez remarqué, nous avons appris sur les _valeurs de retour nommées_ dans la [dernière](hello-world.md#un...dernier...refactoring?) section mais nous n'utilisons pas la même chose ici. Elle devrait généralement être utilisée quand le sens du résultat n'est pas clair dans le contexte, dans notre cas il est assez clair que la fonction `Additionner` va additionner les paramètres. Vous pouvez vous référer à [ce](https://go.dev/wiki/CodeReviewComments#named-result-parameters) wiki pour plus de détails.
 
-## Write enough code to make it pass
+## Écrivez assez de code pour le faire passer
 
-In the strictest sense of TDD we should now write the _minimal amount of code to make the test pass_. A pedantic programmer may do this
+Dans le sens le plus strict du TDD, nous devrions maintenant écrire la _quantité minimale de code pour faire passer le test_. Un programmeur pointilleux pourrait faire ceci
 
 ```go
-func Add(x, y int) int {
+func Additionner(x, y int) int {
 	return 4
 }
 ```
 
-Ah hah! Foiled again, TDD is a sham right?
+Ah ha ! Déjoué encore une fois, le TDD est une arnaque n'est-ce pas ?
 
-We could write another test, with some different numbers to force that test to fail but that feels like [a game of cat and mouse](https://en.m.wikipedia.org/wiki/Cat_and_mouse).
+Nous pourrions écrire un autre test, avec quelques nombres différents pour forcer ce test à échouer mais cela ressemble à [un jeu de chat et souris](https://en.m.wikipedia.org/wiki/Cat_and_mouse).
 
-Once we're more familiar with Go's syntax I will introduce a technique called _"Property Based Testing"_, which would stop annoying developers and help you find bugs.
+Une fois que nous serons plus familiers avec la syntaxe de Go, j'introduirai une technique appelée _"Property Based Testing"_, qui arrêterait d'énerver les développeurs et vous aiderait à trouver des bugs.
 
-For now, let's fix it properly
+Pour l'instant, réparons-le correctement
 
 ```go
-func Add(x, y int) int {
+func Additionner(x, y int) int {
 	return x + y
 }
 ```
 
-If you re-run the tests they should pass.
+Si vous relancez les tests, ils devraient passer.
 
-## Refactor
+## Refactoriser
 
-There's not a lot in the _actual_ code we can really improve on here.
+Il n'y a pas beaucoup dans le code _réel_ que nous pouvons vraiment améliorer ici.
 
-We explored earlier how by naming the return argument it appears in the documentation but also in most developer's text editors.
+Nous avons exploré plus tôt comment en nommant l'argument de retour il apparaît dans la documentation mais aussi dans la plupart des éditeurs de texte des développeurs.
 
-This is great because it aids the usability of code you are writing. It is preferable that a user can understand the usage of your code by just looking at the type signature and documentation.
+C'est génial parce que cela aide l'utilisabilité du code que vous écrivez. Il est préférable qu'un utilisateur puisse comprendre l'utilisation de votre code en regardant juste la signature du type et la documentation.
 
-You can add documentation to functions with comments, and these will appear in Go Doc just like when you look at the standard library's documentation.
+Vous pouvez ajouter de la documentation aux fonctions avec des commentaires, et ceux-ci apparaîtront dans Go Doc tout comme quand vous regardez la documentation de la bibliothèque standard.
 
 ```go
-// Add takes two integers and returns the sum of them.
-func Add(x, y int) int {
+// Additionner prend deux entiers et retourne leur somme.
+func Additionner(x, y int) int {
 	return x + y
 }
 ```
 
-### Testable Examples
+### Exemples testables
 
-If you really want to go the extra mile you can make [Testable Examples](https://blog.golang.org/examples). You will find many examples in the standard library documentation.
+Si vous voulez vraiment aller plus loin, vous pouvez faire des [Exemples testables](https://blog.golang.org/examples). Vous trouverez de nombreux exemples dans la documentation de la bibliothèque standard.
 
-Often code examples that can be found outside the codebase, such as a readme file, become out of date and incorrect compared to the actual code because they don't get checked.
+Souvent, les exemples de code qui peuvent être trouvés en dehors de la base de code, comme un fichier readme, deviennent obsolètes et incorrects par rapport au code réel parce qu'ils ne sont pas vérifiés.
 
-Example functions are compiled whenever tests are executed. Because such examples are validated by the Go compiler, you can be confident your documentation's examples always reflect current code behavior.
+Les fonctions d'exemple sont compilées chaque fois que les tests sont exécutés. Parce que de tels exemples sont validés par le compilateur Go, vous pouvez être confiant que les exemples de votre documentation reflètent toujours le comportement actuel du code.
 
-Example functions begin with `Example` (much like test functions begin with `Test`), and reside in a package's `_test.go` files. Add the following `ExampleAdd` function to the `adder_test.go` file.
+Les fonctions d'exemple commencent par `Example` (un peu comme les fonctions de test commencent par `Test`), et résident dans les fichiers `_test.go` d'un package. Ajoutez la fonction `ExampleAdditionner` suivante au fichier `additionneurs_test.go`.
 
 ```go
-func ExampleAdd() {
-	sum := Add(1, 5)
-	fmt.Println(sum)
+func ExampleAdditionner() {
+	somme := Additionner(1, 5)
+	fmt.Println(somme)
 	// Output: 6
 }
 ```
 
-(If your editor doesn't automatically import packages for you, the compilation step will fail because you will be missing `import "fmt"` in `adder_test.go`. It is strongly recommended you research how to have these kind of errors fixed for you automatically in whatever editor you are using.)
+(Si votre éditeur n'importe pas automatiquement les packages pour vous, l'étape de compilation échouera parce qu'il vous manquera `import "fmt"` dans `additionneurs_test.go`. Il est fortement recommandé de rechercher comment avoir ce genre d'erreurs corrigées automatiquement dans l'éditeur que vous utilisez.)
 
-Adding this code will cause the example to appear in your documentation, making your code even more accessible. If ever your code changes so that the example is no longer valid, your build will fail.
+Ajouter ce code fera que l'exemple apparaisse dans votre documentation, rendant votre code encore plus accessible. Si jamais votre code change pour que l'exemple ne soit plus valide, votre build échouera.
 
-Running the package's test suite, we can see the example `ExampleAdd` function is executed with no further arrangement from us:
+En exécutant la suite de tests du package, nous pouvons voir que la fonction d'exemple `ExampleAdditionner` est exécutée sans arrangement supplémentaire de notre part :
 
 ```bash
 $ go test -v
-=== RUN   TestAdder
---- PASS: TestAdder (0.00s)
-=== RUN   ExampleAdd
---- PASS: ExampleAdd (0.00s)
+=== RUN   TestAdditionneurs
+--- PASS: TestAdditionneurs (0.00s)
+=== RUN   ExampleAdditionner
+--- PASS: ExampleAdditionner (0.00s)
 ```
 
-Notice the special format of the comment, `// Output: 6`. While the example will always be compiled, adding this comment means the example will also be executed. Go ahead and temporarily remove the comment `// Output: 6`, then run `go test`, and you will see `ExampleAdd` is no longer executed.
+Remarquez le format spécial du commentaire, `// Output: 6`. Bien que l'exemple sera toujours compilé, ajouter ce commentaire signifie que l'exemple sera aussi exécuté. Allez-y et retirez temporairement le commentaire `// Output: 6`, puis exécutez `go test`, et vous verrez que `ExampleAdditionner` n'est plus exécuté.
 
-Examples without output comments are useful for demonstrating code that cannot run as unit tests, such as that which accesses the network, while guaranteeing the example at least compiles.
+Les exemples sans commentaires de sortie sont utiles pour démontrer du code qui ne peut pas s'exécuter comme des tests unitaires, comme celui qui accède au réseau, tout en garantissant que l'exemple compile au moins.
 
-To view example documentation, let's take a quick look at `pkgsite`. Navigate to your project's directory, then run `pkgsite -open .`, which should open a web browser for you, pointing to `http://localhost:8080`. Inside here you'll see a list of all of Go's Standard Library packages, plus Third Party packages you have installed, under which you should see your example documentation for `github.com/quii/learn-go-with-tests`. Follow that link, and then look under `Integers`, then under `func Add`, then expand `Example` and you should see the example you added for `sum := Add(1, 5)`.
+Pour voir la documentation d'exemple, jetons un coup d'œil rapide à `pkgsite`. Naviguez vers le répertoire de votre projet, puis exécutez `pkgsite -open .`, ce qui devrait ouvrir un navigateur web pour vous, pointant vers `http://localhost:8080`. À l'intérieur, vous verrez une liste de tous les packages de la bibliothèque standard de Go, plus les packages tiers que vous avez installés, sous lesquels vous devriez voir votre documentation d'exemple pour `github.com/quii/learn-go-with-tests`. Suivez ce lien, et puis regardez sous `Entiers`, puis sous `func Additionner`, puis développez `Example` et vous devriez voir l'exemple que vous avez ajouté pour `somme := Additionner(1, 5)`.
 
-If you publish your code with examples to a public URL, you can share the documentation of your code at [pkg.go.dev](https://pkg.go.dev/). For example, [here](https://pkg.go.dev/github.com/quii/learn-go-with-tests/integers/v2) is the finalised API for this chapter. This web interface allows you to search for documentation of standard library packages and third-party packages.
+Si vous publiez votre code avec des exemples sur une URL publique, vous pouvez partager la documentation de votre code sur [pkg.go.dev](https://pkg.go.dev/). Par exemple, [ici](https://pkg.go.dev/github.com/quii/learn-go-with-tests/integers/v2) est l'API finalisée pour ce chapitre. Cette interface web vous permet de rechercher la documentation des packages de la bibliothèque standard et des packages tiers.
 
-## Wrapping up
+## Conclusion
 
-What we have covered:
+Ce que nous avons couvert :
 
-*   More practice of the TDD workflow
-*   Integers, addition
-*   Writing better documentation so users of our code can understand its usage quickly
-*   Examples of how to use our code, which are checked as part of our tests
+*   Plus de pratique du workflow TDD
+*   Entiers, addition
+*   Écrire une meilleure documentation pour que les utilisateurs de notre code puissent comprendre son utilisation rapidement
+*   Exemples de comment utiliser notre code, qui sont vérifiés dans le cadre de nos tests

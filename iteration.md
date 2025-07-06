@@ -1,117 +1,117 @@
-# Iteration
+# Itération
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/for)**
+**[Vous pouvez trouver tout le code de ce chapitre ici](https://github.com/quii/learn-go-with-tests/tree/main/for)**
 
-To do stuff repeatedly in Go, you'll need `for`. In Go there are no `while`, `do`, `until` keywords, you can only use `for`. Which is a good thing!
+Pour faire des choses de manière répétée en Go, vous aurez besoin de `for`. En Go, il n'y a pas de mots-clés `while`, `do`, `until`, vous ne pouvez utiliser que `for`. Ce qui est une bonne chose !
 
-Let's write a test for a function that repeats a character 5 times.
+Écrivons un test pour une fonction qui répète un caractère 5 fois.
 
-There's nothing new so far, so try and write it yourself for practice.
+Il n'y a rien de nouveau jusqu'à présent, alors essayez de l'écrire vous-même pour pratiquer.
 
-## Write the test first
+## Écrivez le test d'abord
 
 ```go
 package iteration
 
 import "testing"
 
-func TestRepeat(t *testing.T) {
-	repeated := Repeat("a")
-	expected := "aaaaa"
+func TestRepeter(t *testing.T) {
+	repete := Repeter("a")
+	attendu := "aaaaa"
 
-	if repeated != expected {
-		t.Errorf("expected %q but got %q", expected, repeated)
+	if repete != attendu {
+		t.Errorf("attendu %q mais reçu %q", attendu, repete)
 	}
 }
 ```
 
-## Try and run the test
+## Essayez d'exécuter le test
 
-`./repeat_test.go:6:14: undefined: Repeat`
+`./repeter_test.go:6:11: undefined: Repeter`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
 
-_Keep the discipline!_ You don't need to know anything new right now to make the test fail properly.
+_Gardez la discipline !_ Vous n'avez pas besoin de connaître quoi que ce soit de nouveau maintenant pour faire échouer le test correctement.
 
-All you need to do right now is enough to make it compile so you can check your test is written well.
+Tout ce que vous devez faire maintenant est suffisant pour le faire compiler afin que vous puissiez vérifier que votre test est bien écrit.
 
 ```go
 package iteration
 
-func Repeat(character string) string {
+func Repeter(caractere string) string {
 	return ""
 }
 ```
 
-Isn't it nice to know you already know enough Go to write tests for some basic problems? This means you can now play with the production code as much as you like and know it's behaving as you'd hope.
+N'est-ce pas agréable de savoir que vous connaissez déjà assez de Go pour écrire des tests pour quelques problèmes de base ? Cela signifie que vous pouvez maintenant jouer avec le code de production autant que vous le souhaitez et savoir qu'il se comporte comme vous l'espériez.
 
-`repeat_test.go:10: expected 'aaaaa' but got ''`
+`repeter_test.go:10: attendu 'aaaaa' mais reçu ''`
 
-## Write enough code to make it pass
+## Écrivez assez de code pour le faire passer
 
-The `for` syntax is very unremarkable and follows most C-like languages.
+La syntaxe `for` est très peu remarquable et suit la plupart des langages de type C.
 
 ```go
-func Repeat(character string) string {
-	var repeated string
+func Repeter(caractere string) string {
+	var repete string
 	for i := 0; i < 5; i++ {
-		repeated = repeated + character
+		repete = repete + caractere
 	}
-	return repeated
+	return repete
 }
 ```
 
-Unlike other languages like C, Java, or JavaScript there are no parentheses surrounding the three components of the for statement and the braces `{ }` are always required. You might wonder what is happening in the row
+Contrairement à d'autres langages comme C, Java ou JavaScript, il n'y a pas de parenthèses autour des trois composants de l'instruction for et les accolades `{ }` sont toujours requises. Vous pourriez vous demander ce qui se passe dans la ligne
 
 ```go
-	var repeated string
+	var repete string
 ```
 
-as we've been using `:=` so far to declare and initializing variables. However, `:=` is simply [short hand for both steps](https://gobyexample.com/variables). Here we are declaring a `string` variable only. Hence, the explicit version. We can also use `var` to declare functions, as we'll see later on.
+car nous avons utilisé `:=` jusqu'à présent pour déclarer et initialiser des variables. Cependant, `:=` est simplement [un raccourci pour les deux étapes](https://gobyexample.com/variables). Ici, nous déclarons seulement une variable `string`. D'où la version explicite. Nous pouvons aussi utiliser `var` pour déclarer des fonctions, comme nous le verrons plus tard.
 
-Run the test and it should pass.
+Exécutez le test et il devrait passer.
 
-Additional variants of the for loop are described [here](https://gobyexample.com/for).
+Les variantes supplémentaires de la boucle for sont décrites [ici](https://gobyexample.com/for).
 
-## Refactor
+## Refactoriser
 
-Now it's time to refactor and introduce another construct `+=` assignment operator.
+Maintenant il est temps de refactoriser et d'introduire une autre construction `+=` l'opérateur d'affectation.
 
 ```go
-const repeatCount = 5
+const nombreRepetitions = 5
 
-func Repeat(character string) string {
-	var repeated string
-	for i := 0; i < repeatCount; i++ {
-		repeated += character
+func Repeter(caractere string) string {
+	var repete string
+	for i := 0; i < nombreRepetitions; i++ {
+		repete += caractere
 	}
-	return repeated
+	return repete
 }
 ```
 
-`+=` called _"the Add AND assignment operator"_, adds the right operand to the left operand and assigns the result to left operand. It works with other types like integers.
+`+=` appelé _"l'opérateur d'addition ET d'affectation"_, ajoute l'opérande de droite à l'opérande de gauche et affecte le résultat à l'opérande de gauche. Il fonctionne avec d'autres types comme les entiers.
 
 ### Benchmarking
 
-Writing [benchmarks](https://golang.org/pkg/testing/#hdr-Benchmarks) in Go is another first-class feature of the language and it is very similar to writing tests.
+Écrire des [benchmarks](https://golang.org/pkg/testing/#hdr-Benchmarks) en Go est une autre fonctionnalité de première classe du langage et c'est très similaire à l'écriture de tests.
 
 ```go
-func BenchmarkRepeat(b *testing.B) {
+func BenchmarkRepeter(b *testing.B) {
 	for b.Loop() {
-		Repeat("a")
+		Repeter("a")
 	}
 }
 ```
 
-You'll see the code is very similar to a test.
+Vous verrez que le code est très similaire à un test.
 
-The `testing.B` gives you access to the loop function. `Loop()` returns true as long as the benchmark should continue running. 
+Le `testing.B` vous donne accès à la fonction de boucle. `Loop()` retourne true tant que le benchmark devrait continuer à s'exécuter.
 
-When the benchmark code is executed, it measures how long it takes. After `Loop()` returns false, `b.N` contains the total number of iterations that ran.
+Quand le code de benchmark est exécuté, il mesure combien de temps cela prend. Après que `Loop()` retourne false, `b.N` contient le nombre total d'itérations qui ont été exécutées.
 
-The number of times the code is run shouldn't matter to you, the framework will determine what is a "good" value for that to let you have some decent results.
+Le nombre de fois que le code est exécuté ne devrait pas vous importer, le framework déterminera quelle est une "bonne" valeur pour cela pour vous permettre d'avoir quelques résultats décents.
 
-To run the benchmarks do `go test -bench=.` (or if you're in Windows Powershell `go test -bench="."`)
+Pour exécuter les benchmarks, faites `go test -bench=.` (ou si vous êtes dans Windows Powershell `go test -bench="."`)
 
 ```text
 goos: darwin
@@ -121,43 +121,43 @@ pkg: github.com/quii/learn-go-with-tests/for/v4
 PASS
 ```
 
-What `136 ns/op` means is our function takes on average 136 nanoseconds to run \(on my computer\). Which is pretty ok! To test this it ran it 10000000 times.
+Ce que `136 ns/op` signifie, c'est que notre fonction prend en moyenne 136 nanosecondes à s'exécuter \(sur mon ordinateur\). Ce qui est plutôt correct ! Pour tester cela, elle l'a exécuté 10000000 fois.
 
-**Note:** By default benchmarks are run sequentially.
+**Note :** Par défaut, les benchmarks sont exécutés séquentiellement.
 
-Only the body of the loop is timed; it automatically excludes setup and cleanup code from benchmark timing. A typical benchmark is structured like:
+Seul le corps de la boucle est chronométré ; il exclut automatiquement le code de configuration et de nettoyage du chronométrage du benchmark. Un benchmark typique est structuré comme :
 
 ```go
 func Benchmark(b *testing.B) {
-	//... setup ...
+	//... configuration ...
 	for b.Loop() {
-		//... code to measure ...
+		//... code à mesurer ...
 	}
-	//... cleanup ...
+	//... nettoyage ...
 }
 ```
 
-Strings in Go are immutable, meaning every concatenation, such as in our `Repeat` function, involves copying memory to accommodate the new string. This impacts performance, particularly during heavy string concatenation.
+Les chaînes en Go sont immuables, ce qui signifie que chaque concaténation, comme dans notre fonction `Repeter`, implique de copier de la mémoire pour accommoder la nouvelle chaîne. Cela impacte les performances, particulièrement lors de concaténations lourdes de chaînes.
 
-The standard library provides the `strings.Builder`[stringsBuilder] type which minimizes memory copying.
-It implements a `WriteString` method which we can use to concatenate strings:
+La bibliothèque standard fournit le type `strings.Builder`[stringsBuilder] qui minimise la copie de mémoire.
+Il implémente une méthode `WriteString` que nous pouvons utiliser pour concaténer des chaînes :
 
 ```go
-const repeatCount = 5
+const nombreRepetitions = 5
 
-func Repeat(character string) string {
-	var repeated strings.Builder
-	for i := 0; i < repeatCount; i++ {
-		repeated.WriteString(character)
+func Repeter(caractere string) string {
+	var repete strings.Builder
+	for i := 0; i < nombreRepetitions; i++ {
+		repete.WriteString(caractere)
 	}
-	return repeated.String()
+	return repete.String()
 }
 ```
 
-**Note**: We have to call the `String` method to retrieve the final result.
+**Note** : Nous devons appeler la méthode `String` pour récupérer le résultat final.
 
-We can use `BenchmarkRepeat` to confirm that `strings.Builder` significantly improves performance.
-Run `go test -bench=. -benchmem`:
+Nous pouvons utiliser `BenchmarkRepeter` pour confirmer que `strings.Builder` améliore significativement les performances.
+Exécutez `go test -bench=. -benchmem` :
 
 ```text
 goos: darwin
@@ -167,21 +167,21 @@ pkg: github.com/quii/learn-go-with-tests/for/v4
 PASS
 ```
 
-The `-benchmem` flag reports information about memory allocations:
+Le flag `-benchmem` rapporte des informations sur les allocations mémoire :
 
-* `B/op`: the number of bytes allocated per iteration
-* `allocs/op`: the number of memory allocations per iteration
+* `B/op` : le nombre d'octets alloués par itération
+* `allocs/op` : le nombre d'allocations mémoire par itération
 
-## Practice exercises
+## Exercices de pratique
 
-* Change the test so a caller can specify how many times the character is repeated and then fix the code
-* Write `ExampleRepeat` to document your function
-* Have a look through the [strings](https://golang.org/pkg/strings) package. Find functions you think could be useful and experiment with them by writing tests like we have here. Investing time learning the standard library will really pay off over time.
+* Changez le test pour qu'un appelant puisse spécifier combien de fois le caractère est répété et puis corrigez le code
+* Écrivez `ExampleRepeter` pour documenter votre fonction
+* Jetez un œil au package [strings](https://golang.org/pkg/strings). Trouvez des fonctions que vous pensez pourraient être utiles et expérimentez avec elles en écrivant des tests comme nous l'avons fait ici. Investir du temps à apprendre la bibliothèque standard sera vraiment payant avec le temps.
 
-## Wrapping up
+## Conclusion
 
-* More TDD practice
-* Learned `for`
-* Learned how to write benchmarks
+* Plus de pratique TDD
+* Appris `for`
+* Appris comment écrire des benchmarks
 
 [stringsBuilder]: https://pkg.go.dev/strings#Builder

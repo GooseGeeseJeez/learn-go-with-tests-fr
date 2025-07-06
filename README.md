@@ -1,10 +1,10 @@
-# Learn Go with Tests
+# Apprendre Go avec les tests
 
 <p align="center">
   <img src="red-green-blue-gophers-smaller.png" />
 </p>
 
-[Art by Denise](https://twitter.com/deniseyu21)
+[Art par Denise](https://twitter.com/deniseyu21)
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/quii/learn-go-with-tests)](https://goreportcard.com/report/github.com/quii/learn-go-with-tests)
 
@@ -12,9 +12,9 @@
 
 - [Gitbook original (Anglais)](https://quii.gitbook.io/learn-go-with-tests)
 - [Gitbook]()
-- [EPUB or PDF](https://github.com/quii/learn-go-with-tests/releases)
+- [EPUB ou PDF](https://github.com/quii/learn-go-with-tests/releases)
 
-## Translations
+## Traductions
 
 - [中文](https://studygolang.gitbook.io/learn-go-with-tests)
 - [Português](https://larien.gitbook.io/aprenda-go-com-testes/)
@@ -23,157 +23,157 @@
 - [Türkçe](https://halilkocaoz.gitbook.io/go-programlama-dilini-ogren/)
 - [فارسی](https://go-yaad-begir.gitbook.io/go-ba-test/)
 
-## Support me
+## Soutenez-moi
 
-I am proud to offer this resource for free, but if you wish to give some appreciation:
+Je suis fier d'offrir cette ressource gratuitement, mais si vous souhaitez montrer votre appréciation :
 
-- [Tweet me @quii](https://twitter.com/quii)
+- [Tweetez-moi @quii](https://twitter.com/quii)
 - <a rel="me" href="https://mastodon.cloud/@quii">Mastodon</a>
-- [Buy me a coffee :coffee:](https://www.buymeacoffee.com/quii)
-- [Sponsor me on GitHub](https://github.com/sponsors/quii)
+- [Offrez-moi un café :coffee:](https://www.buymeacoffee.com/quii)
+- [Sponsorisez-moi sur GitHub](https://github.com/sponsors/quii)
 
-## Why
+## Pourquoi
 
-* Explore the Go language by writing tests
-* **Get a grounding with TDD**. Go is a good language for learning TDD because it is a simple language to learn and testing is built-in
-* Be confident that you'll be able to start writing robust, well-tested systems in Go
-* [Watch a video, or read about why unit testing and TDD is important](why.md)
+* Explorer le langage Go en écrivant des tests
+* **Acquérir une base solide avec le TDD**. Go est un bon langage pour apprendre le TDD car c'est un langage simple à apprendre et les tests sont intégrés
+* Être confiant dans votre capacité à commencer à écrire des systèmes robustes et bien testés en Go
+* [Regardez une vidéo, ou lisez pourquoi les tests unitaires et le TDD sont importants](why.md)
 
-## Table of contents
+## Table des matières
 
-### Go fundamentals
+### Les fondamentaux de Go
 
-1. [Install Go](install-go.md) - Set up environment for productivity.
-2. [Hello, world](hello-world.md) - Declaring variables, constants, if/else statements, switch, write your first go program and write your first test. Sub-test syntax and closures.
-3. [Integers](integers.md) - Further Explore function declaration syntax and learn new ways to improve the documentation of your code.
-4. [Iteration](iteration.md) - Learn about `for` and benchmarking.
-5. [Arrays and slices](arrays-and-slices.md) - Learn about arrays, slices, `len`, varargs, `range` and test coverage.
-6. [Structs, methods & interfaces](structs-methods-and-interfaces.md) - Learn about `struct`, methods, `interface` and table driven tests.
-7. [Pointers & errors](pointers-and-errors.md) - Learn about pointers and errors.
-8. [Maps](maps.md) - Learn about storing values in the map data structure.
-9. [Dependency Injection](dependency-injection.md) - Learn about dependency injection, how it relates to using interfaces and a primer on io.
-10. [Mocking](mocking.md) - Take some existing untested code and use DI with mocking to test it.
-11. [Concurrency](concurrency.md) - Learn how to write concurrent code to make your software faster.
-12. [Select](select.md) - Learn how to synchronise asynchronous processes elegantly.
-13. [Reflection](reflection.md) - Learn about reflection
-14. [Sync](sync.md) - Learn some functionality from the sync package including `WaitGroup` and `Mutex`
-15. [Context](context.md) - Use the context package to manage and cancel long-running processes
-16. [Intro to property based tests](roman-numerals.md) - Practice some TDD with the Roman Numerals kata and get a brief intro to property based tests
-17. [Maths](math.md) - Use the `math` package to draw an SVG clock
-18. [Reading files](reading-files.md) - Read files and process them
-19. [Templating](html-templates.md) - Use Go's html/template package to render html from data, and also learn about approval testing
-20. [Generics](generics.md) - Learn how to write functions that take generic arguments and make your own generic data-structure
-21. [Revisiting arrays and slices with generics](revisiting-arrays-and-slices-with-generics.md) - Generics are very useful when working with collections. Learn how to write your own `Reduce` function and tidy up some common patterns.
+1. [Installer Go](install-go.md) - Configurer l'environnement pour la productivité.
+2. [Bonjour, monde](hello-world.md) - Déclaration de variables, constantes, instructions if/else, switch, écrivez votre premier programme Go et votre premier test. Syntaxe des sous-tests et closures.
+3. [Entiers](integers.md) - Explorer davantage la syntaxe de déclaration de fonction et apprendre de nouvelles façons d'améliorer la documentation de votre code.
+4. [Itération](iteration.md) - Apprendre `for` et le benchmarking.
+5. [Tableaux et slices](arrays-and-slices.md) - Apprendre les tableaux, slices, `len`, varargs, `range` et la couverture de tests.
+6. [Structs, méthodes et interfaces](structs-methods-and-interfaces.md) - Apprendre `struct`, méthodes, `interface` et les tests dirigés par table.
+7. [Pointeurs et erreurs](pointers-and-errors.md) - Apprendre les pointeurs et les erreurs.
+8. [Maps](maps.md) - Apprendre le stockage de valeurs dans la structure de données map.
+9. [Injection de dépendances](dependency-injection.md) - Apprendre l'injection de dépendances, comment elle se rapporte à l'utilisation d'interfaces et une introduction à io.
+10. [Mocking](mocking.md) - Prendre du code existant non testé et utiliser l'ID avec le mocking pour le tester.
+11. [Concurrence](concurrency.md) - Apprendre comment écrire du code concurrent pour rendre votre logiciel plus rapide.
+12. [Select](select.md) - Apprendre comment synchroniser élégamment des processus asynchrones.
+13. [Reflection](reflection.md) - Apprendre la reflection
+14. [Sync](sync.md) - Apprendre certaines fonctionnalités du package sync incluant `WaitGroup` et `Mutex`
+15. [Context](context.md) - Utiliser le package context pour gérer et annuler des processus longs
+16. [Introduction aux tests basés sur les propriétés](roman-numerals.md) - Pratiquer le TDD avec le kata des chiffres romains et avoir une brève introduction aux tests basés sur les propriétés
+17. [Mathématiques](math.md) - Utiliser le package `math` pour dessiner une horloge SVG
+18. [Lire des fichiers](reading-files.md) - Lire des fichiers et les traiter
+19. [Templating](html-templates.md) - Utiliser le package html/template de Go pour rendre du HTML à partir de données, et apprendre les tests d'approbation
+20. [Generics](generics.md) - Apprendre comment écrire des fonctions qui prennent des arguments génériques et créer votre propre structure de données générique
+21. [Revisiter les tableaux et slices avec les generics](revisiting-arrays-and-slices-with-generics.md) - Les generics sont très utiles quand on travaille avec des collections. Apprendre à écrire votre propre fonction `Reduce` et nettoyer quelques patterns communs.
 
-### Build an application
+### Construire une application
 
-Now that you have hopefully digested the _Go Fundamentals_ section you have a solid grounding of a majority of Go's language features and how to do TDD.
+Maintenant que vous avez espérons-le digéré la section _Fondamentaux de Go_, vous avez une base solide de la majorité des fonctionnalités du langage Go et comment faire du TDD.
 
-This next section will involve building an application.
+Cette section suivante impliquera de construire une application.
 
-Each chapter will iterate on the previous one, expanding the application's functionality as our product owner dictates.
+Chaque chapitre itérera sur le précédent, étendant les fonctionnalités de l'application selon les directives de notre product owner.
 
-New concepts will be introduced to help facilitate writing great code but most of the new material will be learning what can be accomplished from Go's standard library.
+De nouveaux concepts seront introduits pour aider à faciliter l'écriture de bon code, mais la plupart du nouveau matériel sera d'apprendre ce qui peut être accompli à partir de la bibliothèque standard de Go.
 
-By the end of this, you should have a strong grasp as to how to iteratively write an application in Go, backed by tests.
+À la fin de ceci, vous devriez avoir une compréhension solide de comment écrire itérativement une application en Go, soutenue par des tests.
 
-* [HTTP server](http-server.md) - We will create an application which listens to HTTP requests and responds to them.
-* [JSON, routing and embedding](json.md) - We will make our endpoints return JSON and explore how to do routing.
-* [IO and sorting](io.md) - We will persist and read our data from disk and we'll cover sorting data.
-* [Command line & project structure](command-line.md) - Support multiple applications from one code base and read input from command line.
-* [Time](time.md) - using the `time` package to schedule activities.
-* [WebSockets](websockets.md) - learn how to write and test a server that uses WebSockets.
+* [Serveur HTTP](http-server.md) - Nous créerons une application qui écoute les requêtes HTTP et y répond.
+* [JSON, routage et embedding](json.md) - Nous ferons en sorte que nos endpoints retournent du JSON et explorerons comment faire du routage.
+* [IO et tri](io.md) - Nous persisterons et lirons nos données depuis le disque et couvrirons le tri des données.
+* [Ligne de commande et structure de projet](command-line.md) - Supporter plusieurs applications depuis une base de code et lire l'entrée depuis la ligne de commande.
+* [Time](time.md) - utiliser le package `time` pour programmer des activités.
+* [WebSockets](websockets.md) - apprendre comment écrire et tester un serveur qui utilise les WebSockets.
 
-### Testing fundamentals
+### Fondamentaux des tests
 
-Covering other subjects around testing.
+Couvrir d'autres sujets autour des tests.
 
-* [Introduction to acceptance tests](intro-to-acceptance-tests.md) - Learn how to write acceptance tests for your code, with a real-world example for gracefully shutting down a HTTP server
-* [Scaling acceptance tests](scaling-acceptance-tests.md) - Learn techniques to manage the complexity of writing acceptance tests for non-trivial systems.
-* [Working without mocks, stubs and spies](working-without-mocks.md) - Learn about how to use fakes and contracts to create more realistic and maintainable tests.
-* [Refactoring Checklist](refactoring-checklist.md) - Some discussion on what refactoring is, and some basic tips on how to do it.
+* [Introduction aux tests d'acceptation](intro-to-acceptance-tests.md) - Apprendre comment écrire des tests d'acceptation pour votre code, avec un exemple du monde réel pour arrêter gracieusement un serveur HTTP
+* [Mettre à l'échelle les tests d'acceptation](scaling-acceptance-tests.md) - Apprendre des techniques pour gérer la complexité d'écrire des tests d'acceptation pour des systèmes non-triviaux.
+* [Travailler sans mocks, stubs et spies](working-without-mocks.md) - Apprendre comment utiliser des fakes et des contrats pour créer des tests plus réalistes et maintenables.
+* [Checklist de refactorisation](refactoring-checklist.md) - Quelques discussions sur ce qu'est la refactorisation, et quelques conseils de base sur comment la faire.
 
-### Questions and answers
+### Questions et réponses
 
-I often run in to questions on the internets like
+Je rencontre souvent des questions sur internet comme
 
-> How do I test my amazing function that does x, y and z
+> Comment teste-t-on ma fonction incroyable qui fait x, y et z
 
-If you have such a question raise it as an issue on github and I'll try and find time to write a short chapter to tackle the issue. I feel like content like this is valuable as it is tackling people's _real_ questions around testing.
+Si vous avez une telle question, créez une issue sur github et j'essaierai de trouver le temps d'écrire un court chapitre pour traiter le problème. Je pense que du contenu comme celui-ci est précieux car il traite des questions _réelles_ des gens autour des tests.
 
-* [OS exec](os-exec.md) - An example of how we can reach out to the OS to execute commands to fetch data and keep our business logic testable/
-* [Error types](error-types.md) - Example of creating your own error types to improve your tests and make your code easier to work with.
-* [Context-aware Reader](context-aware-reader.md) - Learn how to TDD augmenting `io.Reader` with cancellation. Based on [Context-aware io.Reader for Go](https://pace.dev/blog/2020/02/03/context-aware-ioreader-for-golang-by-mat-ryer)
-* [Revisiting HTTP Handlers](http-handlers-revisited.md) - Testing HTTP handlers seems to be the bane of many a developer's existence. This chapter explores the issues around designing handlers correctly.
+* [OS exec](os-exec.md) - Un exemple de comment nous pouvons atteindre l'OS pour exécuter des commandes pour récupérer des données et garder notre logique métier testable.
+* [Types d'erreur](error-types.md) - Exemple de création de vos propres types d'erreur pour améliorer vos tests et rendre votre code plus facile à utiliser.
+* [Context-aware Reader](context-aware-reader.md) - Apprendre comment faire du TDD en augmentant `io.Reader` avec l'annulation. Basé sur [Context-aware io.Reader pour Go](https://pace.dev/blog/2020/02/03/context-aware-ioreader-for-golang-by-mat-ryer)
+* [Revisiter les gestionnaires HTTP](http-handlers-revisited.md) - Tester les gestionnaires HTTP semble être le fléau de l'existence de nombreux développeurs. Ce chapitre explore les problèmes autour de la conception correcte des gestionnaires.
 
 ### Meta / Discussion
 
-* [Why unit tests and how to make them work for you](why.md) - Watch a video, or read about why unit testing and TDD is important
-* [Anti-patterns](anti-patterns.md) - A short chapter on TDD and unit testing anti-patterns
+* [Pourquoi les tests unitaires et comment les faire fonctionner pour vous](why.md) - Regardez une vidéo, ou lisez pourquoi les tests unitaires et le TDD sont importants
+* [Anti-patterns](anti-patterns.md) - Un court chapitre sur les anti-patterns TDD et tests unitaires
 
-## Contributing
+## Contribuer
 
-* _This project is work in progress_ If you would like to contribute, please do get in touch.
-* Read [contributing.md](https://github.com/quii/learn-go-with-tests/tree/842f4f24d1f1c20ba3bb23cbc376c7ca6f7ca79a/contributing.md) for guidelines
-* Any ideas? Create an issue
+* _Ce projet est un travail en cours_ Si vous souhaitez contribuer, n'hésitez pas à me contacter.
+* Lisez [contributing.md](https://github.com/quii/learn-go-with-tests/tree/842f4f24d1f1c20ba3bb23cbc376c7ca6f7ca79a/contributing.md) pour les directives
+* Des idées ? Créez une issue
 
-## Background
+## Contexte
 
-I have some experience introducing Go to development teams and have tried different approaches as to how to grow a team from some people curious about Go into highly effective writers of Go systems.
+J'ai de l'expérience dans l'introduction de Go aux équipes de développement et j'ai essayé différentes approches sur comment faire grandir une équipe de quelques personnes curieuses de Go vers des rédacteurs très efficaces de systèmes Go.
 
-### What didn't work
+### Ce qui n'a pas marché
 
-#### Read _the_ book
+#### Lire _le_ livre
 
-An approach we tried was to take [the blue book](https://www.amazon.co.uk/Programming-Language-Addison-Wesley-Professional-Computing/dp/0134190440) and every week discuss the next chapter along with the exercises.
+Une approche que nous avons essayée était de prendre [le livre bleu](https://www.amazon.co.uk/Programming-Language-Addison-Wesley-Professional-Computing/dp/0134190440) et chaque semaine discuter du chapitre suivant avec les exercices.
 
-I love this book but it requires a high level of commitment. The book is very detailed in explaining concepts, which is obviously great but it means that the progress is slow and steady - this is not for everyone.
+J'adore ce livre mais il requiert un haut niveau d'engagement. Le livre est très détaillé dans l'explication des concepts, ce qui est évidemment génial mais cela signifie que le progrès est lent et régulier - ce n'est pas pour tout le monde.
 
-I found that whilst a small number of people would read chapter X and do the exercises, many people didn't.
+J'ai trouvé que bien qu'un petit nombre de personnes lisent le chapitre X et fassent les exercices, beaucoup de personnes ne le faisaient pas.
 
-#### Solve some problems
+#### Résoudre quelques problèmes
 
-Katas are fun but they are usually limited in their scope for learning a language; you're unlikely to use goroutines to solve a kata.
+Les katas sont amusants mais ils sont habituellement limités dans leur portée pour apprendre un langage ; vous êtes peu susceptible d'utiliser des goroutines pour résoudre un kata.
 
-Another problem is when you have varying levels of enthusiasm. Some people just learn way more of the language than others and when demonstrating what they have done end up confusing people with features the others are not familiar with.
+Un autre problème est quand vous avez différents niveaux d'enthousiasme. Quelques personnes apprennent juste beaucoup plus du langage que d'autres et quand elles démontrent ce qu'elles ont fait, elles finissent par confondre les personnes avec des fonctionnalités que les autres ne connaissent pas.
 
-This ends up making the learning feel quite _unstructured_ and _ad hoc_.
+Cela finit par rendre l'apprentissage assez _non structuré_ et _ad hoc_.
 
-### What did work
+### Ce qui a marché
 
-By far the most effective way was by slowly introducing the fundamentals of the language by reading through [go by example](https://gobyexample.com/), exploring them with examples and discussing them as a group. This was a more interactive approach than "read chapter x for homework".
+De loin, le moyen le plus efficace était d'introduire lentement les fondamentaux du langage en lisant à travers [go by example](https://gobyexample.com/), les explorer avec des exemples et les discuter en groupe. C'était une approche plus interactive que "lisez le chapitre x comme devoir".
 
-Over time the team gained a solid foundation of the _grammar_ of the language so we could then start to build systems.
+Au fil du temps, l'équipe a acquis une base solide de la _grammaire_ du langage pour que nous puissions ensuite commencer à construire des systèmes.
 
-This to me seems analogous to practicing scales when trying to learn guitar.
+Ceci me semble analogue à pratiquer les gammes quand on essaie d'apprendre la guitare.
 
-It doesn't matter how artistic you think you are, you are unlikely to write good music without understanding the fundamentals and practicing the mechanics.
+Peu importe à quel point vous pensez être artistique, vous êtes peu susceptible d'écrire de la bonne musique sans comprendre les fondamentaux et pratiquer les mécaniques.
 
-### What works for me
+### Ce qui marche pour moi
 
-When _I_ learn a new programming language I usually start by messing around in a REPL but eventually, I need more structure.
+Quand _j'_ apprends un nouveau langage de programmation, je commence habituellement par jouer dans un REPL mais finalement, j'ai besoin de plus de structure.
 
-What I like to do is explore concepts and then solidify the ideas with tests. Tests verify the code I write is correct and documents the feature I have learned.
+Ce que j'aime faire, c'est explorer les concepts et ensuite solidifier les idées avec des tests. Les tests vérifient que le code que j'écris est correct et documentent la fonctionnalité que j'ai apprise.
 
-Taking my experience of learning with a group and my own personal way I am going to try and create something that hopefully proves useful to other teams. Learning the fundamentals by writing small tests so that you can then take your existing software design skills and ship some great systems.
+En prenant mon expérience d'apprentissage avec un groupe et ma propre façon personnelle, je vais essayer de créer quelque chose qui j'espère s'avèrera utile pour d'autres équipes. Apprendre les fondamentaux en écrivant de petits tests pour que vous puissiez ensuite prendre vos compétences existantes de design de logiciel et livrer quelques grands systèmes.
 
-## Who this is for
+## Pour qui c'est
 
-* People who are interested in picking up Go.
-* People who already know some Go, but want to explore testing with TDD.
+* Les personnes qui sont intéressées à apprendre Go.
+* Les personnes qui connaissent déjà un peu Go, mais veulent explorer les tests avec le TDD.
 
-## What you'll need
+## Ce dont vous aurez besoin
 
-* A computer!
-* [Installed Go](https://golang.org/)
-* A text editor
-* Some experience with programming. Understanding of concepts like `if`, variables, functions etc.
-* Comfortable using the terminal
+* Un ordinateur !
+* [Go installé](https://golang.org/)
+* Un éditeur de texte
+* Un peu d'expérience avec la programmation. Comprendre des concepts comme `if`, variables, fonctions etc.
+* À l'aise avec l'utilisation du terminal
 
 ## Feedback
 
-* Add issues/submit PRs [here](https://github.com/quii/learn-go-with-tests) or [tweet me @quii](https://twitter.com/quii)
+* Ajoutez des issues/soumettez des PRs [ici](https://github.com/quii/learn-go-with-tests) ou [tweetez-moi @quii](https://twitter.com/quii)
 
-[MIT license](LICENSE.md)
+[Licence MIT](LICENSE.md)
 
-[Logo is by egonelbre](https://github.com/egonelbre) What a star!
+[Le logo est par egonelbre](https://github.com/egonelbre) Quelle star !
