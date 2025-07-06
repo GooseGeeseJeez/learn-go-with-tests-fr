@@ -10,7 +10,8 @@
 
 ## Formats
 
-- [Gitbook](https://quii.gitbook.io/learn-go-with-tests)
+- [Gitbook original (Anglais)](https://quii.gitbook.io/learn-go-with-tests)
+- [Gitbook]()
 - [EPUB or PDF](https://github.com/quii/learn-go-with-tests/releases)
 
 ## Translations
