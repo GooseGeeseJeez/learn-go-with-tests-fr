@@ -1,418 +1,418 @@
 # Maps
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/maps)**
+**[Vous pouvez trouver tout le code de ce chapitre ici](https://github.com/quii/learn-go-with-tests/tree/main/maps)**
 
-In [arrays & slices](arrays-and-slices.md), you saw how to store values in order. Now, we will look at a way to store items by a `key` and look them up quickly.
+Dans [tableaux et slices](arrays-and-slices.md), vous avez vu comment stocker des valeurs de façon ordonnée. Maintenant, nous allons examiner une façon de stocker des éléments par une `clé` et les rechercher rapidement.
 
-Maps allow you to store items in a manner similar to a dictionary. You can think of the `key` as the word and the `value` as the definition. And what better way is there to learn about Maps than to build our own dictionary?
+Les maps vous permettent de stocker des éléments d'une manière similaire à un dictionnaire. Vous pouvez considérer la `clé` comme le mot et la `valeur` comme la définition. Et quelle meilleure façon d'apprendre sur les Maps que de construire notre propre dictionnaire ?
 
-First, assuming we already have some words with their definitions in the dictionary, if we search for a word, it should return the definition of it.
+Tout d'abord, en supposant que nous avons déjà quelques mots avec leurs définitions dans le dictionnaire, si nous recherchons un mot, il devrait retourner sa définition.
 
-## Write the test first
+## Écrivez le test d'abord
 
-In `dictionary_test.go`
+Dans `dictionary_test.go`
 
 ```go
 package main
 
 import "testing"
 
-func TestSearch(t *testing.T) {
-	dictionary := map[string]string{"test": "this is just a test"}
+func TestRecherche(t *testing.T) {
+	dictionnaire := Dictionnaire{"test": "ceci est juste un test"}
 
-	got := Search(dictionary, "test")
-	want := "this is just a test"
+	resultat := dictionnaire.Recherche("test")
+	attendu := "ceci est juste un test"
 
-	if got != want {
-		t.Errorf("got %q want %q given, %q", got, want, "test")
+	if resultat != attendu {
+		t.Errorf("resultat '%s' attendu '%s'", resultat, attendu)
 	}
 }
 ```
 
-Declaring a Map is somewhat similar to an array. Except, it starts with the `map` keyword and requires two types. The first is the key type, which is written inside the `[]`. The second is the value type, which goes right after the `[]`.
+Déclaration du type la plus simple ici, un `map[string]string`. Les maps vous permettent de stocker des éléments de façon similaire à un dictionnaire, où vous pouvez faire des recherches basées sur une `clé` pour obtenir une `valeur`.
 
-The key type is special. It can only be a comparable type because without the ability to tell if 2 keys are equal, we have no way to ensure that we are getting the correct value. Comparable types are explained in depth in the [language spec](https://golang.org/ref/spec#Comparison_operators).
+Les clés et les valeurs peuvent être de n'importe quel type. Vous pourriez par exemple faire un `map[int]string` si vous vouliez rechercher des chaînes par entier ou `map[string]int` si vous vouliez rechercher des entiers par chaîne.
 
-The value type, on the other hand, can be any type you want. It can even be another map.
+Vous pourriez faire `map[string]Utilisateur` pour rechercher des objets `Utilisateur` par nom, par exemple. La seule exigence est que la clé soit comparable. Consultez [le langage Go spec](https://golang.org/ref/spec#Comparison_operators) pour en savoir plus.
 
-Everything else in this test should be familiar.
+Ce n'est peut-être pas immédiatement évident à première vue, mais nous stockons une variable de type `Dictionnaire` (notre `map[string]string`), puis nous essayons d'appeler une méthode `Recherche` dessus.
 
-## Try to run the test
+Nous avons déjà vu ce genre de choses dans le chapitre [interfaces structurées et méthodes](structs-methods-and-interfaces.md), mais cette fois nous allons utiliser un _alias de type_. Un alias de type vous permet de créer un nouveau type à partir d'un type existant.
 
-By running `go test` the compiler will fail with `./dictionary_test.go:8:9: undefined: Search`.
+La syntaxe est `type MonType ExistantType`.
 
-## Write the minimal amount of code for the test to run and check the output
+Pourquoi utiliser un alias de type plutôt qu'une structure ? Un map est en soi un type de référence. Qu'est-ce que cela signifie ? Si vous passez un map à une fonction ou à une méthode et que vous le modifiez, le changement sera reflété dans le appelant. D'un autre côté, un type comme `int` est un type de valeur. Lorsque vous passez une valeur à une fonction ou une méthode, Go fait une copie de cette valeur.
 
-In `dictionary.go`
+L'aliasing de notre map avec un nouveau type spécifique nous permet d'enrichir notre type en y attachant des méthodes.
+
+## Essayez d'exécuter le test
+
+```text
+./dictionnaire_test.go:8:3: undefined: Dictionnaire
+```
+
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
+
+Dans `dictionnaire.go`
 
 ```go
 package main
 
-func Search(dictionary map[string]string, word string) string {
+type Dictionnaire map[string]string
+
+func (d Dictionnaire) Recherche(mot string) string {
 	return ""
 }
 ```
 
-Your test should now fail with a *clear error message*
+Notre test échoue maintenant avec une sortie beaucoup plus claire.
 
-`dictionary_test.go:12: got '' want 'this is just a test' given, 'test'`.
+```text
+dictionnaire_test.go:12: resultat '' attendu 'ceci est juste un test'
+```
 
-## Write enough code to make it pass
+## Écrivez assez de code pour le faire passer
 
 ```go
-func Search(dictionary map[string]string, word string) string {
-	return dictionary[word]
+func (d Dictionnaire) Recherche(mot string) string {
+	return d[mot]
 }
 ```
 
-Getting a value out of a Map is the same as getting a value out of Array `map[key]`.
+Accéder à un map est identique à l'accès à un tableau, c'est par le biais d'une notation entre crochets.
 
-## Refactor
+La différence essentielle est qu'avec un tableau vous pouvez uniquement passer des entiers comme clés, tandis qu'avec les maps vous pouvez avoir d'autres types comme les chaînes.
+
+Un autre aspect différent est que vous pouvez passer une clé qui n'existe pas. Dans le cas des tableaux, vous obtiendrez une compilation impossible si vous essayez d'écrire un élément de tableau qui est hors limites, mais dans un map vous obtiendrez simplement une valeur zéro de ce type. Par exemple, si vous avez un `map[string]int` et tentez d'obtenir une clé qui n'existe pas, vous obtiendrez 0.
+
+Cette propriété nous permet de simplement retourner le résultat d'accès à la map directement et que le test passe.
+
+## Refactoriser
+
+Il n'y a pas grand-chose à refactoriser dans notre implémentation, mais nous pourrions apporter quelques ajustements à notre test. Une chose que nous pourrions faire est de créer une fonction d'aide `assertChainesEgales` pour faciliter l'écriture de tests futurs.
 
 ```go
-func TestSearch(t *testing.T) {
-	dictionary := map[string]string{"test": "this is just a test"}
+func TestRecherche(t *testing.T) {
+	dictionnaire := Dictionnaire{"test": "ceci est juste un test"}
 
-	got := Search(dictionary, "test")
-	want := "this is just a test"
+	resultat := dictionnaire.Recherche("test")
+	attendu := "ceci est juste un test"
 
-	assertStrings(t, got, want)
+	assertChainesEgales(t, resultat, attendu)
 }
 
-func assertStrings(t testing.TB, got, want string) {
+func assertChainesEgales(t testing.TB, recu, attendu string) {
 	t.Helper()
 
-	if got != want {
-		t.Errorf("got %q want %q", got, want)
+	if recu != attendu {
+		t.Errorf("recu '%s' attendu '%s'", recu, attendu)
 	}
 }
 ```
 
-I decided to create an `assertStrings` helper to make the implementation more general.
+Nous avons maintenant une méthode `Recherche` très simple. Cependant, nous ne savons pas vraiment ce qui arrive lorsque l'on recherche une clé qui n'existe pas. Nous allons écrire un nouveau test pour cela.
 
-### Using a custom type
-
-We can improve our dictionary's usage by creating a new type around map and making `Search` a method.
-
-In `dictionary_test.go`:
+## Écrivez le test d'abord
 
 ```go
-func TestSearch(t *testing.T) {
-	dictionary := Dictionary{"test": "this is just a test"}
+func TestRecherche(t *testing.T) {
+	dictionnaire := Dictionnaire{"test": "ceci est juste un test"}
 
-	got := dictionary.Search("test")
-	want := "this is just a test"
+	t.Run("mot connu", func(t *testing.T) {
+		resultat, _ := dictionnaire.Recherche("test")
+		attendu := "ceci est juste un test"
 
-	assertStrings(t, got, want)
-}
-```
-
-We started using the `Dictionary` type, which we have not defined yet. Then called `Search` on the `Dictionary` instance.
-
-We did not need to change `assertStrings`.
-
-In `dictionary.go`:
-
-```go
-type Dictionary map[string]string
-
-func (d Dictionary) Search(word string) string {
-	return d[word]
-}
-```
-
-Here we created a `Dictionary` type which acts as a thin wrapper around `map`. With the custom type defined, we can create the `Search` method.
-
-## Write the test first
-
-The basic search was very easy to implement, but what will happen if we supply a word that's not in our dictionary?
-
-We actually get nothing back. This is good because the program can continue to run, but there is a better approach. The function can report that the word is not in the dictionary. This way, the user isn't left wondering if the word doesn't exist or if there is just no definition (this might not seem very useful for a dictionary. However, it's a scenario that could be key in other usecases).
-
-```go
-func TestSearch(t *testing.T) {
-	dictionary := Dictionary{"test": "this is just a test"}
-
-	t.Run("known word", func(t *testing.T) {
-		got, _ := dictionary.Search("test")
-		want := "this is just a test"
-
-		assertStrings(t, got, want)
+		assertChainesEgales(t, resultat, attendu)
 	})
 
-	t.Run("unknown word", func(t *testing.T) {
-		_, err := dictionary.Search("unknown")
-		want := "could not find the word you were looking for"
+	t.Run("mot inconnu", func(t *testing.T) {
+		_, resultat := dictionnaire.Recherche("inconnu")
+		attendu := "impossible de trouver le mot que vous recherchez"
 
-		if err == nil {
-			t.Fatal("expected to get an error.")
+		if resultat == nil {
+			t.Fatal("attendu une erreur")
 		}
 
-		assertStrings(t, err.Error(), want)
+		assertChainesEgales(t, resultat.Error(), attendu)
 	})
 }
 ```
 
-The way to handle this scenario in Go is to return a second argument which is an `Error` type.
+L'utilisation de sous-tests nous aide à construire un test complet pour notre fonction `Recherche`.
 
-Notice that as we've seen in the [pointers and error section](./pointers-and-errors.md) here in order to assert the error message
-we first check that the error is not `nil` and then use `.Error()` method to get the string which we can then pass to the assertion.
+Dans le sous-test `mot connu`, nous continuons à vérifier que l'on peut récupérer une définition pour un mot dans le dictionnaire.
 
-## Try and run the test
+Cependant, dans le sous-test `mot inconnu`, nous vérifions deux choses :
+1. `Recherche` retourne une erreur
+2. L'erreur contient un message indiquant pourquoi la recherche a échoué
 
-This does not compile
+En adaptant nos tests, nous avons également modifié notre fonction `Recherche` pour retourner une deuxième valeur, une `erreur`. En Go, la façon idiomatique de gérer cette situation est de retourner la valeur _zéro_ du type (une chaîne vide dans ce cas) et une `erreur` avec un message descriptif.
 
+Cette façon permet à l'appelant de vérifier si une erreur s'est produite et de décider quoi faire à partir de là. Dans notre cas, nous voulons renvoyer un dictionnaire sans aucune sortie d'erreur si tout va bien, ou la valeur zéro et une erreur si la clé n'est pas présente dans le dictionnaire.
+
+## Essayez d'exécuter le test
+
+```text
+./dictionnaire_test.go:15:23: assignment mismatch: 2 variables but 1 values
+./dictionnaire_test.go:19:24: assignment mismatch: 2 variables but 1 values
 ```
-./dictionary_test.go:18:10: assignment mismatch: 2 variables but 1 values
-```
 
-## Write the minimal amount of code for the test to run and check the output
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
 
 ```go
-func (d Dictionary) Search(word string) (string, error) {
-	return d[word], nil
+func (d Dictionnaire) Recherche(mot string) (string, error) {
+	return d[mot], nil
 }
 ```
 
-Your test should now fail with a much clearer error message.
+C'est la première fois que nous retournons plusieurs valeurs dans notre code. Nous pouvons le faire simplement en ajoutant des parenthèses autour des valeurs de retour.
 
-`dictionary_test.go:22: expected to get an error.`
+`(valeur1, valeur2)`
 
-## Write enough code to make it pass
+Maintenant, nous devons créer une erreur à retourner lorsque la clé n'est pas trouvée. Nous utiliserons un moyen courant en Go pour créer des erreurs personnalisées en utilisant `errors.New`.
+
+## Écrivez assez de code pour le faire passer
 
 ```go
-func (d Dictionary) Search(word string) (string, error) {
-	definition, ok := d[word]
+func (d Dictionnaire) Recherche(mot string) (string, error) {
+	definition, ok := d[mot]
 	if !ok {
-		return "", errors.New("could not find the word you were looking for")
+		return "", errors.New("impossible de trouver le mot que vous recherchez")
 	}
 
 	return definition, nil
 }
 ```
 
-In order to make this pass, we are using an interesting property of the map lookup. It can return 2 values. The second value is a boolean which indicates if the key was found successfully.
+Pour améliorer notre gestion d'erreur, nous utilisons une fonctionnalité intéressante de Go en prenant une "deuxième" valeur de retour lorsque nous accédons au map.
 
-This property allows us to differentiate between a word that doesn't exist and a word that just doesn't have a definition.
+La deuxième valeur est un booléen qui indique si la clé a été trouvée ou non.
 
-## Refactor
+Cette opération est à peu près la même que
 
 ```go
-var ErrNotFound = errors.New("could not find the word you were looking for")
+if d[mot] != "" {
+    // do something
+}
+```
 
-func (d Dictionary) Search(word string) (string, error) {
-	definition, ok := d[word]
+Cependant, ce qui est problématique avec cette approche, c'est que si la valeur (dans ce cas, la définition) était vide, nous ne saurions pas si c'était vraiment stocké comme vide ou si la clé n'existait pas dans le map.
+
+En utilisant la syntaxe `value, ok := map[key]`, nous obtenons la valeur (qui sera la valeur zéro si la clé n'est pas présente) et un booléen qui nous indique si la clé a été trouvée.
+
+Cela nous permet de distinguer entre une clé qui n'existe pas (ok sera faux) et une clé qui est présente avec une valeur vide (ok sera vrai).
+
+## Refactoriser
+
+Notre code semble bon, mais nous pourrions améliorer la façon dont nous gérons les erreurs. Il est généralement bon de créer des erreurs constantes que vous pouvez utiliser pour comparer plus facilement avec `==` qu'avec une chaîne comme `err.Error()`.
+
+```go
+var ErrMotInexistant = errors.New("impossible de trouver le mot que vous recherchez")
+
+func (d Dictionnaire) Recherche(mot string) (string, error) {
+	definition, ok := d[mot]
 	if !ok {
-		return "", ErrNotFound
+		return "", ErrMotInexistant
 	}
 
 	return definition, nil
 }
 ```
 
-We can get rid of the magic error in our `Search` function by extracting it into a variable. This will also allow us to have a better test.
+Et maintenant, nous pouvons refactoriser notre test pour utiliser cette constante d'erreur.
 
 ```go
-t.Run("unknown word", func(t *testing.T) {
-	_, got := dictionary.Search("unknown")
-	if got == nil {
-		t.Fatal("expected to get an error.")
-	}
-	assertError(t, got, ErrNotFound)
+t.Run("mot inconnu", func(t *testing.T) {
+	_, err := dictionnaire.Recherche("inconnu")
+
+	assertErreur(t, err, ErrMotInexistant)
 })
-```
-```go
-func assertError(t testing.TB, got, want error) {
+
+func assertErreur(t testing.TB, recu, attendu error) {
 	t.Helper()
 
-	if got != want {
-		t.Errorf("got error %q want %q", got, want)
+	if recu != attendu {
+		t.Errorf("recu erreur '%s' attendu '%s'", recu, attendu)
 	}
 }
 ```
 
-By creating a new helper we were able to simplify our test, and start using our `ErrNotFound` variable so our test doesn't fail if we change the error text in the future.
+Nous avons créé une fonction d'aide `assertErreur` pour que nos tests restent légers.
 
-## Write the test first
+## Écrivez le test d'abord
 
-We have a great way to search the dictionary. However, we have no way to add new words to our dictionary.
+Nous avons un excellent moyen de rechercher dans le dictionnaire. Il est maintenant temps de donner à notre dictionnaire la possibilité d'ajouter de nouveaux mots.
 
 ```go
-func TestAdd(t *testing.T) {
-	dictionary := Dictionary{}
-	dictionary.Add("test", "this is just a test")
+func TestAjouter(t *testing.T) {
+	dictionnaire := Dictionnaire{}
+	mot := "test"
+	definition := "ceci est juste un test"
 
-	want := "this is just a test"
-	got, err := dictionary.Search("test")
+	dictionnaire.Ajouter(mot, definition)
+
+	attendu := "ceci est juste un test"
+	resultat, err := dictionnaire.Recherche(mot)
 	if err != nil {
-		t.Fatal("should find added word:", err)
+		t.Fatal("ne devrait pas obtenir d'erreur:", err)
 	}
 
-	assertStrings(t, got, want)
+	if attendu != resultat {
+		t.Errorf("resultat '%s' attendu '%s'", resultat, attendu)
+	}
 }
 ```
 
-In this test, we are utilizing our `Search` function to make the validation of the dictionary a little easier.
+Notre test crée un dictionnaire vide et s'assure qu'un mot est ajouté.
 
-## Write the minimal amount of code for the test to run and check output
+## Essayez d'exécuter le test
 
-In `dictionary.go`
+```
+./dictionnaire_test.go:31:13: dictionnaire.Ajouter undefined (type Dictionnaire has no field or method Ajouter)
+```
+
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
+
+Dans `dictionnaire.go`
 
 ```go
-func (d Dictionary) Add(word, definition string) {
+func (d Dictionnaire) Ajouter(mot, definition string) {
+
 }
 ```
 
-Your test should now fail
+Notre test échoue parce que nous ne changeons pas les données.
 
 ```
-dictionary_test.go:31: should find added word: could not find the word you were looking for
+dictionnaire_test.go:40: ne devrait pas obtenir d'erreur: impossible de trouver le mot que vous recherchez
 ```
 
-## Write enough code to make it pass
+## Écrivez assez de code pour le faire passer
 
 ```go
-func (d Dictionary) Add(word, definition string) {
-	d[word] = definition
+func (d Dictionnaire) Ajouter(mot, definition string) {
+	d[mot] = definition
 }
 ```
 
-Adding to a map is also similar to an array. You just need to specify a key and set it equal to a value.
+Ajouter à un map est presque comme accéder à un élément, vous utilisez simplement `=` pour affecter une valeur à la clé.
 
-### Pointers, copies, et al
+## Refactoriser
 
-An interesting property of maps is that you can modify them without passing as an address to it (e.g `&myMap`)
-
-This may make them _feel_ like a "reference type", [but as Dave Cheney describes](https://dave.cheney.net/2017/04/30/if-a-map-isnt-a-reference-variable-what-is-it) they are not.
-
-> A map value is a pointer to a runtime.hmap structure.
-
-So when you pass a map to a function/method, you are indeed copying it, but just the pointer part, not the underlying data structure that contains the data.
-
-A gotcha with maps is that they can be a `nil` value. A `nil` map behaves like an empty map when reading, but attempts to write to a `nil` map will cause a runtime panic. You can read more about maps [here](https://blog.golang.org/go-maps-in-action).
-
-Therefore, you should never initialize a nil map variable:
+Notre fonction `Ajouter` est très simple et notre test passe. Mais notre test utilise des vérifications multiples qui rendent le test un peu verbeux. Nous pouvons le simplifier en créant une nouvelle fonction d'aide `assertDefinition`.
 
 ```go
-var m map[string]string
-```
+func TestAjouter(t *testing.T) {
+	dictionnaire := Dictionnaire{}
+	mot := "test"
+	definition := "ceci est juste un test"
+	dictionnaire.Ajouter(mot, definition)
 
-Instead, you can initialize an empty map or use the `make` keyword to create a map for you:
-
-```go
-var dictionary = map[string]string{}
-
-// OR
-
-var dictionary = make(map[string]string)
-```
-
-Both approaches create an empty `hash map` and point `dictionary` at it. Which ensures that you will never get a runtime panic.
-
-## Refactor
-
-There isn't much to refactor in our implementation but the test could use a little simplification.
-
-```go
-func TestAdd(t *testing.T) {
-	dictionary := Dictionary{}
-	word := "test"
-	definition := "this is just a test"
-
-	dictionary.Add(word, definition)
-
-	assertDefinition(t, dictionary, word, definition)
+	assertDefinition(t, dictionnaire, mot, definition)
 }
 
-func assertDefinition(t testing.TB, dictionary Dictionary, word, definition string) {
+func assertDefinition(t testing.TB, dictionnaire Dictionnaire, mot, definition string) {
 	t.Helper()
 
-	got, err := dictionary.Search(word)
+	resultat, err := dictionnaire.Recherche(mot)
 	if err != nil {
-		t.Fatal("should find added word:", err)
+		t.Fatal("ne devrait pas obtenir d'erreur:", err)
 	}
-	assertStrings(t, got, definition)
+
+	if definition != resultat {
+		t.Errorf("resultat '%s' attendu '%s'", resultat, definition)
+	}
 }
 ```
 
-We made variables for word and definition, and moved the definition assertion into its own helper function.
+Notre test est maintenant plus compact et la méthode `Ajouter` est simple. Cependant, qu'advient-il si on redéfinit un mot ? Notre fonction actuelle permettrait à un utilisateur d'écraser une définition. Cette fonctionnalité peut être acceptable dans certains cas, mais pour ce cas, nous allons dire qu'un mot n'est ajouté que s'il n'existe pas déjà.
 
-Our `Add` is looking good. Except, we didn't consider what happens when the value we are trying to add already exists!
-
-Map will not throw an error if the value already exists. Instead, they will go ahead and overwrite the value with the newly provided value. This can be convenient in practice, but makes our function name less than accurate. `Add` should not modify existing values. It should only add new words to our dictionary.
-
-## Write the test first
+## Écrivez le test d'abord
 
 ```go
-func TestAdd(t *testing.T) {
-	t.Run("new word", func(t *testing.T) {
-		dictionary := Dictionary{}
-		word := "test"
-		definition := "this is just a test"
+func TestAjouter(t *testing.T) {
+	t.Run("nouveau mot", func(t *testing.T) {
+		dictionnaire := Dictionnaire{}
+		mot := "test"
+		definition := "ceci est juste un test"
 
-		err := dictionary.Add(word, definition)
+		err := dictionnaire.Ajouter(mot, definition)
 
-		assertError(t, err, nil)
-		assertDefinition(t, dictionary, word, definition)
+		assertErreur(t, err, nil)
+		assertDefinition(t, dictionnaire, mot, definition)
 	})
 
-	t.Run("existing word", func(t *testing.T) {
-		word := "test"
-		definition := "this is just a test"
-		dictionary := Dictionary{word: definition}
-		err := dictionary.Add(word, "new test")
+	t.Run("mot existant", func(t *testing.T) {
+		mot := "test"
+		definition := "ceci est juste un test"
+		dictionnaire := Dictionnaire{mot: definition}
+		err := dictionnaire.Ajouter(mot, "nouveau test")
 
-		assertError(t, err, ErrWordExists)
-		assertDefinition(t, dictionary, word, definition)
+		assertErreur(t, err, ErrMotExistant)
+		assertDefinition(t, dictionnaire, mot, definition)
 	})
 }
 ```
 
-For this test, we modified `Add` to return an error, which we are validating against a new error variable, `ErrWordExists`. We also modified the previous test to check for a `nil` error.
+Pour ce test, nous avons modifié notre fonction `Ajouter` pour renvoyer une erreur, qui est la valeur `nil` (nil étant l'équivalent de null en Go) pour un scénario réussi.
 
-## Try to run test
+Nous avons également créé un dictionnaire avec un mot afin de tester ce qui se passe si nous essayons d'ajouter un mot qui existe déjà.
 
-The compiler will fail because we are not returning a value for `Add`.
+## Essayez d'exécuter le test
 
 ```
-./dictionary_test.go:30:13: dictionary.Add(word, definition) used as value
-./dictionary_test.go:41:13: dictionary.Add(word, "new test") used as value
+./dictionnaire_test.go:40:17: dictionnaire.Ajouter(mot, definition) used as value
+./dictionnaire_test.go:46:23: undefined: ErrMotExistant
+./dictionnaire_test.go:54:22: dictionnaire.Ajouter(mot, "nouveau test") used as value
 ```
 
-## Write the minimal amount of code for the test to run and check the output
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
 
-In `dictionary.go`
+Nous avons besoin de définir notre nouvelle erreur constante et modifier notre fonction `Ajouter` pour retourner des erreurs.
 
 ```go
 var (
-	ErrNotFound   = errors.New("could not find the word you were looking for")
-	ErrWordExists = errors.New("cannot add word because it already exists")
+	ErrMotInexistant = errors.New("impossible de trouver le mot que vous recherchez")
+	ErrMotExistant = errors.New("impossible d'ajouter le mot car il existe déjà")
 )
 
-func (d Dictionary) Add(word, definition string) error {
-	d[word] = definition
+func (d Dictionnaire) Ajouter(mot, definition string) error {
+	d[mot] = definition
 	return nil
 }
 ```
 
-Now we get two more errors. We are still modifying the value, and returning a `nil` error.
+Maintenant, nous avons besoin de vérifier si le mot existe déjà.
 
-```
-dictionary_test.go:43: got error '%!q(<nil>)' want 'cannot add word because it already exists'
-dictionary_test.go:44: got 'new test' want 'this is just a test'
-```
-
-## Write enough code to make it pass
+## Écrivez assez de code pour le faire passer
 
 ```go
-func (d Dictionary) Add(word, definition string) error {
-	_, err := d.Search(word)
+func (d Dictionnaire) Ajouter(mot, definition string) error {
+	_, existe := d[mot]
+	if existe {
+		return ErrMotExistant
+	}
+
+	d[mot] = definition
+	return nil
+}
+```
+
+Ici, nous utilisons à nouveau la deuxième valeur de retour de la recherche de map pour vérifier si le mot existe déjà avant de l'ajouter.
+
+## Refactoriser
+
+Notre implémentation est bonne et les tests passent. Mais il y a une petite optimisation que nous pouvons faire. Nous avons déjà une fonction `Recherche` qui renvoie une erreur si le mot existe. Nous pouvons l'utiliser dans notre fonction `Ajouter` pour vérifier si le mot existe ou non.
+
+```go
+func (d Dictionnaire) Ajouter(mot, definition string) error {
+	_, err := d.Recherche(mot)
 
 	switch err {
-	case ErrNotFound:
-		d[word] = definition
+	case ErrMotInexistant:
+		d[mot] = definition
 	case nil:
-		return ErrWordExists
+		return ErrMotExistant
 	default:
 		return err
 	}
@@ -421,267 +421,123 @@ func (d Dictionary) Add(word, definition string) error {
 }
 ```
 
-Here we are using a `switch` statement to match on the error. Having a `switch` like this provides an extra safety net, in case `Search` returns an error other than `ErrNotFound`.
+Ici, nous sommes utilisant une instruction `switch` pour gérer les résultats potentiels de notre appel à `Recherche`. Remarquez que nous avons aussi géré le cas où `Recherche` pourrait retourner une erreur différente. Bien que nous ne prévoyons pas d'autres erreurs de `Recherche` actuellement, en gérant ce cas, nous rendons notre code plus robuste aux évolutions futures.
 
-## Refactor
+## Écrivez le test d'abord
 
-We don't have too much to refactor, but as our error usage grows we can make a few modifications.
+Maintenant, il est temps d'ajouter une fonctionnalité de mise à jour pour notre dictionnaire. Par "mise à jour", nous voulons dire changer la définition d'un mot.
 
 ```go
-const (
-	ErrNotFound   = DictionaryErr("could not find the word you were looking for")
-	ErrWordExists = DictionaryErr("cannot add word because it already exists")
-)
+func TestMettreAJour(t *testing.T) {
+	mot := "test"
+	definition := "ceci est juste un test"
+	dictionnaire := Dictionnaire{mot: definition}
+	nouvelleDefinition := "nouvelle définition"
 
-type DictionaryErr string
+	dictionnaire.MettreAJour(mot, nouvelleDefinition)
 
-func (e DictionaryErr) Error() string {
-	return string(e)
+	assertDefinition(t, dictionnaire, mot, nouvelleDefinition)
 }
 ```
 
-We made the errors constant; this required us to create our own `DictionaryErr` type which implements the `error` interface. You can read more about the details in [this excellent article by Dave Cheney](https://dave.cheney.net/2016/04/07/constant-errors). Simply put, it makes the errors more reusable and immutable.
+La fonction `MettreAJour` est très similaire à `Ajouter`, à part que cette fois nous attendons que la fonctionnalité remplace l'ancienne définition d'un mot par une nouvelle.
 
-Next, let's create a function to `Update` the definition of a word.
+## Essayez d'exécuter le test
 
-## Write the test first
+```
+./dictionnaire_test.go:68:13: dictionnaire.MettreAJour undefined (type Dictionnaire has no field or method MettreAJour)
+```
+
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
+
+Nous ajoutons simplement une nouvelle fonction `MettreAJour` à notre fichier `dictionnaire.go`.
 
 ```go
-func TestUpdate(t *testing.T) {
-	word := "test"
-	definition := "this is just a test"
-	dictionary := Dictionary{word: definition}
-	newDefinition := "new definition"
-
-	dictionary.Update(word, newDefinition)
-
-	assertDefinition(t, dictionary, word, newDefinition)
-}
-```
-
-`Update` is very closely related to `Add` and will be our next implementation.
-
-## Try and run the test
-
-```
-./dictionary_test.go:53:2: dictionary.Update undefined (type Dictionary has no field or method Update)
-```
-
-## Write minimal amount of code for the test to run and check the failing test output
-
-We already know how to deal with an error like this. We need to define our function.
-
-```go
-func (d Dictionary) Update(word, definition string) {}
-```
-
-With that in place, we are able to see that we need to change the definition of the word.
-
-```
-dictionary_test.go:55: got 'this is just a test' want 'new definition'
-```
-
-## Write enough code to make it pass
-
-We already saw how to do this when we fixed the issue with `Add`. So let's implement something really similar to `Add`.
-
-```go
-func (d Dictionary) Update(word, definition string) {
-	d[word] = definition
-}
-```
-
-There is no refactoring we need to do on this since it was a simple change. However, we now have the same issue as with `Add`. If we pass in a new word, `Update` will add it to the dictionary.
-
-## Write the test first
-
-```go
-t.Run("existing word", func(t *testing.T) {
-	word := "test"
-	definition := "this is just a test"
-	dictionary := Dictionary{word: definition}
-	newDefinition := "new definition"
-
-	err := dictionary.Update(word, newDefinition)
-
-	assertError(t, err, nil)
-	assertDefinition(t, dictionary, word, newDefinition)
-})
-
-t.Run("new word", func(t *testing.T) {
-	word := "test"
-	definition := "this is just a test"
-	dictionary := Dictionary{}
-
-	err := dictionary.Update(word, definition)
-
-	assertError(t, err, ErrWordDoesNotExist)
-})
-```
-
-We added yet another error type for when the word does not exist. We also modified `Update` to return an `error` value.
-
-## Try and run the test
-
-```
-./dictionary_test.go:53:16: dictionary.Update(word, newDefinition) used as value
-./dictionary_test.go:64:16: dictionary.Update(word, definition) used as value
-./dictionary_test.go:66:23: undefined: ErrWordDoesNotExist
-```
-
-We get 3 errors this time, but we know how to deal with these.
-
-## Write the minimal amount of code for the test to run and check the failing test output
-
-```go
-const (
-	ErrNotFound         = DictionaryErr("could not find the word you were looking for")
-	ErrWordExists       = DictionaryErr("cannot add word because it already exists")
-	ErrWordDoesNotExist = DictionaryErr("cannot perform operation on word because it does not exist")
-)
-
-func (d Dictionary) Update(word, definition string) error {
-	d[word] = definition
-	return nil
-}
-```
-
-We added our own error type and are returning a `nil` error.
-
-With these changes, we now get a very clear error:
-
-```
-dictionary_test.go:66: got error '%!q(<nil>)' want 'cannot update word because it does not exist'
-```
-
-## Write enough code to make it pass
-
-```go
-func (d Dictionary) Update(word, definition string) error {
-	_, err := d.Search(word)
-
-	switch err {
-	case ErrNotFound:
-		return ErrWordDoesNotExist
-	case nil:
-		d[word] = definition
-	default:
-		return err
-	}
-
-	return nil
-}
-```
-
-This function looks almost identical to `Add` except we switched when we update the `dictionary` and when we return an error.
-
-### Note on declaring a new error for Update
-
-We could reuse `ErrNotFound` and not add a new error. However, it is often better to have a precise error for when an update fails.
-
-Having specific errors gives you more information about what went wrong. Here is an example in a web app:
-
-> You can redirect the user when `ErrNotFound` is encountered, but display an error message when `ErrWordDoesNotExist` is encountered.
-
-Next, let's create a function to `Delete` a word in the dictionary.
-
-## Write the test first
-
-```go
-func TestDelete(t *testing.T) {
-	word := "test"
-	dictionary := Dictionary{word: "test definition"}
-
-	dictionary.Delete(word)
-
-	_, err := dictionary.Search(word)
-	assertError(t, err, ErrNotFound)
-}
-```
-
-Our test creates a `Dictionary` with a word and then checks if the word has been removed.
-
-## Try to run the test
-
-By running `go test` we get:
-
-```
-./dictionary_test.go:74:6: dictionary.Delete undefined (type Dictionary has no field or method Delete)
-```
-
-## Write the minimal amount of code for the test to run and check the failing test output
-
-```go
-func (d Dictionary) Delete(word string) {
+func (d Dictionnaire) MettreAJour(mot, definition string) {
 
 }
 ```
 
-After we add this, the test tells us we are not deleting the word.
+Maintenant, nous voyons notre test échouer :
 
 ```
-dictionary_test.go:78: got error '%!q(<nil>)' want 'could not find the word you were looking for'
+dictionnaire_test.go:67: resultat 'ceci est juste un test' attendu 'nouvelle définition'
 ```
 
-## Write enough code to make it pass
+## Écrivez assez de code pour le faire passer
 
 ```go
-func (d Dictionary) Delete(word string) {
-	delete(d, word)
+func (d Dictionnaire) MettreAJour(mot, definition string) {
+	d[mot] = definition
 }
 ```
 
-Go has a built-in function `delete` that works on maps. It takes two arguments and returns nothing. The first argument is the map and the second is the key to be removed.
+Notre test passe, mais l'implémentation est la même que notre fonction `Ajouter`. Ce n'est pas idéal, car nous savons que la fonction `Ajouter` échouera si le mot existe déjà, ce qui signifie que nous n'utilisons pas correctement notre fonctionnalité `MettreAJour`.
 
-## Refactor
-There isn't much to refactor, but we can implement the same logic from `Update` to handle cases where word doesn't exist.
+## Refactoriser
+
+Notre fonction `MettreAJour` fonctionne, mais la façon dont nous l'avons implémentée n'est pas idéale. Nous devrions vérifier si le mot existe d'abord, et si ce n'est pas le cas, retourner une erreur.
 
 ```go
-func TestDelete(t *testing.T) {
-	t.Run("existing word", func(t *testing.T) {
-		word := "test"
-		dictionary := Dictionary{word: "test definition"}
+func TestMettreAJour(t *testing.T) {
+	t.Run("mot existant", func(t *testing.T) {
+		mot := "test"
+		definition := "ceci est juste un test"
+		nouvelleDef := "nouvelle définition"
+		dictionnaire := Dictionnaire{mot: definition}
 
-		err := dictionary.Delete(word)
+		err := dictionnaire.MettreAJour(mot, nouvelleDef)
 
-		assertError(t, err, nil)
-
-		_, err = dictionary.Search(word)
-
-		assertError(t, err, ErrNotFound)
+		assertErreur(t, err, nil)
+		assertDefinition(t, dictionnaire, mot, nouvelleDef)
 	})
 
-	t.Run("non-existing word", func(t *testing.T) {
-		word := "test"
-		dictionary := Dictionary{}
+	t.Run("nouveau mot", func(t *testing.T) {
+		mot := "nouveau"
+		definition := "ceci est juste un test"
+		dictionnaire := Dictionnaire{}
 
-		err := dictionary.Delete(word)
+		err := dictionnaire.MettreAJour(mot, definition)
 
-		assertError(t, err, ErrWordDoesNotExist)
+		assertErreur(t, err, ErrMotInexistant)
 	})
 }
 ```
 
-## Try to run test
+Nous avons maintenant deux sous-tests, l'un qui vérifie que nous pouvons mettre à jour un mot existant, et l'autre qui vérifie que `MettreAJour` renvoie une erreur s'il est appelé avec un mot qui n'existe pas dans le dictionnaire.
 
-The compiler will fail because we are not returning a value for `Delete`.
+## Essayez d'exécuter le test
 
 ```
-./dictionary_test.go:77:10: dictionary.Delete(word) (no value) used as value
-./dictionary_test.go:90:10: dictionary.Delete(word) (no value) used as value
+./dictionnaire_test.go:75:17: dictionnaire.MettreAJour(mot, nouvelleDef) used as value
+./dictionnaire_test.go:87:23: dictionnaire.MettreAJour(mot, definition) used as value
 ```
 
-## Write enough code to make it pass
+Nous recevons une erreur de compilation car notre fonction `MettreAJour` ne retourne pas de valeur. Nous devons la mettre à jour pour qu'elle le fasse.
 
 ```go
-func (d Dictionary) Delete(word string) error {
-	_, err := d.Search(word)
+func (d Dictionnaire) MettreAJour(mot, definition string) error {
+	d[mot] = definition
+	return nil
+}
+```
 
+Maintenant, il s'exécute, mais nous avons un échec de test :
+
+```
+dictionnaire_test.go:88: recu erreur '<nil>' attendu 'impossible de trouver le mot que vous recherchez'
+```
+
+## Écrivez assez de code pour le faire passer
+
+```go
+func (d Dictionnaire) MettreAJour(mot, definition string) error {
+	_, err := d.Recherche(mot)
 	switch err {
-	case ErrNotFound:
-		return ErrWordDoesNotExist
+	case ErrMotInexistant:
+		return ErrMotInexistant
 	case nil:
-		delete(d, word)
+		d[mot] = definition
 	default:
 		return err
 	}
@@ -690,17 +546,77 @@ func (d Dictionary) Delete(word string) error {
 }
 ```
 
-We are again using a switch statement to match on the error when we attempt to delete a word that doesn't exist. 
+Nous avons maintenant une implémentation correcte de `MettreAJour`. Encore une fois, nous avons utilisé une instruction `switch` pour gérer les cas où `Recherche` pourrait retourner différents types d'erreurs.
 
-## Wrapping up
+## Écrivez le test d'abord
 
-In this section, we covered a lot. We made a full CRUD (Create, Read, Update and Delete) API for our dictionary. Throughout the process we learned how to:
+Notre dictionnaire est presque complet. Nous avons `Recherche`, `Ajouter` et `MettreAJour`. Il ne reste plus qu'à implémenter `Supprimer`.
 
-* Create maps
-* Search for items in maps
-* Add new items to maps
-* Update items in maps
-* Delete items from a map
-* Learned more about errors
-  * How to create errors that are constants
-  * Writing error wrappers
+```go
+func TestSupprimer(t *testing.T) {
+	mot := "test"
+	dictionnaire := Dictionnaire{mot: "définition de test"}
+
+	dictionnaire.Supprimer(mot)
+
+	_, err := dictionnaire.Recherche(mot)
+	if err != ErrMotInexistant {
+		t.Errorf("attendu '%s' à être supprimé", mot)
+	}
+}
+```
+
+Notre test vérifie que la clé a été supprimée en s'assurant que `Recherche` renvoie notre erreur pour un mot inexistant.
+
+## Essayez d'exécuter le test
+
+```
+./dictionnaire_test.go:95:13: dictionnaire.Supprimer undefined (type Dictionnaire has no field or method Supprimer)
+```
+
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
+
+```go
+func (d Dictionnaire) Supprimer(mot string) {
+
+}
+```
+
+Le test échoue maintenant parce que le mot n'a pas été supprimé :
+
+```
+dictionnaire_test.go:98: attendu 'test' à être supprimé
+```
+
+## Écrivez assez de code pour le faire passer
+
+```go
+func (d Dictionnaire) Supprimer(mot string) {
+	delete(d, mot)
+}
+```
+
+Go a une fonction intégrée `delete` qui fonctionne sur les maps. Elle prend un map et une clé en entrée, et supprime l'élément correspondant.
+
+## Conclusion
+
+Dans ce chapitre, nous avons abordé beaucoup de concepts importants liés aux maps en Go.
+
+Récapitulons ce que nous avons appris :
+
+1. Création d'un type basé sur un map avec un alias de type
+2. Comment travailler avec maps, y compris l'accès, l'ajout, la mise à jour et la suppression d'éléments
+3. Comment gérer les erreurs lors de l'interaction avec des maps
+4. Comment utiliser les méthodes avec notre type d'alias pour créer un type plus riche
+5. Comment utiliser des constantes pour améliorer la gestion des erreurs
+
+Nos fonctions finales sont :
+
+```go
+func (d Dictionnaire) Recherche(mot string) (string, error)
+func (d Dictionnaire) Ajouter(mot, definition string) error
+func (d Dictionnaire) MettreAJour(mot, definition string) error
+func (d Dictionnaire) Supprimer(mot string)
+```
+
+Maintenant, notre `Dictionnaire` est complètement fonctionnel et offre des méthodes idiomatiques qui permettent d'interagir avec le dictionnaire de manière claire et sans ambiguïté.
