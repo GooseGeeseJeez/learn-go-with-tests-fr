@@ -1,241 +1,172 @@
-# Pointers & errors
+# Pointeurs et erreurs
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/pointers)**
+**[Vous pouvez trouver tout le code de ce chapitre ici](https://github.com/quii/learn-go-with-tests/tree/main/pointers)**
 
-We learned about structs in the last section which let us capture a number of values related around a concept.
+Nous avons appris les structs dans la section précédente qui nous permettent de capturer un certain nombre de valeurs liées autour d'un concept.
 
-At some point you may wish to use structs to manage state, exposing methods to let users change the state in a way that you can control.
+À un moment donné, vous pourriez souhaiter utiliser des structs pour gérer l'état, en exposant des méthodes pour permettre aux utilisateurs de changer l'état d'une manière que vous pouvez contrôler.
 
-**Fintech loves Go** and uhhh bitcoins? So let's show what an amazing banking system we can make.
+**La fintech adore Go** et euh les bitcoins ? Alors montrons quel système bancaire incroyable nous pouvons créer.
 
-Let's make a `Wallet` struct which lets us deposit `Bitcoin`.
+Créons une struct `Portefeuille` qui nous permet de déposer des `Bitcoin`.
 
-## Write the test first
+## Écrivez le test d'abord
 
 ```go
-func TestWallet(t *testing.T) {
+func TestPortefeuille(t *testing.T) {
 
-	wallet := Wallet{}
+	portefeuille := Portefeuille{}
 
-	wallet.Deposit(10)
+	portefeuille.Deposer(10)
 
-	got := wallet.Balance()
-	want := 10
+	solde := portefeuille.Solde()
 
-	if got != want {
-		t.Errorf("got %d want %d", got, want)
+	attendu := 10
+
+	if solde != attendu {
+		t.Errorf("solde %d, attendu %d", solde, attendu)
 	}
 }
 ```
 
-In the [previous example](./structs-methods-and-interfaces.md) we accessed fields directly with the field name, however in our _very secure wallet_ we don't want to expose our inner state to the rest of the world. We want to control access via methods.
+## Essayez d'exécuter le test
 
-## Try to run the test
+`./portefeuille_test.go:7:9: undefined: Portefeuille`
 
-`./wallet_test.go:7:12: undefined: Wallet`
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
 
-## Write the minimal amount of code for the test to run and check the failing test output
-
-The compiler doesn't know what a `Wallet` is so let's tell it.
+Nous avons besoin de définir un type `Portefeuille`.
 
 ```go
-type Wallet struct{}
-```
+type Portefeuille struct {}
 
-Now we've made our wallet, try and run the test again
-
-```
-./wallet_test.go:9:8: wallet.Deposit undefined (type Wallet has no field or method Deposit)
-./wallet_test.go:11:15: wallet.Balance undefined (type Wallet has no field or method Balance)
-```
-
-We need to define these methods.
-
-Remember to only do enough to make the tests run. We need to make sure our test fails correctly with a clear error message.
-
-```go
-func (w Wallet) Deposit(amount int) {
+func (p Portefeuille) Deposer(montant int) {
 
 }
 
-func (w Wallet) Balance() int {
+func (p Portefeuille) Solde() int {
 	return 0
 }
 ```
 
-If this syntax is unfamiliar go back and read the structs section.
+Le test échoue maintenant avec un message clair
 
-The tests should now compile and run
+`portefeuille_test.go:13: solde 0, attendu 10`
 
-`wallet_test.go:15: got 0 want 10`
+## Écrivez assez de code pour le faire passer
 
-## Write enough code to make it pass
-
-We will need some kind of _balance_ variable in our struct to store the state
+Nous avons besoin d'une variable à l'intérieur de notre struct pour stocker le solde.
 
 ```go
-type Wallet struct {
-	balance int
+type Portefeuille struct {
+	solde int
+}
+
+func (p *Portefeuille) Deposer(montant int) {
+	p.solde += montant
+}
+
+func (p Portefeuille) Solde() int {
+	return p.solde
 }
 ```
 
-In Go if a symbol (variables, types, functions et al) starts with a lowercase symbol then it is private _outside the package it's defined in_.
+`solde += montant` est une façon concise de dire `solde = solde + montant`.
 
-In our case we want our methods to be able to manipulate this value, but no one else.
+Le test échoue toujours, mais étonnamment.
 
-Remember we can access the internal `balance` field in the struct using the "receiver" variable.
+```
+portefeuille_test.go:13: solde 0, attendu 10
+```
+
+C'est bizarre ! Nous sommes censés avoir mis à jour le solde, mais il semblerait que nous n'ayons pas fait. 
+
+En Go, lorsque vous appelez une fonction ou une méthode, les arguments sont _copiés_.
+
+Quand `Deposer` est appelé, la struct `Portefeuille` est copiée, donc la méthode opère sur une copie des données.
+
+Pour résoudre ce problème, nous avons besoin de la struct `Portefeuille` elle-même, pas d'une copie. Nous devons donc utiliser un **pointer** pour la méthode `Deposer`.
+
+## Pointeurs
+
+Un pointeur fait _référence_ à un endroit en mémoire où une valeur est stockée, plutôt que de copier la valeur elle-même.
+
+En ajoutant un `*` avant le type, vous obtenez accès à une valeur par pointeur.
+
+Donc maintenant, au lieu de faire une copie de la struct `Portefeuille`, `Deposer` a accès aux données originales de la struct.
+
+Exécutez à nouveau les tests et ils devraient maintenant passer.
+
+### Une dernière précision sur les pointeurs
+
+En Go, lorsque vous passez une valeur comme paramètre à une fonction/méthode, cette valeur est copiée.
+
+Quand nous appelons `func (p Portefeuille) Deposer(montant int)`, le compilateur Go copie la struct `Portefeuille` dans `p`, donc les modifications ne sont faites que sur `p` et non sur ce qui a été copié.
+
+Si nous changeons la définition en `func (p *Portefeuille) Deposer(montant int)`, la méthode `Deposer` va fonctionner avec un pointeur vers la `Portefeuille`.
+
+En Go, cela reste clair car vous pouvez voir qu'il s'agit d'un pointeur car nous devons préfixer avec un symbole `*`.
+
+Mais lorsque vous appelez la méthode à l'aide du récepteur, vous n'avez pas besoin de vous soucier des détails de la façon dont elle est implémentée, que ce soit avec une valeur ou un pointeur. Vous n'avez pas besoin de dire dans votre code `&portefeuille.Deposer(10)`.
+
+Cette dernière partie peut sembler un peu déroutante, mais rappelez-vous que lorsque vous appelez une méthode sur une variable comme `portefeuille.Deposer(10)`, l'objet `portefeuille` est toujours le receveur, il est juste copié différemment selon que la méthode a un receveur par valeur ou par pointeur.
+
+## Refactoriser
+
+Nous avons découvert que sans un receveur par pointeur pour la méthode `Deposer`, nous ne pouvons pas modifier l'état de la valeur.
+
+Il convient de faire de même pour `Solde` afin de rester cohérent, même si techniquement elle n'a pas besoin d'être un pointeur car elle ne modifie pas l'état. Mais dans l'ensemble, il est plus courant de garder vos receveurs de méthode cohérents (soit tous des pointeurs, soit tous des valeurs).
 
 ```go
-func (w Wallet) Deposit(amount int) {
-	w.balance += amount
-}
-
-func (w Wallet) Balance() int {
-	return w.balance
+func (p *Portefeuille) Solde() int {
+	return p.solde
 }
 ```
 
-With our career in fintech secured, run the test suite and bask in the passing test
+Ce changement ne modifie pas le comportement, donc les tests devraient toujours passer.
 
-`wallet_test.go:15: got 0 want 10`
-
-### That's not quite right
-
-Well this is confusing, our code looks like it should work.
-We add the new amount onto our balance and then the balance method should return the current state of it.
-
-In Go, **when you call a function or a method the arguments are** _**copied**_.
-
-When calling `func (w Wallet) Deposit(amount int)` the `w` is a copy of whatever we called the method from.
-
-Without getting too computer-sciency, when you create a value - like a wallet, it is stored somewhere in memory. You can find out what the _address_ of that bit of memory with `&myVal`.
-
-Experiment by adding some prints to your code
-
-```go
-func TestWallet(t *testing.T) {
-
-	wallet := Wallet{}
-
-	wallet.Deposit(10)
-
-	got := wallet.Balance()
-
-	fmt.Printf("address of balance in test is %p \n", &wallet.balance)
-
-	want := 10
-
-	if got != want {
-		t.Errorf("got %d want %d", got, want)
-	}
-}
-```
-
-```go
-func (w Wallet) Deposit(amount int) {
-	fmt.Printf("address of balance in Deposit is %p \n", &w.balance)
-	w.balance += amount
-}
-```
-
-The `%p` placeholder prints memory addresses in base 16 notation with leading `0x`s and the `\n` escape character prints a new line.
-Note that we get the pointer (memory address) of something by placing an `&` character at the beginning of the symbol.
-
-Now re-run the test
-
-```text
-address of balance in Deposit is 0xc420012268
-address of balance in test is 0xc420012260
-```
-
-You can see that the addresses of the two balances are different. So when we change the value of the balance inside the code, we are working on a copy of what came from the test. Therefore the balance in the test is unchanged.
-
-We can fix this with _pointers_. [Pointers](https://gobyexample.com/pointers) let us _point_ to some values and then let us change them.
-So rather than taking a copy of the whole Wallet, we instead take a pointer to that wallet so that we can change the original values within it.
-
-```go
-func (w *Wallet) Deposit(amount int) {
-	w.balance += amount
-}
-
-func (w *Wallet) Balance() int {
-	return w.balance
-}
-```
-
-The difference is the receiver type is `*Wallet` rather than `Wallet` which you can read as "a pointer to a wallet".
-
-Try and re-run the tests and they should pass.
-
-Now you might wonder, why did they pass? We didn't dereference the pointer in the function, like so:
-
-```go
-func (w *Wallet) Balance() int {
-	return (*w).balance
-}
-```
-
-and seemingly addressed the object directly. In fact, the code above using `(*w)` is absolutely valid. However, the makers of Go deemed this notation cumbersome, so the language permits us to write `w.balance`, without an explicit dereference.
-These pointers to structs even have their own name: _struct pointers_ and they are [automatically dereferenced](https://golang.org/ref/spec#Method_values).
-
-Technically you do not need to change `Balance` to use a pointer receiver as taking a copy of the balance is fine. However, by convention you should keep your method receiver types the same for consistency.
-
-## Refactor
-
-We said we were making a Bitcoin wallet but we have not mentioned them so far. We've been using `int` because they're a good type for counting things!
-
-It seems a bit overkill to create a `struct` for this. `int` is fine in terms of the way it works but it's not descriptive.
-
-Go lets you create new types from existing ones.
-
-The syntax is `type MyName OriginalType`
+Je souhaite maintenant introduire un nouveau type, `Bitcoin` qui s'ajoutera à notre travail de simulation d'un système bancaire de premier ordre.
 
 ```go
 type Bitcoin int
 
-type Wallet struct {
-	balance Bitcoin
+type Portefeuille struct {
+	solde Bitcoin
 }
 
-func (w *Wallet) Deposit(amount Bitcoin) {
-	w.balance += amount
+func (p *Portefeuille) Deposer(montant Bitcoin) {
+	p.solde += montant
 }
 
-func (w *Wallet) Balance() Bitcoin {
-	return w.balance
+func (p *Portefeuille) Solde() Bitcoin {
+	return p.solde
 }
 ```
 
+Pour utiliser notre nouveau type `Bitcoin`, nous devons mettre à jour notre test.
+
 ```go
-func TestWallet(t *testing.T) {
+func TestPortefeuille(t *testing.T) {
 
-	wallet := Wallet{}
+	portefeuille := Portefeuille{}
 
-	wallet.Deposit(Bitcoin(10))
+	portefeuille.Deposer(Bitcoin(10))
 
-	got := wallet.Balance()
+	solde := portefeuille.Solde()
 
-	want := Bitcoin(10)
+	attendu := Bitcoin(10)
 
-	if got != want {
-		t.Errorf("got %d want %d", got, want)
+	if solde != attendu {
+		t.Errorf("solde %d, attendu %d", solde, attendu)
 	}
 }
 ```
 
-To make `Bitcoin` you just use the syntax `Bitcoin(999)`.
+Pour pouvoir utiliser `Bitcoin` avec le code du test, nous devons convertir un entier en `Bitcoin` avec la syntaxe `Bitcoin(999)`.
 
-By doing this we're making a new type and we can declare _methods_ on them. This can be very useful when you want to add some domain specific functionality on top of existing types.
+Un aspect intéressant de Go est que la méthode `Stringer` du package `fmt` vous permet de définir comment votre type est imprimé lorsqu'il est utilisé avec la chaîne de format `%s` (%s pour "string").
 
-Let's implement [Stringer](https://golang.org/pkg/fmt/#Stringer) on Bitcoin
-
-```go
-type Stringer interface {
-	String() string
-}
-```
-
-This interface is defined in the `fmt` package and lets you define how your type is printed when used with the `%s` format string in prints.
+Ajoutons cette fonctionnalité à `Bitcoin`:
 
 ```go
 func (b Bitcoin) String() string {
@@ -243,439 +174,875 @@ func (b Bitcoin) String() string {
 }
 ```
 
-As you can see, the syntax for creating a method on a type declaration is the same as it is on a struct.
-
-Next we need to update our test format strings so they will use `String()` instead.
+À mesure que notre code devient plus complexe, nous voulons que nos tests restent simples à écrire et à lire. Nous avons déjà vu comment les méthodes d'aide à l'assertion peuvent rendre les tests plus clairs.
 
 ```go
-	if got != want {
-		t.Errorf("got %s want %s", got, want)
-	}
-```
+func TestPortefeuille(t *testing.T) {
 
-To see this in action, deliberately break the test so we can see it
+	portefeuille := Portefeuille{}
+	portefeuille.Deposer(Bitcoin(10))
 
-`wallet_test.go:18: got 10 BTC want 20 BTC`
-
-This makes it clearer what's going on in our test.
-
-The next requirement is for a `Withdraw` function.
-
-## Write the test first
-
-Pretty much the opposite of `Deposit()`
-
-```go
-func TestWallet(t *testing.T) {
-
-	t.Run("deposit", func(t *testing.T) {
-		wallet := Wallet{}
-
-		wallet.Deposit(Bitcoin(10))
-
-		got := wallet.Balance()
-
-		want := Bitcoin(10)
-
-		if got != want {
-			t.Errorf("got %s want %s", got, want)
-		}
-	})
-
-	t.Run("withdraw", func(t *testing.T) {
-		wallet := Wallet{balance: Bitcoin(20)}
-
-		wallet.Withdraw(Bitcoin(10))
-
-		got := wallet.Balance()
-
-		want := Bitcoin(10)
-
-		if got != want {
-			t.Errorf("got %s want %s", got, want)
-		}
-	})
-}
-```
-
-## Try to run the test
-
-`./wallet_test.go:26:9: wallet.Withdraw undefined (type Wallet has no field or method Withdraw)`
-
-## Write the minimal amount of code for the test to run and check the failing test output
-
-```go
-func (w *Wallet) Withdraw(amount Bitcoin) {
-
-}
-```
-
-`wallet_test.go:33: got 20 BTC want 10 BTC`
-
-## Write enough code to make it pass
-
-```go
-func (w *Wallet) Withdraw(amount Bitcoin) {
-	w.balance -= amount
-}
-```
-
-## Refactor
-
-There's some duplication in our tests, lets refactor that out.
-
-```go
-func TestWallet(t *testing.T) {
-
-	assertBalance := func(t testing.TB, wallet Wallet, want Bitcoin) {
+	verifieSolde := func(t testing.TB, portefeuille Portefeuille, attendu Bitcoin) {
 		t.Helper()
-		got := wallet.Balance()
+		solde := portefeuille.Solde()
 
-		if got != want {
-			t.Errorf("got %s want %s", got, want)
+		if solde != attendu {
+			t.Errorf("solde %s, attendu %s", solde, attendu)
 		}
 	}
 
-	t.Run("deposit", func(t *testing.T) {
-		wallet := Wallet{}
-		wallet.Deposit(Bitcoin(10))
-		assertBalance(t, wallet, Bitcoin(10))
+	verifieSolde(t, portefeuille, Bitcoin(10))
+}
+```
+
+Maintenant, nous avons une méthode réutilisable `verifieSolde` qui utilise notre nouvelle fonction `String()` pour nos bitcoins.
+
+Implémentons maintenant une fonction `Retirer` pour notre portefeuille.
+
+## Écrivez le test d'abord
+
+```go
+func TestPortefeuille(t *testing.T) {
+
+	t.Run("Deposer", func(t *testing.T) {
+		portefeuille := Portefeuille{}
+		portefeuille.Deposer(Bitcoin(10))
+		verifieSolde(t, portefeuille, Bitcoin(10))
 	})
 
-	t.Run("withdraw", func(t *testing.T) {
-		wallet := Wallet{balance: Bitcoin(20)}
-		wallet.Withdraw(Bitcoin(10))
-		assertBalance(t, wallet, Bitcoin(10))
+	t.Run("Retirer", func(t *testing.T) {
+		portefeuille := Portefeuille{solde: Bitcoin(20)}
+		portefeuille.Retirer(Bitcoin(10))
+		verifieSolde(t, portefeuille, Bitcoin(10))
 	})
 
 }
 ```
 
-What should happen if you try to `Withdraw` more than is left in the account? For now, our requirement is to assume there is not an overdraft facility.
+## Essayez d'exécuter le test
 
-How do we signal a problem when using `Withdraw`?
+`./portefeuille_test.go:18:9: portefeuille.Retirer undefined (type Portefeuille has no field or method Retirer)`
 
-In Go, if you want to indicate an error it is idiomatic for your function to return an `err` for the caller to check and act on.
-
-Let's try this out in a test.
-
-## Write the test first
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
 
 ```go
-t.Run("withdraw insufficient funds", func(t *testing.T) {
-	startingBalance := Bitcoin(20)
-	wallet := Wallet{startingBalance}
-	err := wallet.Withdraw(Bitcoin(100))
+func (p *Portefeuille) Retirer(montant Bitcoin) {
 
-	assertBalance(t, wallet, startingBalance)
+}
+```
+
+```
+portefeuille_test.go:33: solde 20 BTC, attendu 10 BTC
+```
+
+## Écrivez assez de code pour le faire passer
+
+```go
+func (p *Portefeuille) Retirer(montant Bitcoin) {
+	p.solde -= montant
+}
+```
+
+## Refactoriser
+
+Nous avons maintenant une fonction `Retirer` qui fonctionne. Cependant, que se passe-t-il si un utilisateur essaie de retirer plus de bitcoins qu'il n'en a ? Il finira par avoir un solde négatif.
+
+Nous devons ajouter une validation pour empêcher cela et retourner une erreur dans ce cas.
+
+## Écrivez le test d'abord
+
+```go
+t.Run("Retirer avec des fonds insuffisants", func(t *testing.T) {
+	soldeInitial := Bitcoin(20)
+	portefeuille := Portefeuille{soldeInitial}
+	erreur := portefeuille.Retirer(Bitcoin(100))
+
+	verifieSolde(t, portefeuille, soldeInitial)
+
+	if erreur == nil {
+		t.Errorf("une erreur aurait dû être retournée")
+	}
+})
+```
+
+## Essayez d'exécuter le test
+
+`./portefeuille_test.go:37:15: portefeuille.Retirer(Bitcoin(100)) used as value`
+
+Dans Go, les fonctions peuvent retourner plusieurs valeurs. Ici, nous devons changer la signature de notre fonction `Retirer` pour renvoyer une erreur en plus de l'opération de retrait.
+
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
+
+```go
+func (p *Portefeuille) Retirer(montant Bitcoin) error {
+	p.solde -= montant
+	return nil
+}
+```
+
+```
+portefeuille_test.go:40: une erreur aurait dû être retournée
+```
+
+## Écrivez assez de code pour le faire passer
+
+```go
+func (p *Portefeuille) Retirer(montant Bitcoin) error {
+	if montant > p.solde {
+		return errors.New("oh non")
+	}
+
+	p.solde -= montant
+	return nil
+}
+```
+
+Le test devrait maintenant passer parce que nous vérifions si nous essayons de retirer plus que nous avons et retournons une erreur dans ce cas.
+
+## Refactoriser
+
+### Améliorer les messages d'erreur
+
+Ça n'est pas génial que nous retournions juste une chaîne un peu aléatoire comme erreur. 
+
+Nous pouvons améliorer cela en créant une erreur spécifique pour ce cas :
+
+```go
+var ErrFondsInsuffisants = errors.New("impossible de retirer: fonds insuffisants")
+
+func (p *Portefeuille) Retirer(montant Bitcoin) error {
+	if montant > p.solde {
+		return ErrFondsInsuffisants
+	}
+
+	p.solde -= montant
+	return nil
+}
+```
+
+C'est une bonne pratique d'exposer des variables contenant des erreurs comme celle-ci pour que l'utilisateur de votre API puisse vérifier le type d'erreur qu'il a reçue.
+
+### Vérifier la présence d'erreurs spécifiques
+
+```go
+t.Run("Retirer avec des fonds insuffisants", func(t *testing.T) {
+	soldeInitial := Bitcoin(20)
+	portefeuille := Portefeuille{soldeInitial}
+	erreur := portefeuille.Retirer(Bitcoin(100))
+
+	verifieSolde(t, portefeuille, soldeInitial)
+
+	if erreur != ErrFondsInsuffisants {
+		t.Errorf("erreur attendue %s, mais reçu %s", ErrFondsInsuffisants, erreur)
+	}
+})
+```
+
+Maintenant nous vérifions que l'erreur a la bonne valeur, ce qui est plus précis et rend notre code plus compréhensible.
+
+### Factorisation de la fonctionnalité de test
+
+Notre test a encore des aspects qui pourraient être améliorés. Les vérifications d'erreur sont communes, donc nous pouvons faire une fonction d'aide pour cela :
+
+```go
+verifieErreur := func(t testing.TB, erreur error, attendu error) {
+	t.Helper()
+	if erreur != attendu {
+		t.Errorf("erreur attendue %q, mais reçu %q", attendu, erreur)
+	}
+}
+```
+
+Et maintenant nous pouvons mettre à jour notre code pour utiliser cette fonction :
+
+```go
+t.Run("Retirer avec des fonds insuffisants", func(t *testing.T) {
+	soldeInitial := Bitcoin(20)
+	portefeuille := Portefeuille{soldeInitial}
+	erreur := portefeuille.Retirer(Bitcoin(100))
+
+	verifieSolde(t, portefeuille, soldeInitial)
+	verifieErreur(t, erreur, ErrFondsInsuffisants)
+})
+```
+
+## Conclusion
+
+### Pointeurs
+
+* Go passe les valeurs par copie, donc si vous utilisez une valeur (comme `Portefeuille`) plutôt qu'un pointeur (*`Portefeuille`), les méthodes travailleront sur une copie des données.
+* Les pointeurs vous permettent de partager une référence à un endroit spécifique de la mémoire pour que vous puissiez partager des données.
+* Lorsque vous utilisez des receveurs par pointeur, l'utilisation par les appelants ressemble à l'utilisation de valeurs, ils n'ont pas à se soucier des détails d'implémentation.
+
+### Erreurs
+
+* Exposez les erreurs que les utilisateurs de votre API peuvent vérifier avec des variables.
+* Utilisez les types personnalisés pour ajouter un niveau supplémentaire d'informations à vos valeurs et permettre un code plus expressif.
+
+## Refactoriser
+
+Nous avons maintenant une fonction `Retirer` qui fonctionne. Cependant, que se passe-t-il si un utilisateur essaie de retirer plus de bitcoins qu'il n'en a ? Il finira par avoir un solde négatif.
+
+Nous devons ajouter une validation pour empêcher cela et retourner une erreur dans ce cas.
+
+
+	resultat := portefeuille.Solde()
+	attendu := 10
+
+	if resultat != attendu {
+		t.Errorf("reçu %d attendu %d", resultat, attendu)
+	}
+}
+```
+
+Dans l'[exemple précédent](./structs-methods-and-interfaces.md) nous accédions aux champs directement avec le nom du champ, cependant dans notre _portefeuille très sécurisé_ nous ne voulons pas exposer notre état interne au reste du monde. Nous voulons contrôler l'accès via des méthodes.
+
+## Essayez d'exécuter le test
+
+`./portefeuille_test.go:7:17: undefined: Portefeuille`
+
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
+
+Le compilateur ne sait pas ce qu'est un `Portefeuille` alors disons-le lui.
+
+```go
+type Portefeuille struct{}
+```
+
+Maintenant que nous avons créé notre portefeuille, essayez d'exécuter le test à nouveau
+
+```
+./portefeuille_test.go:9:18: portefeuille.Deposer undefined (type Portefeuille has no field or method Deposer)
+./portefeuille_test.go:11:23: portefeuille.Solde undefined (type Portefeuille has no field or method Solde)
+```
+
+Nous devons définir ces méthodes.
+
+Rappelez-vous de faire seulement assez pour faire fonctionner les tests. Nous devons nous assurer que notre test échoue correctement avec un message d'erreur clair.
+
+```go
+func (p Portefeuille) Deposer(montant int) {
+
+}
+
+func (p Portefeuille) Solde() int {
+	return 0
+}
+```
+
+Si cette syntaxe vous semble inconnue, retournez lire la section sur les structs.
+
+Les tests devraient maintenant compiler et s'exécuter
+
+`portefeuille_test.go:15: reçu 0 attendu 10`
+
+## Écrivez assez de code pour le faire passer
+
+Nous aurons besoin d'une variable _solde_ dans notre struct pour stocker l'état
+
+```go
+type Portefeuille struct {
+	solde int
+}
+```
+
+En Go, si un symbole (variables, types, fonctions etc.) commence par un symbole en minuscule alors il est privé _en dehors du package dans lequel il est défini_.
+
+Dans notre cas, nous voulons que nos méthodes puissent manipuler cette valeur, mais personne d'autre.
+
+Rappelez-vous que nous pouvons accéder au champ interne `solde` dans la struct en utilisant la variable "récepteur".
+
+```go
+func (p Portefeuille) Deposer(montant int) {
+	p.solde += montant
+}
+
+func (p Portefeuille) Solde() int {
+	return p.solde
+}
+```
+
+Avec notre carrière en fintech assurée, exécutez la suite de tests et prélassez-vous dans le test qui passe
+
+`portefeuille_test.go:15: reçu 0 attendu 10`
+
+### Ce n'est pas tout à fait correct
+
+Eh bien c'est confus, notre code ressemble à ce qu'il devrait fonctionner.
+Nous ajoutons le nouveau montant à notre solde et puis la méthode solde devrait retourner l'état actuel de celui-ci.
+
+En Go, **quand vous appelez une fonction ou une méthode les arguments sont** _**copiés**_.
+
+Quand on appelle `func (p Portefeuille) Deposer(montant int)` le `p` est une copie de ce sur quoi nous avons appelé la méthode.
+
+Sans devenir trop informatique, quand vous créez une valeur - comme un portefeuille, elle est stockée quelque part en mémoire. Vous pouvez découvrir quelle est l'_adresse_ de ce bout de mémoire avec `&maVal`.
+
+Expérimentez en ajoutant quelques impressions à votre code
+
+```go
+func TestPortefeuille(t *testing.T) {
+
+	portefeuille := Portefeuille{}
+
+	portefeuille.Deposer(10)
+
+	resultat := portefeuille.Solde()
+
+	fmt.Printf("adresse de solde dans test est %p \n", &portefeuille.solde)
+
+	attendu := 10
+
+	if resultat != attendu {
+		t.Errorf("reçu %d attendu %d", resultat, attendu)
+	}
+}
+```
+
+```go
+func (p Portefeuille) Deposer(montant int) {
+	fmt.Printf("adresse de solde dans Deposer est %p \n", &p.solde)
+	p.solde += montant
+}
+```
+
+L'espace réservé `%p` imprime les adresses mémoire en notation base 16 avec des `0x` en tête et le caractère d'échappement `\n` imprime une nouvelle ligne.
+Notez que nous obtenons le pointeur (adresse mémoire) de quelque chose en plaçant un caractère `&` au début du symbole.
+
+Maintenant relancez le test
+
+```text
+adresse de solde dans Deposer est 0xc420012268
+adresse de solde dans test est 0xc420012260
+```
+
+Vous pouvez voir que les adresses des deux soldes sont différentes. Donc quand nous changeons la valeur du solde dans le code, nous travaillons sur une copie de ce qui vient du test. Par conséquent, le solde dans le test est inchangé.
+
+Nous pouvons corriger cela avec des _pointeurs_. Les [Pointeurs](https://gobyexample.com/pointers) nous permettent de _pointer_ vers des valeurs et puis nous permettent de les changer.
+Donc plutôt que de prendre une copie de tout le Portefeuille, nous prenons à la place un pointeur vers ce portefeuille pour que nous puissions changer les valeurs originales à l'intérieur.
+
+```go
+func (p *Portefeuille) Deposer(montant int) {
+	p.solde += montant
+}
+
+func (p *Portefeuille) Solde() int {
+	return p.solde
+}
+```
+
+La différence est que le type de récepteur est `*Portefeuille` plutôt que `Portefeuille` que vous pouvez lire comme "un pointeur vers un portefeuille".
+
+Essayez de relancer les tests et ils devraient passer.
+
+Maintenant vous pourriez vous demander, pourquoi ont-ils passé ? Nous n'avons pas déréférencé le pointeur dans la fonction, comme ceci :
+
+```go
+func (p *Portefeuille) Solde() int {
+	return (*p).solde
+}
+```
+
+et avons apparemment adressé l'objet directement. En fait, le code ci-dessus utilisant `(*p)` est absolument valide. Cependant, les créateurs de Go ont jugé cette notation encombrante, donc le langage nous permet d'écrire `p.solde`, sans déréférencement explicite.
+Ces pointeurs vers des structs ont même leur propre nom : _pointeurs de struct_ et ils sont [automatiquement déréférencés](https://golang.org/ref/spec#Method_values).
+
+Techniquement vous n'avez pas besoin de changer `Solde` pour utiliser un récepteur pointeur car prendre une copie du solde va bien. Cependant, par convention vous devriez garder vos types de récepteur de méthode identiques pour la cohérence.
+
+## Refactoriser
+
+Nous avons dit que nous faisions un portefeuille Bitcoin mais nous ne les avons pas mentionnés jusqu'à présent. Nous avons utilisé `int` parce que c'est un bon type pour compter les choses !
+
+Il semble un peu excessif de créer une `struct` pour cela. `int` est bien en termes de la façon dont ça fonctionne mais ce n'est pas descriptif.
+
+Go vous permet de créer de nouveaux types à partir de types existants.
+
+La syntaxe est `type MonNom TypeOriginal`
+
+```go
+type Bitcoin int
+
+type Portefeuille struct {
+	solde Bitcoin
+}
+
+func (p *Portefeuille) Deposer(montant Bitcoin) {
+	p.solde += montant
+}
+
+func (p *Portefeuille) Solde() Bitcoin {
+	return p.solde
+}
+```
+
+```go
+func TestPortefeuille(t *testing.T) {
+
+	portefeuille := Portefeuille{}
+
+	portefeuille.Deposer(Bitcoin(10))
+
+	resultat := portefeuille.Solde()
+
+	attendu := Bitcoin(10)
+
+	if resultat != attendu {
+		t.Errorf("reçu %d attendu %d", resultat, attendu)
+	}
+}
+```
+
+Pour faire un `Bitcoin` vous utilisez juste la syntaxe `Bitcoin(999)`.
+
+En faisant cela nous créons un nouveau type et nous pouvons déclarer des _méthodes_ sur eux. Cela peut être très utile quand vous voulez ajouter une fonctionnalité spécifique au domaine au-dessus de types existants.
+
+Implémentons [Stringer](https://golang.org/pkg/fmt/#Stringer) sur Bitcoin
+
+```go
+type Stringer interface {
+	String() string
+}
+```
+
+Cette interface est définie dans le package `fmt` et vous permet de définir comment votre type est imprimé quand utilisé avec la chaîne de format `%s` dans les impressions.
+
+```go
+func (b Bitcoin) String() string {
+	return fmt.Sprintf("%d BTC", b)
+}
+```
+
+Comme vous pouvez le voir, la syntaxe pour créer une méthode sur une déclaration de type est la même que sur une struct.
+
+Ensuite nous devons mettre à jour nos chaînes de format de test pour qu'elles utilisent `String()` à la place.
+
+```go
+	if resultat != attendu {
+		t.Errorf("reçu %s attendu %s", resultat, attendu)
+	}
+```
+
+Pour voir cela en action, cassez délibérément le test pour que nous puissions le voir
+
+`portefeuille_test.go:18: reçu 10 BTC attendu 20 BTC`
+
+Cela rend plus clair ce qui se passe dans notre test.
+
+La prochaine exigence est pour une fonction `Retirer`.
+
+## Écrivez le test d'abord
+
+Presque l'opposé de `Deposer()`
+
+```go
+func TestPortefeuille(t *testing.T) {
+
+	t.Run("déposer", func(t *testing.T) {
+		portefeuille := Portefeuille{}
+
+		portefeuille.Deposer(Bitcoin(10))
+
+		resultat := portefeuille.Solde()
+
+		attendu := Bitcoin(10)
+
+		if resultat != attendu {
+			t.Errorf("reçu %s attendu %s", resultat, attendu)
+		}
+	})
+
+	t.Run("retirer", func(t *testing.T) {
+		portefeuille := Portefeuille{solde: Bitcoin(20)}
+
+		portefeuille.Retirer(Bitcoin(10))
+
+		resultat := portefeuille.Solde()
+
+		attendu := Bitcoin(10)
+
+		if resultat != attendu {
+			t.Errorf("reçu %s attendu %s", resultat, attendu)
+		}
+	})
+}
+```
+
+## Essayez d'exécuter le test
+
+`./portefeuille_test.go:26:19: portefeuille.Retirer undefined (type Portefeuille has no field or method Retirer)`
+
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
+
+```go
+func (p *Portefeuille) Retirer(montant Bitcoin) {
+
+}
+```
+
+`portefeuille_test.go:33: reçu 20 BTC attendu 10 BTC`
+
+## Écrivez assez de code pour le faire passer
+
+```go
+func (p *Portefeuille) Retirer(montant Bitcoin) {
+	p.solde -= montant
+}
+```
+
+## Refactoriser
+
+Il y a de la duplication dans nos tests, refactorisons cela.
+
+```go
+func TestPortefeuille(t *testing.T) {
+
+	verifierSolde := func(t testing.TB, portefeuille Portefeuille, attendu Bitcoin) {
+		t.Helper()
+		resultat := portefeuille.Solde()
+
+		if resultat != attendu {
+			t.Errorf("reçu %s attendu %s", resultat, attendu)
+		}
+	}
+
+	t.Run("déposer", func(t *testing.T) {
+		portefeuille := Portefeuille{}
+		portefeuille.Deposer(Bitcoin(10))
+		verifierSolde(t, portefeuille, Bitcoin(10))
+	})
+
+	t.Run("retirer", func(t *testing.T) {
+		portefeuille := Portefeuille{solde: Bitcoin(20)}
+		portefeuille.Retirer(Bitcoin(10))
+		verifierSolde(t, portefeuille, Bitcoin(10))
+	})
+
+}
+```
+
+Que devrait-il se passer si vous essayez de `Retirer` plus que ce qui reste dans le compte ? Pour l'instant, notre exigence est de supposer qu'il n'y a pas de facilité de découvert.
+
+Comment signalons-nous un problème quand nous utilisons `Retirer` ?
+
+En Go, si vous voulez indiquer une erreur, il est idiomatique que votre fonction retourne une `err` pour que l'appelant vérifie et agisse dessus.
+
+Essayons cela dans un test.
+
+## Écrivez le test d'abord
+
+```go
+t.Run("retirer fonds insuffisants", func(t *testing.T) {
+	soldeDepart := Bitcoin(20)
+	portefeuille := Portefeuille{soldeDepart}
+	err := portefeuille.Retirer(Bitcoin(100))
+
+	verifierSolde(t, portefeuille, soldeDepart)
 
 	if err == nil {
-		t.Error("wanted an error but didn't get one")
+		t.Error("voulait une erreur mais n'en a pas eu")
 	}
 })
 ```
 
-We want `Withdraw` to return an error _if_ you try to take out more than you have and the balance should stay the same.
+Nous voulons que `Retirer` retourne une erreur _si_ vous essayez de prendre plus que ce que vous avez et le solde devrait rester le même.
 
-We then check an error has returned by failing the test if it is `nil`.
+Nous vérifions ensuite qu'une erreur a été retournée en faisant échouer le test si elle est `nil`.
 
-`nil` is synonymous with `null` from other programming languages. Errors can be `nil` because the return type of `Withdraw` will be `error`, which is an interface. If you see a function that takes arguments or returns values that are interfaces, they can be nillable.
+`nil` est synonyme de `null` d'autres langages de programmation. Les erreurs peuvent être `nil` parce que le type de retour de `Retirer` sera `error`, qui est une interface. Si vous voyez une fonction qui prend des arguments ou retourne des valeurs qui sont des interfaces, elles peuvent être nillables.
 
-Like `null` if you try to access a value that is `nil` it will throw a **runtime panic**. This is bad! You should make sure that you check for nils.
+Comme `null` si vous essayez d'accéder à une valeur qui est `nil` cela lancera une **panique d'exécution**. C'est mauvais ! Vous devriez vous assurer de vérifier les nils.
 
-## Try and run the test
+## Essayez d'exécuter le test
 
-`./wallet_test.go:31:25: wallet.Withdraw(Bitcoin(100)) used as value`
+`./portefeuille_test.go:31:25: portefeuille.Retirer(Bitcoin(100)) used as value`
 
-The wording is perhaps a little unclear, but our previous intent with `Withdraw` was just to call it, it will never return a value. To make this compile we will need to change it so it has a return type.
+Le libellé est peut-être un peu peu clair, mais notre intention précédente avec `Retirer` était juste de l'appeler, elle ne retournera jamais de valeur. Pour que cela compile nous devrons la changer pour qu'elle ait un type de retour.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
 
 ```go
-func (w *Wallet) Withdraw(amount Bitcoin) error {
-	w.balance -= amount
+func (p *Portefeuille) Retirer(montant Bitcoin) error {
+	p.solde -= montant
 	return nil
 }
 ```
 
-Again, it is very important to just write enough code to satisfy the compiler. We correct our `Withdraw` method to return `error` and for now we have to return _something_ so let's just return `nil`.
+Encore une fois, il est très important d'écrire juste assez de code pour satisfaire le compilateur. Nous corrigeons notre méthode `Retirer` pour retourner `error` et pour l'instant nous devons retourner _quelque chose_ alors retournons juste `nil`.
 
-## Write enough code to make it pass
+## Écrivez assez de code pour le faire passer
 
 ```go
-func (w *Wallet) Withdraw(amount Bitcoin) error {
+func (p *Portefeuille) Retirer(montant Bitcoin) error {
 
-	if amount > w.balance {
-		return errors.New("oh no")
+	if montant > p.solde {
+		return errors.New("oh non")
 	}
 
-	w.balance -= amount
+	p.solde -= montant
 	return nil
 }
 ```
 
-Remember to import `errors` into your code.
+Rappelez-vous d'importer `errors` dans votre code.
 
-`errors.New` creates a new `error` with a message of your choosing.
+`errors.New` crée une nouvelle `error` avec un message de votre choix.
 
-## Refactor
+## Refactoriser
 
-Let's make a quick test helper for our error check to improve the test's readability
+Créons un aide de test rapide pour notre vérification d'erreur pour améliorer la lisibilité du test
 
 ```go
-assertError := func(t testing.TB, err error) {
+verifierErreur := func(t testing.TB, err error) {
 	t.Helper()
 	if err == nil {
-		t.Error("wanted an error but didn't get one")
+		t.Error("voulait une erreur mais n'en a pas eu")
 	}
 }
 ```
 
-And in our test
+Et dans notre test
 
 ```go
-t.Run("withdraw insufficient funds", func(t *testing.T) {
-	startingBalance := Bitcoin(20)
-	wallet := Wallet{startingBalance}
-	err := wallet.Withdraw(Bitcoin(100))
+t.Run("retirer fonds insuffisants", func(t *testing.T) {
+	soldeDepart := Bitcoin(20)
+	portefeuille := Portefeuille{soldeDepart}
+	err := portefeuille.Retirer(Bitcoin(100))
 
-	assertError(t, err)
-	assertBalance(t, wallet, startingBalance)
+	verifierErreur(t, err)
+	verifierSolde(t, portefeuille, soldeDepart)
 })
 ```
 
-Hopefully when returning an error of "oh no" you were thinking that we _might_ iterate on that because it doesn't seem that useful to return.
+Espérons qu'en retournant une erreur de "oh non" vous pensiez que nous _pourrions_ itérer sur cela parce que ça ne semble pas très utile de retourner.
 
-Assuming that the error ultimately gets returned to the user, let's update our test to assert on some kind of error message rather than just the existence of an error.
+En supposant que l'erreur finit par être retournée à l'utilisateur, mettons à jour notre test pour affirmer sur une sorte de message d'erreur plutôt que juste l'existence d'une erreur.
 
-## Write the test first
+## Écrivez le test d'abord
 
-Update our helper for a `string` to compare against.
+Mettons à jour notre aide pour une `string` à comparer.
 
 ```go
-assertError := func(t testing.TB, got error, want string) {
+verifierErreur := func(t testing.TB, recu error, attendu string) {
 	t.Helper()
 
-	if got == nil {
-		t.Fatal("didn't get an error but wanted one")
+	if recu == nil {
+		t.Fatal("n'a pas eu d'erreur mais en voulait une")
 	}
 
-	if got.Error() != want {
-		t.Errorf("got %q, want %q", got, want)
+	if recu.Error() != attendu {
+		t.Errorf("reçu %q, attendu %q", recu, attendu)
 	}
 }
 ```
 
-As you can see `Error`s can be converted to a string with the `.Error()` method, which we do in order to compare it with the string we want. We are also making sure that the error is not `nil` to ensure we don't call `.Error()` on `nil`.
+Comme vous pouvez le voir, les `Error`s peuvent être converties en chaîne avec la méthode `.Error()`, que nous faisons pour la comparer avec la chaîne que nous voulons. Nous nous assurons aussi que l'erreur n'est pas `nil` pour nous assurer de ne pas appeler `.Error()` sur `nil`.
 
-And then update the caller
+Et puis mettons à jour l'appelant
 
 ```go
-t.Run("withdraw insufficient funds", func(t *testing.T) {
-	startingBalance := Bitcoin(20)
-	wallet := Wallet{startingBalance}
-	err := wallet.Withdraw(Bitcoin(100))
+t.Run("retirer fonds insuffisants", func(t *testing.T) {
+	soldeDepart := Bitcoin(20)
+	portefeuille := Portefeuille{soldeDepart}
+	err := portefeuille.Retirer(Bitcoin(100))
 
-	assertError(t, err, "cannot withdraw, insufficient funds")
-	assertBalance(t, wallet, startingBalance)
+	verifierErreur(t, err, "ne peut pas retirer, fonds insuffisants")
+	verifierSolde(t, portefeuille, soldeDepart)
 })
 ```
 
-We've introduced `t.Fatal` which will stop the test if it is called. This is because we don't want to make any more assertions on the error returned if there isn't one around. Without this the test would carry on to the next step and panic because of a nil pointer.
+Nous avons introduit `t.Fatal` qui arrêtera le test s'il est appelé. C'est parce que nous ne voulons pas faire plus d'assertions sur l'erreur retournée s'il n'y en a pas une. Sans cela le test continuerait à l'étape suivante et paniquerait à cause d'un pointeur nil.
 
-## Try to run the test
+## Essayez d'exécuter le test
 
-`wallet_test.go:61: got err 'oh no' want 'cannot withdraw, insufficient funds'`
+`portefeuille_test.go:61: reçu err 'oh non' attendu 'ne peut pas retirer, fonds insuffisants'`
 
-## Write enough code to make it pass
+## Écrivez assez de code pour le faire passer
 
 ```go
-func (w *Wallet) Withdraw(amount Bitcoin) error {
+func (p *Portefeuille) Retirer(montant Bitcoin) error {
 
-	if amount > w.balance {
-		return errors.New("cannot withdraw, insufficient funds")
+	if montant > p.solde {
+		return errors.New("ne peut pas retirer, fonds insuffisants")
 	}
 
-	w.balance -= amount
+	p.solde -= montant
 	return nil
 }
 ```
 
-## Refactor
+## Refactoriser
 
-We have duplication of the error message in both the test code and the `Withdraw` code.
+Nous avons de la duplication du message d'erreur à la fois dans le code de test et le code `Retirer`.
 
-It would be really annoying for the test to fail if someone wanted to re-word the error and it's just too much detail for our test. We don't _really_ care what the exact wording is, just that some kind of meaningful error around withdrawing is returned given a certain condition.
+Ce serait vraiment ennuyeux que le test échoue si quelqu'un voulait reformuler l'erreur et c'est juste trop de détail pour notre test. Nous ne nous _soucions_ pas vraiment du libellé exact, juste qu'une sorte d'erreur significative autour du retrait soit retournée étant donné une certaine condition.
 
-In Go, errors are values, so we can refactor it out into a variable and have a single source of truth for it.
+En Go, les erreurs sont des valeurs, donc nous pouvons la refactoriser en une variable et avoir une seule source de vérité pour cela.
 
 ```go
-var ErrInsufficientFunds = errors.New("cannot withdraw, insufficient funds")
+var ErrFondsInsuffisants = errors.New("ne peut pas retirer, fonds insuffisants")
 
-func (w *Wallet) Withdraw(amount Bitcoin) error {
+func (p *Portefeuille) Retirer(montant Bitcoin) error {
 
-	if amount > w.balance {
-		return ErrInsufficientFunds
+	if montant > p.solde {
+		return ErrFondsInsuffisants
 	}
 
-	w.balance -= amount
+	p.solde -= montant
 	return nil
 }
 ```
 
-The `var` keyword allows us to define values global to the package.
+Le mot-clé `var` nous permet de définir des valeurs globales au package.
 
-This is a positive change in itself because now our `Withdraw` function looks very clear.
+C'est un changement positif en soi parce que maintenant notre fonction `Retirer` semble très claire.
 
-Next we can refactor our test code to use this value instead of specific strings.
+Ensuite nous pouvons refactoriser notre code de test pour utiliser cette valeur au lieu de chaînes spécifiques.
 
 ```go
-func TestWallet(t *testing.T) {
+func TestPortefeuille(t *testing.T) {
 
-	t.Run("deposit", func(t *testing.T) {
-		wallet := Wallet{}
-		wallet.Deposit(Bitcoin(10))
-		assertBalance(t, wallet, Bitcoin(10))
+	t.Run("déposer", func(t *testing.T) {
+		portefeuille := Portefeuille{}
+		portefeuille.Deposer(Bitcoin(10))
+		verifierSolde(t, portefeuille, Bitcoin(10))
 	})
 
-	t.Run("withdraw with funds", func(t *testing.T) {
-		wallet := Wallet{Bitcoin(20)}
-		wallet.Withdraw(Bitcoin(10))
-		assertBalance(t, wallet, Bitcoin(10))
+	t.Run("retirer avec fonds", func(t *testing.T) {
+		portefeuille := Portefeuille{Bitcoin(20)}
+		portefeuille.Retirer(Bitcoin(10))
+		verifierSolde(t, portefeuille, Bitcoin(10))
 	})
 
-	t.Run("withdraw insufficient funds", func(t *testing.T) {
-		wallet := Wallet{Bitcoin(20)}
-		err := wallet.Withdraw(Bitcoin(100))
+	t.Run("retirer fonds insuffisants", func(t *testing.T) {
+		portefeuille := Portefeuille{Bitcoin(20)}
+		err := portefeuille.Retirer(Bitcoin(100))
 
-		assertError(t, err, ErrInsufficientFunds)
-		assertBalance(t, wallet, Bitcoin(20))
+		verifierErreur(t, err, ErrFondsInsuffisants)
+		verifierSolde(t, portefeuille, Bitcoin(20))
 	})
 }
 
-func assertBalance(t testing.TB, wallet Wallet, want Bitcoin) {
+func verifierSolde(t testing.TB, portefeuille Portefeuille, attendu Bitcoin) {
 	t.Helper()
-	got := wallet.Balance()
+	resultat := portefeuille.Solde()
 
-	if got != want {
-		t.Errorf("got %q want %q", got, want)
+	if resultat != attendu {
+		t.Errorf("reçu %q attendu %q", resultat, attendu)
 	}
 }
 
-func assertError(t testing.TB, got, want error) {
+func verifierErreur(t testing.TB, recu, attendu error) {
 	t.Helper()
-	if got == nil {
-		t.Fatal("didn't get an error but wanted one")
+	if recu == nil {
+		t.Fatal("n'a pas eu d'erreur mais en voulait une")
 	}
 
-	if got != want {
-		t.Errorf("got %q, want %q", got, want)
+	if recu != attendu {
+		t.Errorf("reçu %q, attendu %q", recu, attendu)
 	}
 }
 ```
 
-And now the test is easier to follow too.
+Et maintenant le test est plus facile à suivre aussi.
 
-I have moved the helpers out of the main test function just so when someone opens up a file they can start reading our assertions first, rather than some helpers.
+J'ai déplacé les aides hors de la fonction de test principale juste pour que quand quelqu'un ouvre un fichier, il puisse commencer à lire nos assertions d'abord, plutôt que quelques aides.
 
-Another useful property of tests is that they help us understand the _real_ usage of our code so we can make sympathetic code. We can see here that a developer can simply call our code and do an equals check to `ErrInsufficientFunds` and act accordingly.
+Une autre propriété utile des tests est qu'ils nous aident à comprendre l'usage _réel_ de notre code pour que nous puissions faire du code sympathique. Nous pouvons voir ici qu'un développeur peut simplement appeler notre code et faire une vérification d'égalité avec `ErrFondsInsuffisants` et agir en conséquence.
 
-### Unchecked errors
+### Erreurs non vérifiées
 
-Whilst the Go compiler helps you a lot, sometimes there are things you can still miss and error handling can sometimes be tricky.
+Bien que le compilateur Go vous aide beaucoup, parfois il y a des choses que vous pouvez encore manquer et la gestion d'erreurs peut parfois être délicate.
 
-There is one scenario we have not tested. To find it, run the following in a terminal to install `errcheck`, one of many linters available for Go.
+Il y a un scénario que nous n'avons pas testé. Pour le trouver, exécutez ce qui suit dans un terminal pour installer `errcheck`, un des nombreux linters disponibles pour Go.
 
 `go install github.com/kisielk/errcheck@latest`
 
-Then, inside the directory with your code run `errcheck .`
+Puis, dans le répertoire avec votre code exécutez `errcheck .`
 
-You should get something like
+Vous devriez obtenir quelque chose comme
 
-`wallet_test.go:17:18: wallet.Withdraw(Bitcoin(10))`
+`portefeuille_test.go:17:18: portefeuille.Retirer(Bitcoin(10))`
 
-What this is telling us is that we have not checked the error being returned on that line of code. That line of code on my computer corresponds to our normal withdraw scenario because we have not checked that if the `Withdraw` is successful that an error is _not_ returned.
+Ce que cela nous dit c'est que nous n'avons pas vérifié l'erreur retournée sur cette ligne de code. Cette ligne de code sur mon ordinateur correspond à notre scénario de retrait normal parce que nous n'avons pas vérifié que si le `Retirer` réussit qu'une erreur n'est _pas_ retournée.
 
-Here is the final test code that accounts for this.
+Voici le code de test final qui prend en compte cela.
 
 ```go
-func TestWallet(t *testing.T) {
+func TestPortefeuille(t *testing.T) {
 
-	t.Run("deposit", func(t *testing.T) {
-		wallet := Wallet{}
-		wallet.Deposit(Bitcoin(10))
+	t.Run("déposer", func(t *testing.T) {
+		portefeuille := Portefeuille{}
+		portefeuille.Deposer(Bitcoin(10))
 
-		assertBalance(t, wallet, Bitcoin(10))
+		verifierSolde(t, portefeuille, Bitcoin(10))
 	})
 
-	t.Run("withdraw with funds", func(t *testing.T) {
-		wallet := Wallet{Bitcoin(20)}
-		err := wallet.Withdraw(Bitcoin(10))
+	t.Run("retirer avec fonds", func(t *testing.T) {
+		portefeuille := Portefeuille{Bitcoin(20)}
+		err := portefeuille.Retirer(Bitcoin(10))
 
-		assertNoError(t, err)
-		assertBalance(t, wallet, Bitcoin(10))
+		verifierAucuneErreur(t, err)
+		verifierSolde(t, portefeuille, Bitcoin(10))
 	})
 
-	t.Run("withdraw insufficient funds", func(t *testing.T) {
-		wallet := Wallet{Bitcoin(20)}
-		err := wallet.Withdraw(Bitcoin(100))
+	t.Run("retirer fonds insuffisants", func(t *testing.T) {
+		portefeuille := Portefeuille{Bitcoin(20)}
+		err := portefeuille.Retirer(Bitcoin(100))
 
-		assertError(t, err, ErrInsufficientFunds)
-		assertBalance(t, wallet, Bitcoin(20))
+		verifierErreur(t, err, ErrFondsInsuffisants)
+		verifierSolde(t, portefeuille, Bitcoin(20))
 	})
 }
 
-func assertBalance(t testing.TB, wallet Wallet, want Bitcoin) {
+func verifierSolde(t testing.TB, portefeuille Portefeuille, attendu Bitcoin) {
 	t.Helper()
-	got := wallet.Balance()
+	resultat := portefeuille.Solde()
 
-	if got != want {
-		t.Errorf("got %s want %s", got, want)
+	if resultat != attendu {
+		t.Errorf("reçu %s attendu %s", resultat, attendu)
 	}
 }
 
-func assertNoError(t testing.TB, got error) {
+func verifierAucuneErreur(t testing.TB, recu error) {
 	t.Helper()
-	if got != nil {
-		t.Fatal("got an error but didn't want one")
+	if recu != nil {
+		t.Fatal("a eu une erreur mais n'en voulait pas")
 	}
 }
 
-func assertError(t testing.TB, got error, want error) {
+func verifierErreur(t testing.TB, recu error, attendu error) {
 	t.Helper()
-	if got == nil {
-		t.Fatal("didn't get an error but wanted one")
+	if recu == nil {
+		t.Fatal("n'a pas eu d'erreur mais en voulait une")
 	}
 
-	if got != want {
-		t.Errorf("got %s, want %s", got, want)
+	if recu != attendu {
+		t.Errorf("reçu %s, attendu %s", recu, attendu)
 	}
 }
 ```
 
-## Wrapping up
+## Conclusion
 
-### Pointers
+### Pointeurs
 
-* Go copies values when you pass them to functions/methods, so if you're writing a function that needs to mutate state you'll need it to take a pointer to the thing you want to change.
-* The fact that Go takes a copy of values is useful a lot of the time but sometimes you won't want your system to make a copy of something, in which case you need to pass a reference. Examples include referencing very large data structures or things where only one instance is necessary \(like database connection pools\).
+* Go copie les valeurs quand vous les passez aux fonctions/méthodes, donc si vous écrivez une fonction qui a besoin de muter l'état vous aurez besoin qu'elle prenne un pointeur vers la chose que vous voulez changer.
+* Le fait que Go prenne une copie des valeurs est utile beaucoup de fois mais parfois vous ne voudrez pas que votre système fasse une copie de quelque chose, auquel cas vous avez besoin de passer une référence. Les exemples incluent référencer de très grandes structures de données ou des choses où seule une instance est nécessaire \(comme les pools de connexion de base de données\).
 
 ### nil
 
-* Pointers can be nil
-* When a function returns a pointer to something, you need to make sure you check if it's nil or you might raise a runtime exception - the compiler won't help you here.
-* Useful for when you want to describe a value that could be missing
+* Les pointeurs peuvent être nil
+* Quand une fonction retourne un pointeur vers quelque chose, vous devez vous assurer de vérifier s'il est nil ou vous pourriez lever une exception d'exécution - le compilateur ne vous aidera pas ici.
+* Utile quand vous voulez décrire une valeur qui pourrait manquer
 
-### Errors
+### Erreurs
 
-* Errors are the way to signify failure when calling a function/method.
-* By listening to our tests we concluded that checking for a string in an error would result in a flaky test. So we refactored our implementation to use a meaningful value instead and this resulted in easier to test code and concluded this would be easier for users of our API too.
-* This is not the end of the story with error handling, you can do more sophisticated things but this is just an intro. Later sections will cover more strategies.
-* [Don’t just check errors, handle them gracefully](https://dave.cheney.net/2016/04/27/dont-just-check-errors-handle-them-gracefully)
+* Les erreurs sont la façon de signifier l'échec quand on appelle une fonction/méthode.
+* En écoutant nos tests nous avons conclu que vérifier une chaîne dans une erreur résulterait en un test fragile. Donc nous avons refactorisé notre implémentation pour utiliser une valeur significative à la place et cela a résulté en du code plus facile à tester et nous avons conclu que ce serait plus facile pour les utilisateurs de notre API aussi.
+* Ce n'est pas la fin de l'histoire avec la gestion d'erreurs, vous pouvez faire des choses plus sophistiquées mais c'est juste une introduction. Les sections ultérieures couvriront plus de stratégies.
+* [Ne vérifiez pas juste les erreurs, gérez-les gracieusement](https://dave.cheney.net/2016/04/27/dont-just-check-errors-handle-them-gracefully)
 
-### Create new types from existing ones
+### Créer de nouveaux types à partir de types existants
 
-* Useful for adding more domain specific meaning to values
-* Can let you implement interfaces
+* Utile pour ajouter plus de signification spécifique au domaine aux valeurs
+* Peut vous permettre d'implémenter des interfaces
 
-Pointers and errors are a big part of writing Go that you need to get comfortable with. Thankfully the compiler will _usually_ help you out if you do something wrong, just take your time and read the error.
+Les pointeurs et les erreurs sont une grande partie de l'écriture de Go avec laquelle vous devez être à l'aise. Heureusement le compilateur vous aidera _habituellement_ si vous faites quelque chose de mal, prenez juste votre temps et lisez l'erreur.
