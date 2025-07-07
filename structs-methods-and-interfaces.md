@@ -1,581 +1,581 @@
-# Structs, methods & interfaces
+# Structs, méthodes et interfaces
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/structs)**
+**[Vous pouvez trouver tout le code de ce chapitre ici](https://github.com/quii/learn-go-with-tests/tree/main/structs)**
 
-Suppose that we need some geometry code to calculate the perimeter of a rectangle given a height and width. We can write a `Perimeter(width float64, height float64)` function, where `float64` is for floating-point numbers like `123.45`.
+Supposons que nous ayons besoin de code géométrique pour calculer le périmètre d'un rectangle donné une hauteur et une largeur. Nous pouvons écrire une fonction `Perimetre(largeur float64, hauteur float64)`, où `float64` est pour les nombres à virgule flottante comme `123.45`.
 
-The TDD cycle should be pretty familiar to you by now.
+Le cycle TDD devrait maintenant vous être assez familier.
 
-## Write the test first
+## Écrivez le test d'abord
 
 ```go
-func TestPerimeter(t *testing.T) {
-	got := Perimeter(10.0, 10.0)
-	want := 40.0
+func TestPerimetre(t *testing.T) {
+	resultat := Perimetre(10.0, 10.0)
+	attendu := 40.0
 
-	if got != want {
-		t.Errorf("got %.2f want %.2f", got, want)
+	if resultat != attendu {
+		t.Errorf("reçu %.2f attendu %.2f", resultat, attendu)
 	}
 }
 ```
 
-Notice the new format string? The `f` is for our `float64` and the `.2` means print 2 decimal places.
+Vous remarquez la nouvelle chaîne de format ? Le `f` est pour notre `float64` et le `.2` signifie imprimer 2 décimales.
 
-## Try to run the test
+## Essayez d'exécuter le test
 
-`./shapes_test.go:6:9: undefined: Perimeter`
+`./formes_test.go:6:14: undefined: Perimetre`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
 
 ```go
-func Perimeter(width float64, height float64) float64 {
+func Perimetre(largeur float64, hauteur float64) float64 {
 	return 0
 }
 ```
 
-Results in `shapes_test.go:10: got 0.00 want 40.00`.
+Résulte en `formes_test.go:10: reçu 0.00 attendu 40.00`.
 
-## Write enough code to make it pass
+## Écrivez assez de code pour le faire passer
 
 ```go
-func Perimeter(width float64, height float64) float64 {
-	return 2 * (width + height)
+func Perimetre(largeur float64, hauteur float64) float64 {
+	return 2 * (largeur + hauteur)
 }
 ```
 
-So far, so easy. Now let's create a function called `Area(width, height float64)` which returns the area of a rectangle.
+Jusqu'ici, très facile. Maintenant créons une fonction appelée `Aire(largeur, hauteur float64)` qui retourne l'aire d'un rectangle.
 
-Try to do it yourself, following the TDD cycle.
+Essayez de le faire vous-même, en suivant le cycle TDD.
 
-You should end up with tests like this
+Vous devriez vous retrouver avec des tests comme ceci
 
 ```go
-func TestPerimeter(t *testing.T) {
-	got := Perimeter(10.0, 10.0)
-	want := 40.0
+func TestPerimetre(t *testing.T) {
+	resultat := Perimetre(10.0, 10.0)
+	attendu := 40.0
 
-	if got != want {
-		t.Errorf("got %.2f want %.2f", got, want)
+	if resultat != attendu {
+		t.Errorf("reçu %.2f attendu %.2f", resultat, attendu)
 	}
 }
 
-func TestArea(t *testing.T) {
-	got := Area(12.0, 6.0)
-	want := 72.0
+func TestAire(t *testing.T) {
+	resultat := Aire(12.0, 6.0)
+	attendu := 72.0
 
-	if got != want {
-		t.Errorf("got %.2f want %.2f", got, want)
+	if resultat != attendu {
+		t.Errorf("reçu %.2f attendu %.2f", resultat, attendu)
 	}
 }
 ```
 
-And code like this
+Et du code comme ceci
 
 ```go
-func Perimeter(width float64, height float64) float64 {
-	return 2 * (width + height)
+func Perimetre(largeur float64, hauteur float64) float64 {
+	return 2 * (largeur + hauteur)
 }
 
-func Area(width float64, height float64) float64 {
-	return width * height
+func Aire(largeur float64, hauteur float64) float64 {
+	return largeur * hauteur
 }
 ```
 
-## Refactor
+## Refactoriser
 
-Our code does the job, but it doesn't contain anything explicit about rectangles. An unwary developer might try to supply the width and height of a triangle to these functions without realising they will return the wrong answer.
+Notre code fait le travail, mais il ne contient rien d'explicite sur les rectangles. Un développeur imprudent pourrait essayer de fournir la largeur et la hauteur d'un triangle à ces fonctions sans réaliser qu'elles retourneront la mauvaise réponse.
 
-We could just give the functions more specific names like `RectangleArea`. A neater solution is to define our own _type_ called `Rectangle` which encapsulates this concept for us.
+Nous pourrions juste donner aux fonctions des noms plus spécifiques comme `AireRectangle`. Une solution plus élégante est de définir notre propre _type_ appelé `Rectangle` qui encapsule ce concept pour nous.
 
-We can create a simple type using a **struct**. [A struct](https://golang.org/ref/spec#Struct_types) is just a named collection of fields where you can store data.
+Nous pouvons créer un type simple en utilisant une **struct**. [Une struct](https://golang.org/ref/spec#Struct_types) est juste une collection nommée de champs où vous pouvez stocker des données.
 
-Declare a struct in your `shapes.go` file like this
+Déclarez une struct dans votre fichier `formes.go` comme ceci
 
 ```go
 type Rectangle struct {
-	Width  float64
-	Height float64
+	Largeur float64
+	Hauteur float64
 }
 ```
 
-Now let's refactor the tests to use `Rectangle` instead of plain `float64`s.
+Maintenant refactorisons les tests pour utiliser `Rectangle` au lieu de simples `float64`.
 
 ```go
-func TestPerimeter(t *testing.T) {
+func TestPerimetre(t *testing.T) {
 	rectangle := Rectangle{10.0, 10.0}
-	got := Perimeter(rectangle)
-	want := 40.0
+	resultat := Perimetre(rectangle)
+	attendu := 40.0
 
-	if got != want {
-		t.Errorf("got %.2f want %.2f", got, want)
+	if resultat != attendu {
+		t.Errorf("reçu %.2f attendu %.2f", resultat, attendu)
 	}
 }
 
-func TestArea(t *testing.T) {
+func TestAire(t *testing.T) {
 	rectangle := Rectangle{12.0, 6.0}
-	got := Area(rectangle)
-	want := 72.0
+	resultat := Aire(rectangle)
+	attendu := 72.0
 
-	if got != want {
-		t.Errorf("got %.2f want %.2f", got, want)
+	if resultat != attendu {
+		t.Errorf("reçu %.2f attendu %.2f", resultat, attendu)
 	}
 }
 ```
 
-Remember to run your tests before attempting to fix. The tests should show a helpful error like
+Rappelez-vous d'exécuter vos tests avant d'essayer de les corriger. Les tests devraient montrer une erreur utile comme
 
 ```text
-./shapes_test.go:7:18: not enough arguments in call to Perimeter
+./formes_test.go:7:23: not enough arguments in call to Perimetre
     have (Rectangle)
     want (float64, float64)
 ```
 
-You can access the fields of a struct with the syntax of `myStruct.field`.
+Vous pouvez accéder aux champs d'une struct avec la syntaxe `maStruct.champ`.
 
-Change the two functions to fix the test.
+Changez les deux fonctions pour corriger le test.
 
 ```go
-func Perimeter(rectangle Rectangle) float64 {
-	return 2 * (rectangle.Width + rectangle.Height)
+func Perimetre(rectangle Rectangle) float64 {
+	return 2 * (rectangle.Largeur + rectangle.Hauteur)
 }
 
-func Area(rectangle Rectangle) float64 {
-	return rectangle.Width * rectangle.Height
+func Aire(rectangle Rectangle) float64 {
+	return rectangle.Largeur * rectangle.Hauteur
 }
 ```
 
-I hope you'll agree that passing a `Rectangle` to a function conveys our intent more clearly, but there are more benefits of using structs that we will cover later.
+J'espère que vous serez d'accord que passer un `Rectangle` à une fonction transmet notre intention plus clairement, mais il y a plus d'avantages à utiliser des structs que nous couvrirons plus tard.
 
-Our next requirement is to write an `Area` function for circles.
+Notre prochaine exigence est d'écrire une fonction `Aire` pour les cercles.
 
-## Write the test first
+## Écrivez le test d'abord
 
 ```go
-func TestArea(t *testing.T) {
+func TestAire(t *testing.T) {
 
 	t.Run("rectangles", func(t *testing.T) {
 		rectangle := Rectangle{12, 6}
-		got := Area(rectangle)
-		want := 72.0
+		resultat := Aire(rectangle)
+		attendu := 72.0
 
-		if got != want {
-			t.Errorf("got %g want %g", got, want)
+		if resultat != attendu {
+			t.Errorf("reçu %g attendu %g", resultat, attendu)
 		}
 	})
 
-	t.Run("circles", func(t *testing.T) {
-		circle := Circle{10}
-		got := Area(circle)
-		want := 314.1592653589793
+	t.Run("cercles", func(t *testing.T) {
+		cercle := Cercle{10}
+		resultat := Aire(cercle)
+		attendu := 314.1592653589793
 
-		if got != want {
-			t.Errorf("got %g want %g", got, want)
+		if resultat != attendu {
+			t.Errorf("reçu %g attendu %g", resultat, attendu)
 		}
 	})
 
 }
 ```
 
-As you can see, the `f` has been replaced by `g`, with good reason.
-Use of `g` will print a more precise decimal number in the error message \([fmt options](https://golang.org/pkg/fmt/)\).
-For example, using a radius of 1.5 in a circle area calculation, `f` would show `7.068583` whereas `g` would show `7.0685834705770345`.
+Comme vous pouvez le voir, le `f` a été remplacé par `g`, pour une bonne raison.
+L'utilisation de `g` imprimera un nombre décimal plus précis dans le message d'erreur \([options fmt](https://golang.org/pkg/fmt/)\).
+Par exemple, en utilisant un rayon de 1.5 dans un calcul d'aire de cercle, `f` montrerait `7.068583` tandis que `g` montrerait `7.0685834705770345`.
 
-## Try to run the test
+## Essayez d'exécuter le test
 
-`./shapes_test.go:28:13: undefined: Circle`
+`./formes_test.go:28:11: undefined: Cercle`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
 
-We need to define our `Circle` type.
+Nous devons définir notre type `Cercle`.
 
 ```go
-type Circle struct {
-	Radius float64
+type Cercle struct {
+	Rayon float64
 }
 ```
 
-Now try to run the tests again
+Maintenant essayez d'exécuter les tests à nouveau
 
-`./shapes_test.go:29:14: cannot use circle (type Circle) as type Rectangle in argument to Area`
+`./formes_test.go:29:13: cannot use cercle (type Cercle) as type Rectangle in argument to Aire`
 
-Some programming languages allow you to do something like this:
+Certains langages de programmation vous permettent de faire quelque chose comme ceci :
 
 ```go
-func Area(circle Circle) float64       {}
-func Area(rectangle Rectangle) float64 {}
+func Aire(cercle Cercle) float64       {}
+func Aire(rectangle Rectangle) float64 {}
 ```
 
-But you cannot in Go
+Mais vous ne pouvez pas en Go
 
-`./shapes.go:20:32: Area redeclared in this block`
+`./formes.go:20:32: Aire redeclared in this block`
 
-We have two choices:
+Nous avons deux choix :
 
-* You can have functions with the same name declared in different _packages_. So we could create our `Area(Circle)` in a new package, but that feels overkill here.
-* We can define [_methods_](https://golang.org/ref/spec#Method_declarations) on our newly defined types instead.
+* Vous pouvez avoir des fonctions avec le même nom déclarées dans différents _packages_. Donc nous pourrions créer notre `Aire(Cercle)` dans un nouveau package, mais cela semble excessif ici.
+* Nous pouvons définir des [_méthodes_](https://golang.org/ref/spec#Method_declarations) sur nos types nouvellement définis à la place.
 
-### What are methods?
+### Que sont les méthodes ?
 
-So far we have only been writing _functions_ but we have been using some methods. When we call `t.Errorf` we are calling the method `Errorf` on the instance of our `t` \(`testing.T`\).
+Jusqu'à présent, nous n'avons écrit que des _fonctions_ mais nous avons utilisé quelques méthodes. Quand nous appelons `t.Errorf`, nous appelons la méthode `Errorf` sur l'instance de notre `t` \(`testing.T`\).
 
-A method is a function with a receiver.
-A method declaration binds an identifier, the method name, to a method, and associates the method with the receiver's base type.
+Une méthode est une fonction avec un récepteur.
+Une déclaration de méthode lie un identifiant, le nom de la méthode, à une méthode, et associe la méthode avec le type de base du récepteur.
 
-Methods are very similar to functions but they are called by invoking them on an instance of a particular type. Where you can just call functions wherever you like, such as `Area(rectangle)` you can only call methods on "things".
+Les méthodes sont très similaires aux fonctions mais elles sont appelées en les invoquant sur une instance d'un type particulier. Alors que vous pouvez juste appeler les fonctions où vous voulez, comme `Aire(rectangle)`, vous ne pouvez appeler les méthodes que sur des "choses".
 
-An example will help so let's change our tests first to call methods instead and then fix the code.
+Un exemple aidera alors changeons nos tests d'abord pour appeler des méthodes à la place et puis corrigeons le code.
 
 ```go
-func TestArea(t *testing.T) {
+func TestAire(t *testing.T) {
 
 	t.Run("rectangles", func(t *testing.T) {
 		rectangle := Rectangle{12, 6}
-		got := rectangle.Area()
-		want := 72.0
+		resultat := rectangle.Aire()
+		attendu := 72.0
 
-		if got != want {
-			t.Errorf("got %g want %g", got, want)
+		if resultat != attendu {
+			t.Errorf("reçu %g attendu %g", resultat, attendu)
 		}
 	})
 
-	t.Run("circles", func(t *testing.T) {
-		circle := Circle{10}
-		got := circle.Area()
-		want := 314.1592653589793
+	t.Run("cercles", func(t *testing.T) {
+		cercle := Cercle{10}
+		resultat := cercle.Aire()
+		attendu := 314.1592653589793
 
-		if got != want {
-			t.Errorf("got %g want %g", got, want)
+		if resultat != attendu {
+			t.Errorf("reçu %g attendu %g", resultat, attendu)
 		}
 	})
 
 }
 ```
 
-If we try to run the tests, we get
+Si nous essayons d'exécuter les tests, nous obtenons
 
 ```text
-./shapes_test.go:19:19: rectangle.Area undefined (type Rectangle has no field or method Area)
-./shapes_test.go:29:16: circle.Area undefined (type Circle has no field or method Area)
+./formes_test.go:19:20: rectangle.Aire undefined (type Rectangle has no field or method Aire)
+./formes_test.go:29:16: cercle.Aire undefined (type Cercle has no field or method Aire)
 ```
 
-> type Circle has no field or method Area
+> type Cercle has no field or method Aire
 
-I would like to reiterate how great the compiler is here. It is so important to take the time to slowly read the error messages you get, it will help you in the long run.
+J'aimerais réitérer à quel point le compilateur est génial ici. Il est si important de prendre le temps de lire lentement les messages d'erreur que vous obtenez, cela vous aidera à long terme.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
 
-Let's add some methods to our types
+Ajoutons quelques méthodes à nos types
 
 ```go
 type Rectangle struct {
-	Width  float64
-	Height float64
+	Largeur float64
+	Hauteur float64
 }
 
-func (r Rectangle) Area() float64 {
+func (r Rectangle) Aire() float64 {
 	return 0
 }
 
-type Circle struct {
-	Radius float64
+type Cercle struct {
+	Rayon float64
 }
 
-func (c Circle) Area() float64 {
+func (c Cercle) Aire() float64 {
 	return 0
 }
 ```
 
-The syntax for declaring methods is almost the same as functions and that's because they're so similar. The only difference is the syntax of the method receiver `func (receiverName ReceiverType) MethodName(args)`.
+La syntaxe pour déclarer des méthodes est presque la même que les fonctions et c'est parce qu'elles sont si similaires. La seule différence est la syntaxe du récepteur de méthode `func (nomRecepteur TypeRecepteur) NomMethode(args)`.
 
-When your method is called on a variable of that type, you get your reference to its data via the `receiverName` variable. In many other programming languages this is done implicitly and you access the receiver via `this`.
+Quand votre méthode est appelée sur une variable de ce type, vous obtenez votre référence à ses données via la variable `nomRecepteur`. Dans beaucoup d'autres langages de programmation, ceci est fait implicitement et vous accédez au récepteur via `this`.
 
-It is a convention in Go to have the receiver variable be the first letter of the type.
+C'est une convention en Go d'avoir la variable récepteur être la première lettre du type.
 
 ```
 r Rectangle
 ```
 
-If you try to re-run the tests they should now compile and give you some failing output.
+Si vous essayez de relancer les tests, ils devraient maintenant compiler et vous donner une sortie d'échec.
 
-## Write enough code to make it pass
+## Écrivez assez de code pour le faire passer
 
-Now let's make our rectangle tests pass by fixing our new method
+Maintenant corrigeons nos tests de rectangle en corrigeant notre nouvelle méthode
 
 ```go
-func (r Rectangle) Area() float64 {
-	return r.Width * r.Height
+func (r Rectangle) Aire() float64 {
+	return r.Largeur * r.Hauteur
 }
 ```
 
-If you re-run the tests the rectangle tests should be passing but circle should still be failing.
+Si vous relancez les tests, les tests de rectangle devraient passer mais le cercle devrait toujours échouer.
 
-To make circle's `Area` function pass we will borrow the `Pi` constant from the `math` package \(remember to import it\).
+Pour faire passer la fonction `Aire` du cercle, nous empruntons la constante `Pi` du package `math` \(rappelez-vous de l'importer\).
 
 ```go
-func (c Circle) Area() float64 {
-	return math.Pi * c.Radius * c.Radius
+func (c Cercle) Aire() float64 {
+	return math.Pi * c.Rayon * c.Rayon
 }
 ```
 
-## Refactor
+## Refactoriser
 
-There is some duplication in our tests.
+Il y a quelques duplications dans nos tests.
 
-All we want to do is take a collection of _shapes_, call the `Area()` method on them and then check the result.
+Tout ce que nous voulons faire est prendre une collection de _formes_, appeler la méthode `Aire()` sur elles et puis vérifier le résultat.
 
-We want to be able to write some kind of `checkArea` function that we can pass both `Rectangle`s and `Circle`s to, but fail to compile if we try to pass in something that isn't a shape.
+Nous voulons pouvoir écrire une sorte de fonction `verifierAire` à laquelle nous pouvons passer à la fois des `Rectangle` et des `Cercle`, mais échouer à compiler si nous essayons de passer quelque chose qui n'est pas une forme.
 
-With Go, we can codify this intent with **interfaces**.
+Avec Go, nous pouvons codifier cette intention avec les **interfaces**.
 
-[Interfaces](https://golang.org/ref/spec#Interface_types) are a very powerful concept in statically typed languages like Go because they allow you to make functions that can be used with different types and create highly-decoupled code whilst still maintaining type-safety.
+Les [Interfaces](https://golang.org/ref/spec#Interface_types) sont un concept très puissant dans les langages statiquement typés comme Go parce qu'elles vous permettent de créer des fonctions qui peuvent être utilisées avec différents types et créent du code hautement découplé tout en maintenant la sécurité de type.
 
-Let's introduce this by refactoring our tests.
+Introduisons ceci en refactorisant nos tests.
 
 ```go
-func TestArea(t *testing.T) {
+func TestAire(t *testing.T) {
 
-	checkArea := func(t testing.TB, shape Shape, want float64) {
+	verifierAire := func(t testing.TB, forme Forme, attendu float64) {
 		t.Helper()
-		got := shape.Area()
-		if got != want {
-			t.Errorf("got %g want %g", got, want)
+		resultat := forme.Aire()
+		if resultat != attendu {
+			t.Errorf("reçu %g attendu %g", resultat, attendu)
 		}
 	}
 
 	t.Run("rectangles", func(t *testing.T) {
 		rectangle := Rectangle{12, 6}
-		checkArea(t, rectangle, 72.0)
+		verifierAire(t, rectangle, 72.0)
 	})
 
-	t.Run("circles", func(t *testing.T) {
-		circle := Circle{10}
-		checkArea(t, circle, 314.1592653589793)
+	t.Run("cercles", func(t *testing.T) {
+		cercle := Cercle{10}
+		verifierAire(t, cercle, 314.1592653589793)
 	})
 
 }
 ```
 
-We are creating a helper function like we have in other exercises but this time we are asking for a `Shape` to be passed in. If we try to call this with something that isn't a shape, then it will not compile.
+Nous créons une fonction d'aide comme nous l'avons fait dans d'autres exercices mais cette fois nous demandons qu'une `Forme` soit passée. Si nous essayons d'appeler ceci avec quelque chose qui n'est pas une forme, alors ça ne compilera pas.
 
-How does something become a shape? We just tell Go what a `Shape` is using an interface declaration
+Comment quelque chose devient-il une forme ? Nous disons juste à Go ce qu'est une `Forme` en utilisant une déclaration d'interface
 
 ```go
-type Shape interface {
-	Area() float64
+type Forme interface {
+	Aire() float64
 }
 ```
 
-We're creating a new `type` just like we did with `Rectangle` and `Circle` but this time it is an `interface` rather than a `struct`.
+Nous créons un nouveau `type` tout comme nous l'avons fait avec `Rectangle` et `Cercle` mais cette fois c'est une `interface` plutôt qu'une `struct`.
 
-Once you add this to the code, the tests will pass.
+Une fois que vous ajoutez ceci au code, les tests passeront.
 
-### Wait, what?
+### Attendez, quoi ?
 
-This is quite different to interfaces in most other programming languages. Normally you have to write code to say `My type Foo implements interface Bar`.
+C'est assez différent des interfaces dans la plupart des autres langages de programmation. Normalement vous devez écrire du code pour dire `Mon type Foo implémente l'interface Bar`.
 
-But in our case
+Mais dans notre cas
 
-* `Rectangle` has a method called `Area` that returns a `float64` so it satisfies the `Shape` interface
-* `Circle` has a method called `Area` that returns a `float64` so it satisfies the `Shape` interface
-* `string` does not have such a method, so it doesn't satisfy the interface
+* `Rectangle` a une méthode appelée `Aire` qui retourne un `float64` donc elle satisfait l'interface `Forme`
+* `Cercle` a une méthode appelée `Aire` qui retourne un `float64` donc elle satisfait l'interface `Forme`
+* `string` n'a pas une telle méthode, donc elle ne satisfait pas l'interface
 * etc.
 
-In Go **interface resolution is implicit**. If the type you pass in matches what the interface is asking for, it will compile.
+En Go **la résolution d'interface est implicite**. Si le type que vous passez correspond à ce que l'interface demande, ça compilera.
 
-### Decoupling
+### Découplage
 
-Notice how our helper does not need to concern itself with whether the shape is a `Rectangle` or a `Circle` or a `Triangle`. By declaring an interface, the helper is _decoupled_ from the concrete types and only has the method it needs to do its job.
+Remarquez comment notre aide n'a pas besoin de se préoccuper de savoir si la forme est un `Rectangle` ou un `Cercle` ou un `Triangle`. En déclarant une interface, l'aide est _découplée_ des types concrets et a seulement la méthode dont elle a besoin pour faire son travail.
 
-This kind of approach of using interfaces to declare **only what you need** is very important in software design and will be covered in more detail in later sections.
+Ce genre d'approche d'utiliser des interfaces pour déclarer **seulement ce dont vous avez besoin** est très important dans la conception de logiciels et sera couvert plus en détail dans les sections ultérieures.
 
-## Further refactoring
+## Refactorisation supplémentaire
 
-Now that you have some understanding of structs we can introduce "table driven tests".
+Maintenant que vous avez une certaine compréhension des structs, nous pouvons introduire les "tests dirigés par table".
 
-[Table driven tests](https://go.dev/wiki/TableDrivenTests) are useful when you want to build a list of test cases that can be tested in the same manner.
+Les [tests dirigés par table](https://go.dev/wiki/TableDrivenTests) sont utiles quand vous voulez construire une liste de cas de test qui peuvent être testés de la même manière.
 
 ```go
-func TestArea(t *testing.T) {
+func TestAire(t *testing.T) {
 
-	areaTests := []struct {
-		shape Shape
-		want  float64
+	testsAire := []struct {
+		forme Forme
+		attendu  float64
 	}{
 		{Rectangle{12, 6}, 72.0},
-		{Circle{10}, 314.1592653589793},
+		{Cercle{10}, 314.1592653589793},
 	}
 
-	for _, tt := range areaTests {
-		got := tt.shape.Area()
-		if got != tt.want {
-			t.Errorf("got %g want %g", got, tt.want)
+	for _, tt := range testsAire {
+		resultat := tt.forme.Aire()
+		if resultat != tt.attendu {
+			t.Errorf("reçu %g attendu %g", resultat, tt.attendu)
 		}
 	}
 
 }
 ```
 
-The only new syntax here is creating an "anonymous struct", `areaTests`. We are declaring a slice of structs by using `[]struct` with two fields, the `shape` and the `want`. Then we fill the slice with cases.
+La seule nouvelle syntaxe ici est de créer une "struct anonyme", `testsAire`. Nous déclarons un slice de structs en utilisant `[]struct` avec deux champs, la `forme` et l'`attendu`. Puis nous remplissons le slice avec des cas.
 
-We then iterate over them just like we do any other slice, using the struct fields to run our tests.
+Nous itérons ensuite sur eux juste comme nous le faisons avec tout autre slice, en utilisant les champs de struct pour exécuter nos tests.
 
-You can see how it would be very easy for a developer to introduce a new shape, implement `Area` and then add it to the test cases. In addition, if a bug is found with `Area` it is very easy to add a new test case to exercise it before fixing it.
+Vous pouvez voir comme il serait très facile pour un développeur d'introduire une nouvelle forme, d'implémenter `Aire` et puis de l'ajouter aux cas de test. De plus, si un bug est trouvé avec `Aire`, il est très facile d'ajouter un nouveau cas de test pour l'exercer avant de le corriger.
 
-Table driven tests can be a great item in your toolbox, but be sure that you have a need for the extra noise in the tests.
-They are a great fit when you wish to test various implementations of an interface, or if the data being passed in to a function has lots of different requirements that need testing.
+Les tests dirigés par table peuvent être un excellent élément dans votre boîte à outils, mais assurez-vous d'avoir besoin du bruit supplémentaire dans les tests.
+Ils sont un excellent ajustement quand vous souhaitez tester diverses implémentations d'une interface, ou si les données passées à une fonction ont beaucoup d'exigences différentes qui doivent être testées.
 
-Let's demonstrate all this by adding another shape and testing it; a triangle.
+Démontrons tout ceci en ajoutant une autre forme et en la testant ; un triangle.
 
-## Write the test first
+## Écrivez le test d'abord
 
-Adding a new test for our new shape is very easy. Just add `{Triangle{12, 6}, 36.0},` to our list.
+Ajouter un nouveau test pour notre nouvelle forme est très facile. Ajoutez juste `{Triangle{12, 6}, 36.0},` à notre liste.
 
 ```go
-func TestArea(t *testing.T) {
+func TestAire(t *testing.T) {
 
-	areaTests := []struct {
-		shape Shape
-		want  float64
+	testsAire := []struct {
+		forme Forme
+		attendu  float64
 	}{
 		{Rectangle{12, 6}, 72.0},
-		{Circle{10}, 314.1592653589793},
+		{Cercle{10}, 314.1592653589793},
 		{Triangle{12, 6}, 36.0},
 	}
 
-	for _, tt := range areaTests {
-		got := tt.shape.Area()
-		if got != tt.want {
-			t.Errorf("got %g want %g", got, tt.want)
+	for _, tt := range testsAire {
+		resultat := tt.forme.Aire()
+		if resultat != tt.attendu {
+			t.Errorf("reçu %g attendu %g", resultat, tt.attendu)
 		}
 	}
 
 }
 ```
 
-## Try to run the test
+## Essayez d'exécuter le test
 
-Remember, keep trying to run the test and let the compiler guide you toward a solution.
+Rappelez-vous, continuez à essayer d'exécuter le test et laissez le compilateur vous guider vers une solution.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
 
-`./shapes_test.go:25:4: undefined: Triangle`
+`./formes_test.go:25:4: undefined: Triangle`
 
-We have not defined `Triangle` yet
+Nous n'avons pas encore défini `Triangle`
 
 ```go
 type Triangle struct {
 	Base   float64
-	Height float64
+	Hauteur float64
 }
 ```
 
-Try again
+Essayez à nouveau
 
 ```text
-./shapes_test.go:25:8: cannot use Triangle literal (type Triangle) as type Shape in field value:
-    Triangle does not implement Shape (missing Area method)
+./formes_test.go:25:8: cannot use Triangle literal (type Triangle) as type Forme in field value:
+    Triangle does not implement Forme (missing Aire method)
 ```
 
-It's telling us we cannot use a `Triangle` as a shape because it does not have an `Area()` method, so add an empty implementation to get the test working
+Il nous dit que nous ne pouvons pas utiliser un `Triangle` comme une forme parce qu'il n'a pas de méthode `Aire()`, alors ajoutez une implémentation vide pour faire fonctionner le test
 
 ```go
-func (t Triangle) Area() float64 {
+func (t Triangle) Aire() float64 {
 	return 0
 }
 ```
 
-Finally the code compiles and we get our error
+Finalement le code compile et nous obtenons notre erreur
 
-`shapes_test.go:31: got 0.00 want 36.00`
+`formes_test.go:31: reçu 0.00 attendu 36.00`
 
-## Write enough code to make it pass
+## Écrivez assez de code pour le faire passer
 
 ```go
-func (t Triangle) Area() float64 {
-	return (t.Base * t.Height) * 0.5
+func (t Triangle) Aire() float64 {
+	return (t.Base * t.Hauteur) * 0.5
 }
 ```
 
-And our tests pass!
+Et nos tests passent !
 
-## Refactor
+## Refactoriser
 
-Again, the implementation is fine but our tests could do with some improvement.
+Encore une fois, l'implémentation est correcte mais nos tests pourraient avoir quelques améliorations.
 
-When you scan this
+Quand vous scannez ceci
 
 ```
 {Rectangle{12, 6}, 72.0},
-{Circle{10}, 314.1592653589793},
+{Cercle{10}, 314.1592653589793},
 {Triangle{12, 6}, 36.0},
 ```
 
-It's not immediately clear what all the numbers represent and you should be aiming for your tests to be easily understood.
+Il n'est pas immédiatement clair ce que tous les nombres représentent et vous devriez viser à ce que vos tests soient facilement compris.
 
-So far you've only been shown syntax for creating instances of structs `MyStruct{val1, val2}` but you can optionally name the fields.
+Jusqu'à présent, on ne vous a montré que la syntaxe pour créer des instances de structs `MaStruct{val1, val2}` mais vous pouvez optionnellement nommer les champs.
 
-Let's see what it looks like
+Voyons à quoi ça ressemble
 
 ```
-        {shape: Rectangle{Width: 12, Height: 6}, want: 72.0},
-        {shape: Circle{Radius: 10}, want: 314.1592653589793},
-        {shape: Triangle{Base: 12, Height: 6}, want: 36.0},
+        {forme: Rectangle{Largeur: 12, Hauteur: 6}, attendu: 72.0},
+        {forme: Cercle{Rayon: 10}, attendu: 314.1592653589793},
+        {forme: Triangle{Base: 12, Hauteur: 6}, attendu: 36.0},
 ```
 
-In [Test-Driven Development by Example](https://g.co/kgs/yCzDLF) Kent Beck refactors some tests to a point and asserts:
+Dans [Test-Driven Development by Example](https://g.co/kgs/yCzDLF) Kent Beck refactorise quelques tests à un point et affirme :
 
-> The test speaks to us more clearly, as if it were an assertion of truth, **not a sequence of operations**
+> Le test nous parle plus clairement, comme s'il était une assertion de vérité, **pas une séquence d'opérations**
 
-\(emphasis in the quote is mine\)
+\(l'emphase dans la citation est la mienne\)
 
-Now our tests - rather, the list of test cases - make assertions of truth about shapes and their areas.
+Maintenant nos tests - plutôt, la liste de cas de test - font des assertions de vérité sur les formes et leurs aires.
 
-## Make sure your test output is helpful
+## Assurez-vous que la sortie de votre test est utile
 
-Remember earlier when we were implementing `Triangle` and we had the failing test? It printed `shapes_test.go:31: got 0.00 want 36.00`.
+Rappelez-vous plus tôt quand nous implémentions `Triangle` et nous avions le test qui échouait ? Il a imprimé `formes_test.go:31: reçu 0.00 attendu 36.00`.
 
-We knew this was in relation to `Triangle` because we were just working with it.
-But what if a bug slipped in to the system in one of 20 cases in the table?
-How would a developer know which case failed?
-This is not a great experience for the developer, they will have to manually look through the cases to find out which case actually failed.
+Nous savions que c'était en relation avec `Triangle` parce que nous travaillions juste avec.
+Mais que se passerait-il si un bug se glissait dans le système dans un des 20 cas dans la table ?
+Comment un développeur saurait-il quel cas a échoué ?
+Ce n'est pas une grande expérience pour le développeur, il devra regarder manuellement à travers les cas pour découvrir quel cas a réellement échoué.
 
-We can change our error message into `%#v got %g want %g`. The `%#v` format string will print out our struct with the values in its field, so the developer can see at a glance the properties that are being tested.
+Nous pouvons changer notre message d'erreur en `%#v reçu %g attendu %g`. La chaîne de format `%#v` imprimera notre struct avec les valeurs dans ses champs, donc le développeur peut voir d'un coup d'œil les propriétés qui sont testées.
 
-To increase the readability of our test cases further, we can rename the `want` field into something more descriptive like `hasArea`.
+Pour augmenter davantage la lisibilité de nos cas de test, nous pouvons renommer le champ `attendu` en quelque chose de plus descriptif comme `aAire`.
 
-One final tip with table driven tests is to use `t.Run` and to name the test cases.
+Un dernier conseil avec les tests dirigés par table est d'utiliser `t.Run` et de nommer les cas de test.
 
-By wrapping each case in a `t.Run` you will have clearer test output on failures as it will print the name of the case
+En enveloppant chaque cas dans un `t.Run`, vous aurez une sortie de test plus claire sur les échecs car elle imprimera le nom du cas
 
 ```text
---- FAIL: TestArea (0.00s)
-    --- FAIL: TestArea/Rectangle (0.00s)
-        shapes_test.go:33: main.Rectangle{Width:12, Height:6} got 72.00 want 72.10
+--- FAIL: TestAire (0.00s)
+    --- FAIL: TestAire/Rectangle (0.00s)
+        formes_test.go:33: main.Rectangle{Largeur:12, Hauteur:6} reçu 72.00 attendu 72.10
 ```
 
-And you can run specific tests within your table with `go test -run TestArea/Rectangle`.
+Et vous pouvez exécuter des tests spécifiques dans votre table avec `go test -run TestAire/Rectangle`.
 
-Here is our final test code which captures this
+Voici notre code de test final qui capture ceci
 
 ```go
-func TestArea(t *testing.T) {
+func TestAire(t *testing.T) {
 
-	areaTests := []struct {
-		name    string
-		shape   Shape
-		hasArea float64
+	testsAire := []struct {
+		nom    string
+		forme   Forme
+		aAire float64
 	}{
-		{name: "Rectangle", shape: Rectangle{Width: 12, Height: 6}, hasArea: 72.0},
-		{name: "Circle", shape: Circle{Radius: 10}, hasArea: 314.1592653589793},
-		{name: "Triangle", shape: Triangle{Base: 12, Height: 6}, hasArea: 36.0},
+		{nom: "Rectangle", forme: Rectangle{Largeur: 12, Hauteur: 6}, aAire: 72.0},
+		{nom: "Cercle", forme: Cercle{Rayon: 10}, aAire: 314.1592653589793},
+		{nom: "Triangle", forme: Triangle{Base: 12, Hauteur: 6}, aAire: 36.0},
 	}
 
-	for _, tt := range areaTests {
-		// using tt.name from the case to use it as the `t.Run` test name
-		t.Run(tt.name, func(t *testing.T) {
-			got := tt.shape.Area()
-			if got != tt.hasArea {
-				t.Errorf("%#v got %g want %g", tt.shape, got, tt.hasArea)
+	for _, tt := range testsAire {
+		// utilisation de tt.nom du cas pour l'utiliser comme nom de test `t.Run`
+		t.Run(tt.nom, func(t *testing.T) {
+			resultat := tt.forme.Aire()
+			if resultat != tt.aAire {
+				t.Errorf("%#v reçu %g attendu %g", tt.forme, resultat, tt.aAire)
 			}
 		})
 
@@ -584,17 +584,17 @@ func TestArea(t *testing.T) {
 }
 ```
 
-## Wrapping up
+## Conclusion
 
-This was more TDD practice, iterating over our solutions to basic mathematic problems and learning new language features motivated by our tests.
+C'était plus de pratique TDD, itérant sur nos solutions à des problèmes mathématiques de base et apprenant de nouvelles fonctionnalités du langage motivées par nos tests.
 
-* Declaring structs to create your own data types which lets you bundle related data together and make the intent of your code clearer
-* Declaring interfaces so you can define functions that can be used by different types \([parametric polymorphism](https://en.wikipedia.org/wiki/Parametric_polymorphism)\)
-* Adding methods so you can add functionality to your data types and so you can implement interfaces
-* Table driven tests to make your assertions clearer and your test suites easier to extend & maintain
+* Déclarer des structs pour créer vos propres types de données qui vous permet de regrouper des données connexes ensemble et rendre l'intention de votre code plus claire
+* Déclarer des interfaces pour que vous puissiez définir des fonctions qui peuvent être utilisées par différents types \([polymorphisme paramétrique](https://en.wikipedia.org/wiki/Parametric_polymorphism)\)
+* Ajouter des méthodes pour que vous puissiez ajouter des fonctionnalités à vos types de données et pour que vous puissiez implémenter des interfaces
+* Tests dirigés par table pour rendre vos assertions plus claires et vos suites de tests plus faciles à étendre et maintenir
 
-This was an important chapter because we are now starting to define our own types. In statically typed languages like Go, being able to design your own types is essential for building software that is easy to understand, to piece together and to test.
+C'était un chapitre important parce que nous commençons maintenant à définir nos propres types. Dans les langages statiquement typés comme Go, être capable de concevoir vos propres types est essentiel pour construire des logiciels faciles à comprendre, à assembler et à tester.
 
-Interfaces are a great tool for hiding complexity away from other parts of the system. In our case our test helper _code_ did not need to know the exact shape it was asserting on, only how to "ask" for its area.
+Les interfaces sont un excellent outil pour cacher la complexité d'autres parties du système. Dans notre cas, notre code d'aide de test n'avait pas besoin de connaître la forme exacte sur laquelle il faisait des assertions, seulement comment "demander" son aire.
 
-As you become more familiar with Go you will start to see the real strength of interfaces and the standard library. You'll learn about interfaces defined in the standard library that are used _everywhere_ and by implementing them against your own types, you can very quickly re-use a lot of great functionality.
+À mesure que vous devenez plus familier avec Go, vous commencerez à voir la vraie force des interfaces et de la bibliothèque standard. Vous apprendrez sur les interfaces définies dans la bibliothèque standard qui sont utilisées _partout_ et en les implémentant contre vos propres types, vous pouvez très rapidement réutiliser beaucoup de grandes fonctionnalités.
