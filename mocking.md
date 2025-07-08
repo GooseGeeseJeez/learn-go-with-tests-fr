@@ -1,8 +1,8 @@
 # Mocking
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/mocking)**
+**[Vous pouvez trouver tout le code de ce chapitre ici](https://github.com/quii/learn-go-with-tests/tree/main/mocking)**
 
-You have been asked to write a program which counts down from 3, printing each number on a new line (with a 1-second pause) and when it reaches zero it will print "Go!" and exit.
+On vous a demandé d'écrire un programme qui compte à rebours à partir de 3, en affichant chaque nombre sur une nouvelle ligne (avec une pause d'une seconde), et lorsqu'il atteint zéro, il affiche "Go!" et se termine.
 
 ```
 3
@@ -11,107 +11,107 @@ You have been asked to write a program which counts down from 3, printing each n
 Go!
 ```
 
-We'll tackle this by writing a function called `Countdown` which we will then put inside a `main` program so it looks something like this:
+Nous allons aborder ce problème en écrivant une fonction appelée `Compte` que nous intégrerons ensuite dans un programme `main` pour qu'il ressemble à quelque chose comme :
 
 ```go
 package main
 
 func main() {
-	Countdown()
+	Compte()
 }
 ```
 
-While this is a pretty trivial program, to test it fully we will need as always to take an _iterative_, _test-driven_ approach.
+Bien que ce soit un programme assez simple, pour le tester complètement, nous devrons, comme toujours, adopter une approche _itérative_ et _pilotée par les tests_.
 
-What do I mean by iterative? We make sure we take the smallest steps we can to have _useful software_.
+Que veux-je dire par itératif ? Nous nous assurons de prendre les plus petites étapes possibles pour avoir un _logiciel utile_.
 
-We don't want to spend a long time with code that will theoretically work after some hacking because that's often how developers fall down rabbit holes. **It's an important skill to be able to slice up requirements as small as you can so you can have _working software_.**
+Nous ne voulons pas passer beaucoup de temps avec du code qui fonctionnera théoriquement après quelques bricolages, car c'est souvent ainsi que les développeurs tombent dans des pièges. **C'est une compétence importante que de pouvoir découper les exigences en morceaux aussi petits que possible afin d'avoir un _logiciel fonctionnel_.**
 
-Here's how we can divide our work up and iterate on it:
+Voici comment nous pouvons diviser notre travail et l'itérer :
 
-- Print 3
-- Print 3, 2, 1 and Go!
-- Wait a second between each line
+- Afficher 3
+- Afficher 3, 2, 1 et Go!
+- Attendre une seconde entre chaque ligne
 
-## Write the test first
+## Écrivez le test d'abord
 
-Our software needs to print to stdout and we saw how we could use Dependency Injection (DI) to facilitate testing this in the DI section.
+Notre logiciel doit imprimer sur stdout et nous avons vu comment nous pouvons utiliser l'Injection de Dépendances (DI) pour faciliter le test dans la section DI.
 
 ```go
-func TestCountdown(t *testing.T) {
+func TestCompte(t *testing.T) {
 	buffer := &bytes.Buffer{}
 
-	Countdown(buffer)
+	Compte(buffer)
 
-	got := buffer.String()
-	want := "3"
+	obtenu := buffer.String()
+	attendu := "3"
 
-	if got != want {
-		t.Errorf("got %q want %q", got, want)
+	if obtenu != attendu {
+		t.Errorf("obtenu %q attendu %q", obtenu, attendu)
 	}
 }
 ```
 
-If anything like `buffer` is unfamiliar to you, re-read [the previous section](dependency-injection.md).
+Si quelque chose comme `buffer` ne vous est pas familier, relisez [la section précédente](dependency-injection.md).
 
-We know we want our `Countdown` function to write data somewhere and `io.Writer` is the de-facto way of capturing that as an interface in Go.
+Nous savons que nous voulons que notre fonction `Compte` écrive des données quelque part et `io.Writer` est la manière de facto de capturer cela en tant qu'interface en Go.
 
-- In `main` we will send to `os.Stdout` so our users see the countdown printed to the terminal.
-- In test we will send to `bytes.Buffer` so our tests can capture what data is being generated.
+- Dans `main`, nous enverrons vers `os.Stdout` pour que nos utilisateurs voient le compte à rebours affiché sur le terminal.
+- Dans le test, nous enverrons vers `bytes.Buffer` pour que nos tests puissent capturer les données générées.
 
-## Try and run the test
+## Essayez d'exécuter le test
 
-`./countdown_test.go:11:2: undefined: Countdown`
+`./compte_test.go:11:2: undefined: Compte`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
 
-Define `Countdown`
+Définissez `Compte`
 
 ```go
-func Countdown() {}
+func Compte() {}
 ```
 
-Try again
+Essayez à nouveau
 
 ```
-./countdown_test.go:11:11: too many arguments in call to Countdown
+./compte_test.go:11:11: too many arguments in call to Compte
     have (*bytes.Buffer)
     want ()
 ```
 
-The compiler is telling you what your function signature could be, so update it.
+Le compilateur vous indique ce que pourrait être la signature de votre fonction, alors mettez-la à jour.
 
 ```go
-func Countdown(out *bytes.Buffer) {}
+func Compte(out *bytes.Buffer) {}
 ```
 
-`countdown_test.go:17: got '' want '3'`
+`compte_test.go:17: obtenu '' attendu '3'`
 
-Perfect!
+Parfait !
 
-## Write enough code to make it pass
+## Écrivez assez de code pour le faire passer
 
 ```go
-func Countdown(out *bytes.Buffer) {
+func Compte(out *bytes.Buffer) {
 	fmt.Fprint(out, "3")
 }
 ```
 
-We're using `fmt.Fprint` which takes an `io.Writer` (like `*bytes.Buffer`) and sends a `string` to it. The test should pass.
+Nous utilisons `fmt.Fprint` qui prend un `io.Writer` (comme `*bytes.Buffer`) et lui envoie une `string`. Le test devrait passer.
 
-## Refactor
+## Refactoriser
 
-We know that while `*bytes.Buffer` works, it would be better to use a general purpose interface instead.
+Nous savons que bien que `*bytes.Buffer` fonctionne, il serait préférable d'utiliser une interface à usage général à la place.
 
 ```go
-func Countdown(out io.Writer) {
+func Compte(out io.Writer) {
 	fmt.Fprint(out, "3")
 }
 ```
 
-Re-run the tests and they should be passing.
+Relancez les tests et ils devraient passer.
 
-To complete matters, let's now wire up our function into a `main` so we have some working software to reassure ourselves we're making progress.
+Pour finaliser, connectons maintenant notre fonction à un `main` pour avoir un logiciel fonctionnel qui nous rassure sur notre progression.
 
 ```go
 package main
@@ -122,57 +122,57 @@ import (
 	"os"
 )
 
-func Countdown(out io.Writer) {
+func Compte(out io.Writer) {
 	fmt.Fprint(out, "3")
 }
 
 func main() {
-	Countdown(os.Stdout)
+	Compte(os.Stdout)
 }
 ```
 
-Try and run the program and be amazed at your handywork.
+Essayez d'exécuter le programme et admirez votre travail.
 
-Yes this seems trivial but this approach is what I would recommend for any project. **Take a thin slice of functionality and make it work end-to-end, backed by tests.**
+Oui, cela semble trivial, mais c'est l'approche que je recommanderais pour tout projet. **Prenez une fine tranche de fonctionnalité et faites-la fonctionner de bout en bout, soutenue par des tests.**
 
-Next we can make it print 2,1 and then "Go!".
+Ensuite, nous pouvons faire afficher 2, 1 et puis "Go!".
 
-## Write the test first
+## Écrivez le test d'abord
 
-By investing in getting the overall plumbing working right, we can iterate on our solution safely and easily. We will no longer need to stop and re-run the program to be confident of it working as all the logic is tested.
+En investissant pour que la tuyauterie globale fonctionne correctement, nous pouvons itérer sur notre solution en toute sécurité et facilement. Nous n'aurons plus besoin d'arrêter et de redémarrer le programme pour être sûrs qu'il fonctionne, car toute la logique est testée.
 
 ```go
-func TestCountdown(t *testing.T) {
+func TestCompte(t *testing.T) {
 	buffer := &bytes.Buffer{}
 
-	Countdown(buffer)
+	Compte(buffer)
 
-	got := buffer.String()
-	want := `3
+	obtenu := buffer.String()
+	attendu := `3
 2
 1
 Go!`
 
-	if got != want {
-		t.Errorf("got %q want %q", got, want)
+	if obtenu != attendu {
+		t.Errorf("obtenu %q attendu %q", obtenu, attendu)
 	}
 }
 ```
 
-The backtick syntax is another way of creating a `string` but lets you include things like newlines, which is perfect for our test.
+La syntaxe des backticks est une autre façon de créer une `string`, mais elle permet d'inclure des éléments comme les sauts de ligne, ce qui est parfait pour notre test.
 
-## Try and run the test
+## Essayez d'exécuter le test
 
 ```
-countdown_test.go:21: got '3' want '3
+compte_test.go:21: obtenu '3' attendu '3
         2
         1
         Go!'
 ```
-## Write enough code to make it pass
+## Écrivez assez de code pour le faire passer
 
 ```go
-func Countdown(out io.Writer) {
+func Compte(out io.Writer) {
 	for i := 3; i > 0; i-- {
 		fmt.Fprintln(out, i)
 	}
@@ -180,495 +180,495 @@ func Countdown(out io.Writer) {
 }
 ```
 
-Use a `for` loop counting backwards with `i--` and use `fmt.Fprintln` to print to `out` with our number followed by a newline character. Finally use `fmt.Fprint` to send "Go!" aftward.
+Utilisez une boucle `for` qui compte à rebours avec `i--` et utilisez `fmt.Fprintln` pour imprimer sur `out` avec notre nombre suivi d'un caractère de nouvelle ligne. Enfin, utilisez `fmt.Fprint` pour envoyer "Go!" à la fin.
 
-## Refactor
+## Refactoriser
 
-There's not much to refactor other than refactoring some magic values into named constants.
+Il n'y a pas grand-chose à refactoriser à part transformer certaines valeurs magiques en constantes nommées.
 
 ```go
-const finalWord = "Go!"
-const countdownStart = 3
+const motFinal = "Go!"
+const debutCompteARebours = 3
 
-func Countdown(out io.Writer) {
-	for i := countdownStart; i > 0; i-- {
+func Compte(out io.Writer) {
+	for i := debutCompteARebours; i > 0; i-- {
 		fmt.Fprintln(out, i)
 	}
-	fmt.Fprint(out, finalWord)
+	fmt.Fprint(out, motFinal)
 }
 ```
 
-If you run the program now, you should get the desired output but we don't have it as a dramatic countdown with the 1-second pauses.
+Si vous exécutez le programme maintenant, vous devriez obtenir le résultat souhaité, mais nous n'avons pas encore le compte à rebours dramatique avec les pauses d'une seconde.
 
-Go lets you achieve this with `time.Sleep`. Try adding it in to our code.
+Go vous permet d'y parvenir avec `time.Sleep`. Essayez de l'ajouter à notre code.
 
 ```go
-func Countdown(out io.Writer) {
-	for i := countdownStart; i > 0; i-- {
+func Compte(out io.Writer) {
+	for i := debutCompteARebours; i > 0; i-- {
 		fmt.Fprintln(out, i)
 		time.Sleep(1 * time.Second)
 	}
 
-	fmt.Fprint(out, finalWord)
+	fmt.Fprint(out, motFinal)
 }
 ```
 
-If you run the program it works as we want it to.
+Si vous exécutez le programme, il fonctionne comme nous le souhaitons.
 
 ## Mocking
 
-The tests still pass and the software works as intended but we have some problems:
-- Our tests take 3 seconds to run.
-    - Every forward-thinking post about software development emphasises the importance of quick feedback loops.
-    - **Slow tests ruin developer productivity**.
-    - Imagine if the requirements get more sophisticated warranting more tests. Are we happy with 3s added to the test run for every new test of `Countdown`?
-- We have not tested an important property of our function.
+Les tests passent toujours et le logiciel fonctionne comme prévu, mais nous avons quelques problèmes :
+- Nos tests prennent 3 secondes à s'exécuter.
+    - Chaque article prospectif sur le développement logiciel souligne l'importance des boucles de retour rapides.
+    - **Les tests lents ruinent la productivité des développeurs**.
+    - Imaginez si les exigences deviennent plus sophistiquées, nécessitant plus de tests. Sommes-nous satisfaits d'ajouter 3 secondes au temps d'exécution des tests pour chaque nouveau test de `Compte` ?
+- Nous n'avons pas testé une propriété importante de notre fonction.
 
-We have a dependency on `Sleep`ing which we need to extract so we can then control it in our tests.
+Nous avons une dépendance à `Sleep` que nous devons extraire pour pouvoir la contrôler dans nos tests.
 
-If we can _mock_ `time.Sleep` we can use _dependency injection_ to use it instead of a "real" `time.Sleep` and then we can **spy on the calls** to make assertions on them.
+Si nous pouvons _mocker_ `time.Sleep`, nous pouvons utiliser _l'injection de dépendances_ pour l'utiliser à la place d'un "vrai" `time.Sleep` et ensuite nous pouvons **espionner les appels** pour faire des assertions sur eux.
 
-## Write the test first
+## Écrivez le test d'abord
 
-Let's define our dependency as an interface. This lets us then use a _real_ Sleeper in `main` and a _spy sleeper_ in our tests. By using an interface our `Countdown` function is oblivious to this and adds some flexibility for the caller.
+Définissons notre dépendance comme une interface. Cela nous permet ensuite d'utiliser une _vraie_ Dormeuse dans `main` et une _dormeuse espion_ dans nos tests. En utilisant une interface, notre fonction `Compte` n'en a pas conscience et cela ajoute de la flexibilité pour l'appelant.
 
 ```go
-type Sleeper interface {
-	Sleep()
+type Dormeuse interface {
+	Dormir()
 }
 ```
 
-I made a design decision that our `Countdown` function would not be responsible for how long the sleep is. This simplifies our code a little for now at least and means a user of our function can configure that sleepiness however they like.
+J'ai pris la décision de conception que notre fonction `Compte` ne serait pas responsable de la durée du sommeil. Cela simplifie un peu notre code pour l'instant et signifie qu'un utilisateur de notre fonction peut configurer cette somnolence comme il le souhaite.
 
-Now we need to make a _mock_ of it for our tests to use.
+Maintenant, nous devons créer un _mock_ pour nos tests.
 
 ```go
-type SpySleeper struct {
-	Calls int
+type DormeuseEspion struct {
+	Appels int
 }
 
-func (s *SpySleeper) Sleep() {
-	s.Calls++
+func (s *DormeuseEspion) Dormir() {
+	s.Appels++
 }
 ```
 
-_Spies_ are a kind of _mock_ which can record how a dependency is used. They can record the arguments sent in, how many times it has been called, etc. In our case, we're keeping track of how many times `Sleep()` is called so we can check it in our test.
+Les _espions_ sont un type de _mock_ qui peut enregistrer comment une dépendance est utilisée. Ils peuvent enregistrer les arguments envoyés, combien de fois elle a été appelée, etc. Dans notre cas, nous gardons une trace du nombre de fois où `Dormir()` est appelé afin de pouvoir le vérifier dans notre test.
 
-Update the tests to inject a dependency on our Spy and assert that the sleep has been called 3 times.
+Mettez à jour les tests pour injecter une dépendance à notre Espion et affirmer que le sommeil a été appelé 3 fois.
 
 ```go
-func TestCountdown(t *testing.T) {
+func TestCompte(t *testing.T) {
 	buffer := &bytes.Buffer{}
-	spySleeper := &SpySleeper{}
+	dormeuseEspion := &DormeuseEspion{}
 
-	Countdown(buffer, spySleeper)
+	Compte(buffer, dormeuseEspion)
 
-	got := buffer.String()
-	want := `3
+	obtenu := buffer.String()
+	attendu := `3
 2
 1
 Go!`
 
-	if got != want {
-		t.Errorf("got %q want %q", got, want)
+	if obtenu != attendu {
+		t.Errorf("obtenu %q attendu %q", obtenu, attendu)
 	}
 
-	if spySleeper.Calls != 3 {
-		t.Errorf("not enough calls to sleeper, want 3 got %d", spySleeper.Calls)
+	if dormeuseEspion.Appels != 3 {
+		t.Errorf("pas assez d'appels à dormeuse, attendu 3 obtenu %d", dormeuseEspion.Appels)
 	}
 }
 ```
 
-## Try and run the test
+## Essayez d'exécuter le test
 
 ```
-too many arguments in call to Countdown
-    have (*bytes.Buffer, *SpySleeper)
+too many arguments in call to Compte
+    have (*bytes.Buffer, *DormeuseEspion)
     want (io.Writer)
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
 
-We need to update `Countdown` to accept our `Sleeper`
+Nous devons mettre à jour `Compte` pour accepter notre `Dormeuse`
 
 ```go
-func Countdown(out io.Writer, sleeper Sleeper) {
-	for i := countdownStart; i > 0; i-- {
+func Compte(out io.Writer, dormeuse Dormeuse) {
+	for i := debutCompteARebours; i > 0; i-- {
 		fmt.Fprintln(out, i)
 		time.Sleep(1 * time.Second)
 	}
 
-	fmt.Fprint(out, finalWord)
+	fmt.Fprint(out, motFinal)
 }
 ```
 
-If you try again, your `main` will no longer compile for the same reason
+Si vous essayez à nouveau, votre `main` ne compilera plus pour la même raison
 
 ```
-./main.go:26:11: not enough arguments in call to Countdown
+./main.go:26:11: not enough arguments in call to Compte
     have (*os.File)
-    want (io.Writer, Sleeper)
+    want (io.Writer, Dormeuse)
 ```
 
-Let's create a _real_ sleeper which implements the interface we need
+Créons une _vraie_ dormeuse qui implémente l'interface dont nous avons besoin
 
 ```go
-type DefaultSleeper struct{}
+type DormeuseParDefaut struct{}
 
-func (d *DefaultSleeper) Sleep() {
+func (d *DormeuseParDefaut) Dormir() {
 	time.Sleep(1 * time.Second)
 }
 ```
 
-We can then use it in our real application like so
+Nous pouvons ensuite l'utiliser dans notre vraie application comme ceci
 
 ```go
 func main() {
-	sleeper := &DefaultSleeper{}
-	Countdown(os.Stdout, sleeper)
+	dormeuse := &DormeuseParDefaut{}
+	Compte(os.Stdout, dormeuse)
 }
 ```
 
-## Write enough code to make it pass
+## Écrivez assez de code pour le faire passer
 
-The test is now compiling but not passing because we're still calling the `time.Sleep` rather than the injected in dependency. Let's fix that.
+Le test compile maintenant mais ne passe pas car nous appelons toujours le `time.Sleep` plutôt que la dépendance injectée. Corrigeons cela.
 
 ```go
-func Countdown(out io.Writer, sleeper Sleeper) {
-	for i := countdownStart; i > 0; i-- {
+func Compte(out io.Writer, dormeuse Dormeuse) {
+	for i := debutCompteARebours; i > 0; i-- {
 		fmt.Fprintln(out, i)
-		sleeper.Sleep()
+		dormeuse.Dormir()
 	}
 
-	fmt.Fprint(out, finalWord)
+	fmt.Fprint(out, motFinal)
 }
 ```
 
-The test should pass and no longer take 3 seconds.
+Le test devrait passer et ne plus prendre 3 secondes.
 
-### Still some problems
+### Encore quelques problèmes
 
-There's still another important property we haven't tested.
+Il y a encore une autre propriété importante que nous n'avons pas testée.
 
-`Countdown` should sleep before each next print, e.g:
+`Compte` devrait dormir avant chaque impression suivante, par exemple :
 
-- `Print N`
-- `Sleep`
-- `Print N-1`
-- `Sleep`
-- `Print Go!`
+- `Imprimer N`
+- `Dormir`
+- `Imprimer N-1`
+- `Dormir`
+- `Imprimer Go!`
 - etc
 
-Our latest change only asserts that it has slept 3 times, but those sleeps could occur out of sequence.
+Notre dernier changement affirme seulement qu'il a dormi 3 fois, mais ces sommeils pourraient se produire hors séquence.
 
-When writing tests if you're not confident that your tests are giving you sufficient confidence, just break it! (make sure you have committed your changes to source control first though). Change the code to the following
+Lorsque vous écrivez des tests, si vous n'êtes pas sûr que vos tests vous donnent une confiance suffisante, cassez-les simplement ! (assurez-vous d'avoir d'abord validé vos modifications dans le contrôle de source). Modifiez le code comme suit
 
 ```go
-func Countdown(out io.Writer, sleeper Sleeper) {
-	for i := countdownStart; i > 0; i-- {
-		sleeper.Sleep()
+func Compte(out io.Writer, dormeuse Dormeuse) {
+	for i := debutCompteARebours; i > 0; i-- {
+		dormeuse.Dormir()
 	}
 
-	for i := countdownStart; i > 0; i-- {
+	for i := debutCompteARebours; i > 0; i-- {
 		fmt.Fprintln(out, i)
 	}
 
-	fmt.Fprint(out, finalWord)
+	fmt.Fprint(out, motFinal)
 }
 ```
 
-If you run your tests they should still be passing even though the implementation is wrong.
+Si vous exécutez vos tests, ils devraient toujours passer même si l'implémentation est incorrecte.
 
-Let's use spying again with a new test to check the order of operations is correct.
+Utilisons à nouveau l'espionnage avec un nouveau test pour vérifier que l'ordre des opérations est correct.
 
-We have two different dependencies and we want to record all of their operations into one list. So we'll create _one spy for them both_.
+Nous avons deux dépendances différentes et nous voulons enregistrer toutes leurs opérations dans une seule liste. Nous allons donc créer _un espion pour les deux_.
 
 ```go
-type SpyCountdownOperations struct {
-	Calls []string
+type EspionOperationsCompte struct {
+	Appels []string
 }
 
-func (s *SpyCountdownOperations) Sleep() {
-	s.Calls = append(s.Calls, sleep)
+func (s *EspionOperationsCompte) Dormir() {
+	s.Appels = append(s.Appels, dormir)
 }
 
-func (s *SpyCountdownOperations) Write(p []byte) (n int, err error) {
-	s.Calls = append(s.Calls, write)
+func (s *EspionOperationsCompte) Write(p []byte) (n int, err error) {
+	s.Appels = append(s.Appels, ecrire)
 	return
 }
 
-const write = "write"
-const sleep = "sleep"
+const ecrire = "écrire"
+const dormir = "dormir"
 ```
 
-Our `SpyCountdownOperations` implements both `io.Writer` and `Sleeper`, recording every call into one slice. In this test we're only concerned about the order of operations, so just recording them as list of named operations is sufficient.
+Notre `EspionOperationsCompte` implémente à la fois `io.Writer` et `Dormeuse`, en enregistrant chaque appel dans une seule tranche. Dans ce test, nous ne nous soucions que de l'ordre des opérations, donc les enregistrer sous forme de liste d'opérations nommées est suffisant.
 
-We can now add a sub-test into our test suite which verifies our sleeps and prints operate in the order we hope
+Nous pouvons maintenant ajouter un sous-test à notre suite de tests qui vérifie que nos sommeils et impressions fonctionnent dans l'ordre que nous espérons
 
 ```go
-t.Run("sleep before every print", func(t *testing.T) {
-	spySleepPrinter := &SpyCountdownOperations{}
-	Countdown(spySleepPrinter, spySleepPrinter)
+t.Run("dormir avant chaque impression", func(t *testing.T) {
+	espionDormirImprimer := &EspionOperationsCompte{}
+	Compte(espionDormirImprimer, espionDormirImprimer)
 
-	want := []string{
-		write,
-		sleep,
-		write,
-		sleep,
-		write,
-		sleep,
-		write,
+	attendu := []string{
+		ecrire,
+		dormir,
+		ecrire,
+		dormir,
+		ecrire,
+		dormir,
+		ecrire,
 	}
 
-	if !reflect.DeepEqual(want, spySleepPrinter.Calls) {
-		t.Errorf("wanted calls %v got %v", want, spySleepPrinter.Calls)
+	if !reflect.DeepEqual(attendu, espionDormirImprimer.Appels) {
+		t.Errorf("appels attendus %v obtenus %v", attendu, espionDormirImprimer.Appels)
 	}
 })
 ```
 
-This test should now fail. Revert `Countdown` back to how it was to fix the test.
+Ce test devrait maintenant échouer. Remettez `Compte` à ce qu'il était pour corriger le test.
 
-We now have two tests spying on the `Sleeper` so we can now refactor our test so one is testing what is being printed and the other one is ensuring we're sleeping between the prints. Finally, we can delete our first spy as it's not used anymore.
+Nous avons maintenant deux tests espionnant la `Dormeuse`, nous pouvons donc refactoriser notre test pour que l'un teste ce qui est imprimé et l'autre s'assure que nous dormons entre les impressions. Enfin, nous pouvons supprimer notre premier espion car il n'est plus utilisé.
 
 ```go
-func TestCountdown(t *testing.T) {
+func TestCompte(t *testing.T) {
 
-	t.Run("prints 3 to Go!", func(t *testing.T) {
+	t.Run("imprime 3 jusqu'à Go!", func(t *testing.T) {
 		buffer := &bytes.Buffer{}
-		Countdown(buffer, &SpyCountdownOperations{})
+		Compte(buffer, &EspionOperationsCompte{})
 
-		got := buffer.String()
-		want := `3
+		obtenu := buffer.String()
+		attendu := `3
 2
 1
 Go!`
 
-		if got != want {
-			t.Errorf("got %q want %q", got, want)
+		if obtenu != attendu {
+			t.Errorf("obtenu %q attendu %q", obtenu, attendu)
 		}
 	})
 
-	t.Run("sleep before every print", func(t *testing.T) {
-		spySleepPrinter := &SpyCountdownOperations{}
-		Countdown(spySleepPrinter, spySleepPrinter)
+	t.Run("dormir avant chaque impression", func(t *testing.T) {
+		espionDormirImprimer := &EspionOperationsCompte{}
+		Compte(espionDormirImprimer, espionDormirImprimer)
 
-		want := []string{
-			write,
-			sleep,
-			write,
-			sleep,
-			write,
-			sleep,
-			write,
+		attendu := []string{
+			ecrire,
+			dormir,
+			ecrire,
+			dormir,
+			ecrire,
+			dormir,
+			ecrire,
 		}
 
-		if !reflect.DeepEqual(want, spySleepPrinter.Calls) {
-			t.Errorf("wanted calls %v got %v", want, spySleepPrinter.Calls)
+		if !reflect.DeepEqual(attendu, espionDormirImprimer.Appels) {
+			t.Errorf("appels attendus %v obtenus %v", attendu, espionDormirImprimer.Appels)
 		}
 	})
 }
 ```
 
-We now have our function and its 2 important properties properly tested.
+Nous avons maintenant notre fonction et ses 2 propriétés importantes correctement testées.
 
-## Extending Sleeper to be configurable
+## Étendre Dormeuse pour la rendre configurable
 
-A nice feature would be for the `Sleeper` to be configurable. This means that we can adjust the sleep time in our main program.
+Une fonctionnalité intéressante serait que la `Dormeuse` soit configurable. Cela signifie que nous pouvons ajuster le temps de sommeil dans notre programme principal.
 
-### Write the test first
+### Écrivez le test d'abord
 
-Let's first create a new type for `ConfigurableSleeper` that accepts what we need for configuration and testing.
+Créons d'abord un nouveau type pour `DormeuseConfigurable` qui accepte ce dont nous avons besoin pour la configuration et les tests.
 
 ```go
-type ConfigurableSleeper struct {
-	duration time.Duration
-	sleep    func(time.Duration)
+type DormeuseConfigurable struct {
+	duree time.Duration
+	dormir func(time.Duration)
 }
 ```
 
-We are using `duration` to configure the time slept and `sleep` as a way to pass in a sleep function. The signature of `sleep` is the same as for `time.Sleep` allowing us to use `time.Sleep` in our real implementation and the following spy in our tests:
+Nous utilisons `duree` pour configurer le temps de sommeil et `dormir` comme moyen de passer une fonction de sommeil. La signature de `dormir` est la même que pour `time.Sleep`, nous permettant d'utiliser `time.Sleep` dans notre implémentation réelle et l'espion suivant dans nos tests :
 
 ```go
-type SpyTime struct {
-	durationSlept time.Duration
+type EspionTemps struct {
+	dureeDormie time.Duration
 }
 
-func (s *SpyTime) Sleep(duration time.Duration) {
-	s.durationSlept = duration
+func (s *EspionTemps) Dormir(duree time.Duration) {
+	s.dureeDormie = duree
 }
 ```
 
-With our spy in place, we can create a new test for the configurable sleeper.
+Avec notre espion en place, nous pouvons créer un nouveau test pour la dormeuse configurable.
 
 ```go
-func TestConfigurableSleeper(t *testing.T) {
-	sleepTime := 5 * time.Second
+func TestDormeuseConfigurable(t *testing.T) {
+	tempsDormir := 5 * time.Second
 
-	spyTime := &SpyTime{}
-	sleeper := ConfigurableSleeper{sleepTime, spyTime.Sleep}
-	sleeper.Sleep()
+	espionTemps := &EspionTemps{}
+	dormeuse := DormeuseConfigurable{tempsDormir, espionTemps.Dormir}
+	dormeuse.Dormir()
 
-	if spyTime.durationSlept != sleepTime {
-		t.Errorf("should have slept for %v but slept for %v", sleepTime, spyTime.durationSlept)
+	if espionTemps.dureeDormie != tempsDormir {
+		t.Errorf("aurait dû dormir pendant %v mais a dormi pendant %v", tempsDormir, espionTemps.dureeDormie)
 	}
 }
 ```
 
-There should be nothing new in this test and it is set up very similar to the previous mock tests.
+Il ne devrait y avoir rien de nouveau dans ce test et il est configuré de manière très similaire aux tests de mock précédents.
 
-### Try and run the test
+### Essayez d'exécuter le test
 ```
-sleeper.Sleep undefined (type ConfigurableSleeper has no field or method Sleep, but does have sleep)
+dormeuse.Dormir undefined (type DormeuseConfigurable has no field or method Dormir, but does have dormir)
 
 ```
 
-You should see a very clear error message indicating that we do not have a `Sleep` method created on our `ConfigurableSleeper`.
+Vous devriez voir un message d'erreur très clair indiquant que nous n'avons pas créé de méthode `Dormir` sur notre `DormeuseConfigurable`.
 
-### Write the minimal amount of code for the test to run and check failing test output
+### Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
 ```go
-func (c *ConfigurableSleeper) Sleep() {
+func (c *DormeuseConfigurable) Dormir() {
 }
 ```
 
-With our new `Sleep` function implemented we have a failing test.
+Avec notre nouvelle fonction `Dormir` implémentée, nous avons un test qui échoue.
 
 ```
-countdown_test.go:56: should have slept for 5s but slept for 0s
+compte_test.go:56: aurait dû dormir pendant 5s mais a dormi pendant 0s
 ```
 
-### Write enough code to make it pass
+### Écrivez assez de code pour le faire passer
 
-All we need to do now is implement the `Sleep` function for `ConfigurableSleeper`.
+Tout ce que nous devons faire maintenant est d'implémenter la fonction `Dormir` pour `DormeuseConfigurable`.
 
 ```go
-func (c *ConfigurableSleeper) Sleep() {
-	c.sleep(c.duration)
+func (c *DormeuseConfigurable) Dormir() {
+	c.dormir(c.duree)
 }
 ```
 
-With this change all of the tests should be passing again and you might wonder why all the hassle as the main program didn't change at all. Hopefully it becomes clear after the following section.
+Avec ce changement, tous les tests devraient à nouveau passer et vous pourriez vous demander pourquoi tant d'efforts alors que le programme principal n'a pas du tout changé. Espérons que cela deviendra clair après la section suivante.
 
-### Cleanup and refactor
+### Nettoyage et refactorisation
 
-The last thing we need to do is to actually use our `ConfigurableSleeper` in the main function.
+La dernière chose que nous devons faire est d'utiliser notre `DormeuseConfigurable` dans la fonction principale.
 
 ```go
 func main() {
-	sleeper := &ConfigurableSleeper{1 * time.Second, time.Sleep}
-	Countdown(os.Stdout, sleeper)
+	dormeuse := &DormeuseConfigurable{1 * time.Second, time.Sleep}
+	Compte(os.Stdout, dormeuse)
 }
 ```
 
-If we run the tests and the program manually, we can see that all the behavior remains the same.
+Si nous exécutons les tests et le programme manuellement, nous pouvons voir que tout le comportement reste le même.
 
-Since we are using the `ConfigurableSleeper`, it is now safe to delete the `DefaultSleeper` implementation. Wrapping up our program and having a more [generic](https://stackoverflow.com/questions/19291776/whats-the-difference-between-abstraction-and-generalization) Sleeper with arbitrary long countdowns.
+Puisque nous utilisons la `DormeuseConfigurable`, il est maintenant sûr de supprimer l'implémentation `DormeuseParDefaut`. Finalisant notre programme et ayant une Dormeuse plus [générique](https://stackoverflow.com/questions/19291776/whats-the-difference-between-abstraction-and-generalization) avec des comptes à rebours de durée arbitraire.
 
-## But isn't mocking evil?
+## Mais le mocking n'est-il pas mauvais ?
 
-You may have heard mocking is evil. Just like anything in software development it can be used for evil, just like [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself).
+Vous avez peut-être entendu dire que le mocking est mauvais. Comme tout dans le développement logiciel, il peut être utilisé à mauvais escient, tout comme [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself).
 
-People normally get in to a bad state when they don't _listen to their tests_ and are _not respecting the refactoring stage_.
+Les gens se retrouvent généralement dans une mauvaise situation lorsqu'ils n'_écoutent pas leurs tests_ et ne _respectent pas l'étape de refactorisation_.
 
-If your mocking code is becoming complicated or you are having to mock out lots of things to test something, you should _listen_ to that bad feeling and think about your code. Usually it is a sign of
+Si votre code de mocking devient compliqué ou si vous devez mocker beaucoup de choses pour tester quelque chose, vous devriez _écouter_ ce mauvais sentiment et réfléchir à votre code. Généralement, c'est le signe que :
 
-- The thing you are testing is having to do too many things (because it has too many dependencies to mock)
-  - Break the module apart so it does less
-- Its dependencies are too fine-grained
-  - Think about how you can consolidate some of these dependencies into one meaningful module
-- Your test is too concerned with implementation details
-  - Favour testing expected behaviour rather than the implementation
+- La chose que vous testez doit faire trop de choses (car elle a trop de dépendances à mocker)
+  - Décomposez le module pour qu'il en fasse moins
+- Ses dépendances sont trop granulaires
+  - Réfléchissez à la façon dont vous pouvez consolider certaines de ces dépendances en un module significatif
+- Votre test est trop préoccupé par les détails d'implémentation
+  - Privilégiez le test du comportement attendu plutôt que de l'implémentation
 
-Normally a lot of mocking points to _bad abstraction_ in your code.
+Normalement, beaucoup de mocking indique une _mauvaise abstraction_ dans votre code.
 
-**What people see here is a weakness in TDD but it is actually a strength**, more often than not poor test code is a result of bad design or put more nicely, well-designed code is easy to test.
+**Ce que les gens voient ici est une faiblesse du TDD, mais c'est en fait une force**. Le plus souvent, un code de test médiocre est le résultat d'une mauvaise conception ou, pour le dire plus gentiment, un code bien conçu est facile à tester.
 
-### But mocks and tests are still making my life hard!
+### Mais les mocks et les tests me compliquent toujours la vie !
 
-Ever run into this situation?
+Vous êtes-vous déjà retrouvé dans cette situation ?
 
-- You want to do some refactoring
-- To do this you end up changing lots of tests
-- You question TDD and make a post on Medium titled "Mocking considered harmful"
+- Vous voulez faire un peu de refactorisation
+- Pour ce faire, vous finissez par changer beaucoup de tests
+- Vous remettez en question le TDD et publiez un article sur Medium intitulé "Le mocking est nocif"
 
-This is usually a sign of you testing too much _implementation detail_. Try to make it so your tests are testing _useful behaviour_ unless the implementation is really important to how the system runs.
+C'est généralement le signe que vous testez trop de _détails d'implémentation_. Essayez de faire en sorte que vos tests testent le _comportement utile_, sauf si l'implémentation est vraiment importante pour le fonctionnement du système.
 
-It is sometimes hard to know _what level_ to test exactly but here are some thought processes and rules I try to follow:
+Il est parfois difficile de savoir _à quel niveau_ tester exactement, mais voici quelques réflexions et règles que j'essaie de suivre :
 
-- **The definition of refactoring is that the code changes but the behaviour stays the same**. If you have decided to do some refactoring in theory you should be able to make the commit without any test changes. So when writing a test ask yourself
-  - Am I testing the behaviour I want, or the implementation details?
-  - If I were to refactor this code, would I have to make lots of changes to the tests?
-- Although Go lets you test private functions, I would avoid it as private functions are implementation detail to support public behaviour. Test the public behaviour. Sandi Metz describes private functions as being "less stable" and you don't want to couple your tests to them.
-- I feel like if a test is working with **more than 3 mocks then it is a red flag** - time for a rethink on the design
-- Use spies with caution. Spies let you see the insides of the algorithm you are writing which can be very useful but that means a tighter coupling between your test code and the implementation. **Be sure you actually care about these details if you're going to spy on them**
+- **La définition du refactoring est que le code change mais que le comportement reste le même**. Si vous avez décidé de faire un refactoring, en théorie, vous devriez pouvoir faire le commit sans aucun changement de test. Alors, lorsque vous écrivez un test, demandez-vous :
+  - Est-ce que je teste le comportement que je veux, ou les détails d'implémentation ?
+  - Si je devais refactoriser ce code, devrais-je apporter beaucoup de changements aux tests ?
+- Bien que Go vous permette de tester des fonctions privées, je les éviterais car les fonctions privées sont des détails d'implémentation pour soutenir le comportement public. Testez le comportement public. Sandi Metz décrit les fonctions privées comme étant "moins stables" et vous ne voulez pas que vos tests y soient couplés.
+- J'ai l'impression que si un test fonctionne avec **plus de 3 mocks, c'est un signal d'alarme** - il est temps de repenser la conception.
+- Utilisez les espions avec prudence. Les espions vous permettent de voir l'intérieur de l'algorithme que vous écrivez, ce qui peut être très utile, mais cela signifie un couplage plus étroit entre votre code de test et l'implémentation. **Assurez-vous que vous vous souciez réellement de ces détails si vous allez les espionner**.
 
-#### Can't I just use a mocking framework?
+#### Ne puis-je pas simplement utiliser un framework de mocking ?
 
-Mocking requires no magic and is relatively simple; using a framework can make mocking seem more complicated than it is. We don't use automocking in this chapter so that we get:
+Le mocking ne nécessite pas de magie et est relativement simple ; l'utilisation d'un framework peut rendre le mocking plus compliqué qu'il ne l'est. Nous n'utilisons pas l'automocking dans ce chapitre afin d'obtenir :
 
-- a better understanding of how to mock
-- practice implementing interfaces
+- une meilleure compréhension de la façon de mocker
+- la pratique de l'implémentation des interfaces
 
-In collaborative projects there is value in auto-generating mocks. In a team, a mock generation tool codifies consistency around the test doubles. This will avoid inconsistently written test doubles which can translate to inconsistently written tests.
+Dans les projets collaboratifs, il y a une valeur à auto-générer des mocks. Dans une équipe, un outil de génération de mocks codifie la cohérence autour des doubles de test. Cela évitera les doubles de test mal écrits, ce qui peut se traduire par des tests mal écrits.
 
-You should only use a mock generator that generates test doubles against an interface. Any tool that overly dictates how tests are written, or that use lots of 'magic', can get in the sea.
+Vous ne devriez utiliser qu'un générateur de mock qui génère des doubles de test contre une interface. Tout outil qui dicte trop la façon dont les tests sont écrits, ou qui utilise beaucoup de "magie", peut aller au diable.
 
-## Wrapping up
+## Récapitulatif
 
-### More on TDD approach
+### Plus sur l'approche TDD
 
-- When faced with less trivial examples, break the problem down into "thin vertical slices". Try to get to a point where you have _working software backed by tests_ as soon as you can, to avoid getting in rabbit holes and taking a "big bang" approach.
-- Once you have some working software it should be easier to _iterate with small steps_ until you arrive at the software you need.
+- Face à des exemples moins triviaux, décomposez le problème en "tranches verticales minces". Essayez d'arriver à un point où vous avez _un logiciel fonctionnel soutenu par des tests_ aussi rapidement que possible, pour éviter de vous retrouver dans des impasses et d'adopter une approche "big bang".
+- Une fois que vous avez un logiciel qui fonctionne, il devrait être plus facile de _l'itérer par petites étapes_ jusqu'à ce que vous arriviez au logiciel dont vous avez besoin.
 
-> "When to use iterative development? You should use iterative development only on projects that you want to succeed."
-
-Martin Fowler.
+> "Quand utiliser le développement itératif ? Vous devriez utiliser le développement itératif uniquement sur les projets que vous voulez réussir."
+>
+> Martin Fowler.
 
 ### Mocking
 
-- **Without mocking important areas of your code will be untested**. In our case we would not be able to test that our code paused between each print but there are countless other examples. Calling a service that _can_ fail? Wanting to test your system in a particular state? It is very hard to test these scenarios without mocking.
-- Without mocks you may have to set up databases and other third parties things just to test simple business rules. You're likely to have slow tests, resulting in **slow feedback loops**.
-- By having to spin up a database or a webservice to test something you're likely to have **fragile tests** due to the unreliability of such services.
+- **Sans mocking, des domaines importants de votre code resteront non testés**. Dans notre cas, nous ne serions pas en mesure de tester que notre code faisait une pause entre chaque impression, mais il existe d'innombrables autres exemples. Appeler un service qui _peut_ échouer ? Vouloir tester votre système dans un état particulier ? Il est très difficile de tester ces scénarios sans mocking.
+- Sans mocks, vous pourriez avoir à configurer des bases de données et d'autres éléments tiers juste pour tester des règles métier simples. Vous risquez d'avoir des tests lents, ce qui entraîne des **boucles de rétroaction lentes**.
+- En devant lancer une base de données ou un service web pour tester quelque chose, vous risquez d'avoir des **tests fragiles** en raison du manque de fiabilité de ces services.
 
-Once a developer learns about mocking it becomes very easy to over-test every single facet of a system in terms of the _way it works_ rather than _what it does_. Always be mindful about **the value of your tests** and what impact they would have in future refactoring.
+Une fois qu'un développeur a appris le mocking, il devient très facile de sur-tester chaque facette d'un système en termes de _façon dont il fonctionne_ plutôt que de _ce qu'il fait_. Soyez toujours conscient de **la valeur de vos tests** et de l'impact qu'ils auraient sur les refactorisations futures.
 
-In this post about mocking we have only covered **Spies**, which are a kind of mock. Mocks are a type of "test double."
+Dans ce chapitre sur le mocking, nous n'avons couvert que les **Spies**, qui sont un type de mock. Les mocks sont un type de "double de test".
 
-> [Test Double is a generic term for any case where you replace a production object for testing purposes.](https://martinfowler.com/bliki/TestDouble.html)
+> [Test Double est un terme générique pour tout cas où vous remplacez un objet de production à des fins de test.](https://martinfowler.com/bliki/TestDouble.html)
 
-Under test doubles, there are various types like stubs, spies and indeed mocks! Check out [Martin Fowler's post](https://martinfowler.com/bliki/TestDouble.html) for more detail.
+Parmi les doubles de test, il existe différents types comme les stubs, les spies et les mocks ! Consultez [l'article de Martin Fowler](https://martinfowler.com/bliki/TestDouble.html) pour plus de détails.
 
-## Bonus - Example of iterators from go 1.23
+## Bonus - Exemple d'itérateurs de Go 1.23
 
-In Go 1.23 [iterators were introduced](https://tip.golang.org/doc/go1.23). We can use iterators in various ways, in this instance we can make a `countdownFrom` iterator, which will return the numbers to countdown in reverse order.
+Dans Go 1.23, [les itérateurs ont été introduits](https://tip.golang.org/doc/go1.23). Nous pouvons utiliser les itérateurs de diverses façons, dans ce cas, nous pouvons créer un itérateur `compteARebroursDepuis`, qui retournera les nombres du compte à rebours dans l'ordre inverse.
 
-Before we get into how we write custom iterators, let's see how we use them. Rather than writing a fairly imperative looking loop to count down from a number, we can make this code look more expressive by `range`-ing over our custom `countdownFrom` iterator.
+Avant d'aborder la façon dont nous écrivons des itérateurs personnalisés, voyons comment nous les utilisons. Plutôt que d'écrire une boucle assez impérative pour compter à rebours à partir d'un nombre, nous pouvons rendre ce code plus expressif en utilisant `range` sur notre itérateur personnalisé `compteARebroursDepuis`.
 
 ```go
-func Countdown(out io.Writer, sleeper Sleeper) {
-	for i := range countDownFrom(3) {
+func Compte(out io.Writer, dormeuse Dormeuse) {
+	for i := range compteARebroursDepuis(3) {
 		fmt.Fprintln(out, i)
-		sleeper.Sleep()
+		dormeuse.Dormir()
 	}
 
-	fmt.Fprint(out, finalWord)
+	fmt.Fprint(out, motFinal)
 }
 ```
 
-To write an iterator like `countDownFrom`, you need to write a function in a particular way. From the docs:
+Pour écrire un itérateur comme `compteARebroursDepuis`, vous devez écrire une fonction d'une manière particulière. D'après la documentation :
 
-    The “range” clause in a “for-range” loop now accepts iterator functions of the following types
+    La clause "range" dans une boucle "for-range" accepte maintenant des fonctions d'itérateur des types suivants
         func(func() bool)
         func(func(K) bool)
         func(func(K, V) bool)
 
-(The `K` and `V` stand for key and value types, respectively.)
+(Les `K` et `V` représentent respectivement les types de clé et de valeur.)
 
-In our case, we don't have keys, just values. Go also provides a convenience type `iter.Seq[T]` which is a type alias for `func(func(T) bool)`.
+Dans notre cas, nous n'avons pas de clés, juste des valeurs. Go fournit également un type pratique `iter.Seq[T]` qui est un alias de type pour `func(func(T) bool)`.
 
 ```go
-func countDownFrom(from int) iter.Seq[int] {
+func compteARebroursDepuis(depuis int) iter.Seq[int] {
 	return func(yield func(int) bool) {
-		for i := from; i > 0; i-- {
+		for i := depuis; i > 0; i-- {
 			if !yield(i) {
 				return
 			}
@@ -677,4 +677,4 @@ func countDownFrom(from int) iter.Seq[int] {
 }
 ```
 
-This is a simple iterator, which will yield numbers in reverse order, starting from, `from` - perfect for our usecase. 
+C'est un itérateur simple, qui générera des nombres dans l'ordre inverse, en commençant par `depuis` - parfait pour notre cas d'utilisation.
