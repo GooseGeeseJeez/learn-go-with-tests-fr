@@ -1,63 +1,68 @@
 # Select
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/select)**
+**[Vous pouvez trouver tout le code de ce chapitre ici](https://github.com/quii/learn-go-with-tests/tree/main/select)**
 
-You have been asked to make a function called `WebsiteRacer` which takes two URLs and "races" them by hitting them with an HTTP GET and returning the URL which returned first. If none of them return within 10 seconds then it should return an `error`.
+On vous a demandé de créer une fonction appelée `CourseDesSites` qui prend deux URLs et les fait "s'affronter" en effectuant une requête HTTP GET et en retournant l'URL qui a répondu en premier. Si aucune ne répond dans un délai de 10 secondes, alors la fonction doit retourner une `error`.
 
-For this, we will be using:
+Pour cela, nous utiliserons :
 
-- `net/http` to make the HTTP calls.
-- `net/http/httptest` to help us test them.
-- goroutines.
-- `select` to synchronise processes.
+- `net/http` pour effectuer les appels HTTP.
+- `net/http/httptest` pour nous aider à les tester.
+- Les goroutines.
+- `select` pour synchroniser les processus.
 
-## Write the test first
+## Écrivez le test d'abord
 
-Let's start with something naive to get us going.
+Commençons par quelque chose de simple pour nous lancer.
 
 ```go
-func TestRacer(t *testing.T) {
-	slowURL := "http://www.facebook.com"
-	fastURL := "http://www.quii.dev"
+func TestCourseDesSites(t *testing.T) {
+	siteRapide := "https://www.quii.dev"
+	siteLent := "http://www.facebook.com"
 
-	want := fastURL
-	got := Racer(slowURL, fastURL)
+	attendu := siteRapide
+	resultat := CourseDesSites(siteRapide, siteLent)
 
-	if got != want {
-		t.Errorf("got %q, want %q", got, want)
+	if resultat != attendu {
+		t.Errorf("resultat '%s', attendu '%s'", resultat, attendu)
 	}
 }
 ```
 
-We know this isn't perfect and has problems, but it's a start. It's important not to get too hung-up on getting things perfect first time.
+Nous savons que ce n'est pas parfait et qu'il y a des hypothèses discutables dans notre test, mais c'est suffisant pour commencer. Il est important de ne pas trop se préoccuper de l'exactitude dès le départ.
 
-## Try to run the test
+## Essayons d'exécuter le test
 
-`./racer_test.go:14:9: undefined: Racer`
+```
+./racer_test.go:14:9: undefined: CourseDesSites
+```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
 
 ```go
-func Racer(a, b string) (winner string) {
+func CourseDesSites(a, b string) (gagnant string) {
 	return
 }
 ```
 
-`racer_test.go:25: got '', want 'http://www.quii.dev'`
+```
+--- FAIL: TestCourseDesSites (0.00s)
+    racer_test.go:12: resultat '', attendu 'https://www.quii.dev'
+```
 
-## Write enough code to make it pass
+## Écrivez assez de code pour le faire passer
 
 ```go
-func Racer(a, b string) (winner string) {
-	startA := time.Now()
+func CourseDesSites(a, b string) (gagnant string) {
+	demarreA := time.Now()
 	http.Get(a)
-	aDuration := time.Since(startA)
+	dureeA := time.Since(demarreA)
 
-	startB := time.Now()
+	demarreB := time.Now()
 	http.Get(b)
-	bDuration := time.Since(startB)
+	dureeB := time.Since(demarreB)
 
-	if aDuration < bDuration {
+	if dureeA < dureeB {
 		return a
 	}
 
@@ -65,150 +70,267 @@ func Racer(a, b string) (winner string) {
 }
 ```
 
-For each URL:
+Pour ce test nous :
 
-1. We use `time.Now()` to record just before we try and get the `URL`.
-1. Then we use [`http.Get`](https://golang.org/pkg/net/http/#Client.Get) to try and perform an HTTP `GET` request against the `URL`. This function returns an [`http.Response`](https://golang.org/pkg/net/http/#Response) and an `error` but so far we are not interested in these values.
-1. `time.Since` takes the start time and returns a `time.Duration` of the difference.
+1. Mesurons le temps qu'il faut pour faire `Get(a)`
+2. Mesurons le temps qu'il faut pour faire `Get(b)`
+3. Si `a` est plus rapide, on retourne `a`, sinon on retourne `b`
 
-Once we have done this we simply compare the durations to see which is the quickest.
-
-### Problems
-
-This may or may not make the test pass for you. The problem is we're reaching out to real websites to test our own logic.
-
-Testing code that uses HTTP is so common that Go has tools in the standard library to help you test it.
-
-In the mocking and dependency injection chapters, we covered how ideally we don't want to be relying on external services to test our code because they can be
-
-- Slow
-- Flaky
-- Can't test edge cases
-
-In the standard library, there is a package called [`net/http/httptest`](https://golang.org/pkg/net/http/httptest/) which enables users to easily create a mock HTTP server.
-
-Let's change our tests to use mocks so we have reliable servers to test against that we can control.
+Refactorisons-le un peu, puisqu'il est assez répétitif.
 
 ```go
-func TestRacer(t *testing.T) {
+func CourseDesSites(a, b string) (gagnant string) {
+	aDuration := mesurerTempsDAppel(a)
+	bDuration := mesurerTempsDAppel(b)
 
-	slowServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	if aDuration < bDuration {
+		return a
+	}
+
+	return b
+}
+
+func mesurerTempsDAppel(url string) time.Duration {
+	debut := time.Now()
+	http.Get(url)
+	return time.Since(debut)
+}
+```
+
+### Problèmes avec notre approche
+
+Nous avons une solution qui fonctionnera la _plupart du temps_ mais elle est un peu naïve.
+
+Quels sont les problèmes potentiels ?
+
+- Si un des sites n'existe pas, nous allons toujours obtenir une réponse mais cela se manifestera par une erreur de type HTTP. Nous n'utilisons pas le retour des valeurs de `http.Get`.
+- Nous avons du mal à les tester car nous dépendons de sites web externes.
+- Et même s'ils existent, il est évidemment risqué de dépendre d'un site web externe pour nos tests - il faut, au minimum, accepter qu'ils soient un peu flaky.
+
+Commençons par résoudre le problème que nous avons créé en dépendant de sites web du monde réel en créant nos propres serveurs web pour les tester.
+
+## Écrivez le test d'abord
+
+Supprimons notre test précédent et écrivons un nouveau qui utilise des serveurs HTTP que nous allons contrôler.
+
+```go
+func TestCourseDesSites(t *testing.T) {
+	serveurLent := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(20 * time.Millisecond)
 		w.WriteHeader(http.StatusOK)
 	}))
 
-	fastServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	serveurRapide := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 
-	slowURL := slowServer.URL
-	fastURL := fastServer.URL
+	serveurLent.URL, serveurRapide.URL
+	attendu := serveurRapide.URL
+	resultat := CourseDesSites(serveurLent.URL, serveurRapide.URL)
 
-	want := fastURL
-	got := Racer(slowURL, fastURL)
-
-	if got != want {
-		t.Errorf("got %q, want %q", got, want)
+	if resultat != attendu {
+		t.Errorf("resultat '%s', attendu '%s'", resultat, attendu)
 	}
 
-	slowServer.Close()
-	fastServer.Close()
+	serveurLent.Close()
+	serveurRapide.Close()
 }
 ```
 
-The syntax may look a bit busy but just take your time.
+Le package `httptest` est vraiment pratique pour tester du code qui utilise HTTP. Dans notre cas, nous utilisons [`NewServer`](https://golang.org/pkg/net/http/httptest/#NewServer) pour créer deux serveurs web. Une des fonctions qui simule un serveur lent qui va attendre 20 millisecondes avant de répondre, et l'autre qui retourne immédiatement une réponse.
 
-`httptest.NewServer` takes an `http.HandlerFunc` which we are sending in via an _anonymous function_.
+Quand nous créons un serveur web avec `NewServer`, il lance un serveur réel qui écoute sur une adresse HTTP réelle, que vous pouvez récupérer à partir de la propriété `URL`. Nous utilisons cette adresse dans nos tests.
 
-`http.HandlerFunc` is a type that looks like this: `type HandlerFunc func(ResponseWriter, *Request)`.
+Ne manquez pas de `defer` la fermeture des serveurs à la fin des tests, sinon ils continueront à écouter sur les adresses HTTP après la fin des tests.
 
-All it's really saying is it needs a function that takes a `ResponseWriter` and a `Request`, which is not too surprising for an HTTP server.
+## Essayons d'exécuter le test
 
-It turns out there's really no extra magic here, **this is also how you would write a _real_ HTTP server in Go**. The only difference is we are wrapping it in an `httptest.NewServer` which makes it easier to use with testing, as it finds an open port to listen on and then you can close it when you're done with your test.
+```
+=== RUN   TestCourseDesSites
+--- FAIL: TestCourseDesSites (0.05s)
+    racer_test.go:31: resultat 'http://127.0.0.1:57354', attendu 'http://127.0.0.1:57355'
+```
 
-Inside our two servers, we make the slow one have a short `time.Sleep` when we get a request to make it slower than the other one. Both servers then write an `OK` response with `w.WriteHeader(http.StatusOK)` back to the caller.
-
-If you re-run the test it will definitely pass now and should be faster. Play with these sleeps to deliberately break the test.
-
-## Refactor
-
-We have some duplication in both our production code and test code.
+Il est difficile de savoir exactement pourquoi il échoue en raison de la façon dont le test a été écrit. Ce n'est pas très clair quelle URL doit être la plus rapide. Créons une fonction d'aide pour rendre cela plus explicite.
 
 ```go
-func Racer(a, b string) (winner string) {
-	aDuration := measureResponseTime(a)
-	bDuration := measureResponseTime(b)
+func TestCourseDesSites(t *testing.T) {
+	serveurLent := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(20 * time.Millisecond)
+		w.WriteHeader(http.StatusOK)
+	}))
 
-	if aDuration < bDuration {
-		return a
+	serveurRapide := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	defer serveurLent.Close()
+	defer serveurRapide.Close()
+
+	URLLente := serveurLent.URL
+	URLRapide := serveurRapide.URL
+
+	attendu := URLRapide
+	resultat := CourseDesSites(URLLente, URLRapide)
+
+	if resultat != attendu {
+		t.Errorf("resultat '%s', attendu '%s'", resultat, attendu)
 	}
-
-	return b
 }
+```
 
-func measureResponseTime(url string) time.Duration {
-	start := time.Now()
+C'est beaucoup plus clair maintenant quant à ce qui devrait se passer.
+
+## Essayons d'exécuter le test
+
+```
+=== RUN   TestCourseDesSites
+--- FAIL: TestCourseDesSites (0.05s)
+    racer_test.go:33: resultat 'http://127.0.0.1:57106', attendu 'http://127.0.0.1:57105'
+```
+
+Nous échouons toujours, mais pourquoi ? Je crois que c'est parce que, même si le serveur "lent" a un délai de 20 millisecondes, c'est si rapide que le problème n'apparaît pas toujours.
+
+Renforçons le délai pour être sûr.
+
+```go
+serveurLent := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	time.Sleep(20 * time.Millisecond)
+	w.WriteHeader(http.StatusOK)
+}))
+```
+
+Si vous exécutez le test à plusieurs reprises, vous devriez voir qu'il passe. Étant donné que le problème vient de notre test, ajouter un "fix" comme celui-ci est acceptable. Maintenant, nous avons un test qui échoue si nous n'obtenons pas le bon résultat.
+
+### Problème avec notre approche
+
+Notre test a un risque de flakiness (instabilité). Il risque d'échouer parfois. Ce n'est évidemment pas idéal. Qu'est-ce que nous pourrions faire pour l'améliorer ?
+
+- La fonction `CourseDesSites` est en train de mesurer le temps de réponse en effectuant des requêtes d'une manière séquentielle. C'est plutôt inefficace et risque de ne pas refléter comment les serveurs se comporteraient sur un ordinateur différent. Si vous aviez une machine assez lente, le premier appel pourrait ne pas être terminé avant que le second n'ait fini, même avec le délai.
+- Nous ne voulons pas attendre 20 ms à chaque fois que nous exécutons ce test. Et que se passerait-il si nous ajoutons des tests qui vérifient des requêtes plus lentes ?
+
+En réalité, nous voulons tester que notre fonction effectue les requêtes de manière concurrente, car c'est plus efficace que de les faire séquentiellement. Nous nous soucions moins du temps réel qu'il faut pour répondre à l'appel, mais plutôt de l'ordre dans lequel les requêtes sont terminées. Notre nouvelle solution devrait faire les appels HTTP simultanément et retourner l'URL du plus rapide.
+
+## Écrivez assez de code pour le faire passer
+
+```go
+func CourseDesSites(a, b string) (gagnant string) {
+	premierARepondre := make(chan string)
+
+	go func() {
+		http.Get(a)
+		premierARepondre <- a
+	}()
+
+	go func() {
+		http.Get(b)
+		premierARepondre <- b
+	}()
+
+	return <-premierARepondre
+}
+```
+
+- Nous avons créé un `chan string` appelé `premierARepondre`.
+- Pour chaque URL, nous avons lancé une goroutine qui va tenter de récupérer l'URL et ensuite l'écrire dans le canal `premierARepondre`.
+- Nous retournons la première réponse qui est écrite dans notre canal.
+
+### Problèmes avec notre approche
+
+Notre problème est que c'est toujours un peu lent. Chaque requête vers un serveur fictif peut répondre à des vitesses différentes, ce qui peut provoquer des flakiness dans nos tests. Nous voulons avoir un contrôle total, mais sans attendre des secondes pour que nos tests s'exécutent.
+
+C'est là qu'entre en jeu `net/http/httptest`.
+
+Modifions notre fonction `mesurerTempsDAppel` pour qu'elle n'utilise pas de vrais serveurs HTTP.
+
+```go
+func mesurerTempsDAppel(url string) time.Duration {
+	debut := time.Now()
 	http.Get(url)
-	return time.Since(start)
+	return time.Since(debut)
 }
 ```
 
-This DRY-ing up makes our `Racer` code a lot easier to read.
+Nous voulons injecter (au sens d'injection de dépendances) du code qui peut être appelé par la fonction `CourseDesSites` et qui retournera un code HTTP. Pour ce faire, nous pouvons utiliser une interface.
 
 ```go
-func TestRacer(t *testing.T) {
+type Fetcher interface {
+	Fetch() (string, error)
+}
+```
 
-	slowServer := makeDelayedServer(20 * time.Millisecond)
-	fastServer := makeDelayedServer(0 * time.Millisecond)
+Maintenant nous pouvons changer notre fonction `CourseDesSites` pour qu'elle prenne en paramètre cette interface plutôt que des chaînes de caractères.
 
-	defer slowServer.Close()
-	defer fastServer.Close()
-
-	slowURL := slowServer.URL
-	fastURL := fastServer.URL
-
-	want := fastURL
-	got := Racer(slowURL, fastURL)
-
-	if got != want {
-		t.Errorf("got %q, want %q", got, want)
+```go
+func CourseDesSites(a, b Fetcher) (gagnant string, err error) {
+	select {
+	case <-a.Fetch():
+		return a.URL(), nil
+	case <-b.Fetch():
+		return b.URL(), nil
+	case <-time.After(10 * time.Second):
+		return "", fmt.Errorf("délai d'attente dépassé pour %s et %s", a.URL(), b.URL())
 	}
 }
+```
 
-func makeDelayedServer(delay time.Duration) *httptest.Server {
+Le mot-clé `select` est comme un switch, mais pour les canaux. Les `case` définissent ce qui sera retourné lorsqu'un canal est écrit. Dans ce cas, nous renvoyons le nom de l'URL qui a écrit en premier dans son canal.
+
+### Un nouveau besoin
+
+Avant de pouvoir terminer ce travail, nous avons besoin d'une nouvelle exigence : nous voulons que `CourseDesSites` retourne une erreur si les deux sites web mettent plus de 10 secondes à répondre.
+
+## Écrivez le test d'abord
+
+```go
+t.Run("retourne une erreur si un serveur ne répond pas dans le délai imparti", func(t *testing.T) {
+	serveurA := creerServeurQuiMetLongtempsARepondre(11 * time.Second)
+	serveurB := creerServeurQuiMetLongtempsARepondre(12 * time.Second)
+
+	defer serveurA.Close()
+	defer serveurB.Close()
+
+	_, err := CourseDesSites(serveurA.URL, serveurB.URL)
+
+	if err == nil {
+		t.Error("on s'attendait à une erreur mais on n'en a pas reçu")
+	}
+})
+
+func creerServeurQuiMetLongtempsARepondre(delai time.Duration) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		time.Sleep(delay)
+		time.Sleep(delai)
 		w.WriteHeader(http.StatusOK)
 	}))
 }
 ```
 
-We've refactored creating our fake servers into a function called `makeDelayedServer` to move some uninteresting code out of the test and reduce repetition.
+Nous avons défini deux serveurs qui prennent plus que le délai d'attente pour répondre. Ensuite, nous vérifions que notre fonction retourne une erreur.
 
-### `defer`
+## Essayons d'exécuter le test
 
-By prefixing a function call with `defer` it will now call that function _at the end of the containing function_.
+```
+=== RUN   TestCourseDesSites
+    --- FAIL: TestCourseDesSites (0.00s)
+        --- FAIL: TestCourseDesSites/retourne_une_erreur_si_un_serveur_ne_répond_pas_dans_le_délai_imparti (0.00s)
+            racer_test.go:40: on s'attendait à une erreur mais on n'en a pas reçu
+```
 
-Sometimes you will need to clean up resources, such as closing a file or in our case closing a server so that it does not continue to listen to a port.
-
-You want this to execute at the end of the function, but keep the instruction near where you created the server for the benefit of future readers of the code.
-
-Our refactoring is an improvement and is a reasonable solution given the Go features covered so far, but we can make the solution simpler.
-
-### Synchronising processes
-
-- Why are we testing the speeds of the websites one after another when Go is great at concurrency? We should be able to check both at the same time.
-- We don't really care about _the exact response times_ of the requests, we just want to know which one comes back first.
-
-To do this, we're going to introduce a new construct called `select` which helps us synchronise processes really easily and clearly.
+## Écrivez assez de code pour le faire passer
 
 ```go
-func Racer(a, b string) (winner string) {
+func CourseDesSites(a, b string) (gagnant string, err error) {
+	return ConfigCourseDesSites(a, b, 10*time.Second)
+}
+
+func ConfigCourseDesSites(a, b string, timeout time.Duration) (gagnant string, err error) {
 	select {
 	case <-ping(a):
-		return a
+		return a, nil
 	case <-ping(b):
-		return b
+		return b, nil
+	case <-time.After(timeout):
+		return "", fmt.Errorf("délai d'attente dépassé pour %s et %s", a, b)
 	}
 }
 
@@ -222,226 +344,71 @@ func ping(url string) chan struct{} {
 }
 ```
 
-#### `ping`
+Le mot-clé `select` est comme un switch, mais pour les canaux. Les `case` définissent ce qui sera retourné lorsqu'un canal est écrit. Dans ce cas, nous renvoyons le nom de l'URL qui a écrit en premier dans son canal.
 
-We have defined a function `ping` which creates a `chan struct{}` and returns it.
+Notre fonction `ping` crée un canal et ensuite lance une goroutine qui essaie de récupérer l'URL puis ferme le canal après avoir terminé. Remarquez que le canal a un type `chan struct{}` qui est le plus petit type disponible à partir de la mémoire. Nous ne sommes pas intéressés par le contenu du canal, seulement par sa propriété de signalisation.
 
-In our case, we don't _care_ what type is sent to the channel, _we just want to signal we are done_ and closing the channel works perfectly!
+La troisième instruction `case` utilise `time.After` qui est une fonction très pratique lors de l'utilisation de canaux. Elle renvoie un `chan` et écrira dessus après la durée spécifiée. Dans notre cas, on l'utilise pour définir un délai d'attente.
 
-Why `struct{}` and not another type like a `bool`? Well, a `chan struct{}` is the smallest data type available from a memory perspective so we
-get no allocation versus a `bool`. Since we are closing and not sending anything on the chan, why allocate anything?
+## Refactoriser
 
-Inside the same function, we start a goroutine which will send a signal into that channel once we have completed `http.Get(url)`.
-
-##### Always `make` channels
-
-Notice how we have to use `make` when creating a channel; rather than say `var ch chan struct{}`. When you use `var` the variable will be initialised with the "zero" value of the type. So for `string` it is `""`, `int` it is 0, etc.
-
-For channels the zero value is `nil` and if you try and send to it with `<-` it will block forever because you cannot send to `nil` channels
-
-[You can see this in action in The Go Playground](https://play.golang.org/p/IIbeAox5jKA)
-#### `select`
-
-You'll recall from the concurrency chapter that you can wait for values to be sent to a channel with `myVar := <-ch`. This is a _blocking_ call, as you're waiting for a value.
-
-`select` allows you to wait on _multiple_ channels. The first one to send a value "wins" and the code underneath the `case` is executed.
-
-We use `ping` in our `select` to set up two channels, one for each of our `URL`s. Whichever one writes to its channel first will have its code executed in the `select`, which results in its `URL` being returned (and being the winner).
-
-After these changes, the intent behind our code is very clear and the implementation is actually simpler.
-
-### Timeouts
-
-Our final requirement was to return an error if `Racer` takes longer than 10 seconds.
-
-## Write the test first
+Nous pouvons revoir légèrement l'API pour ajouter une flexibilité supplémentaire à la fonction `CourseDesSites` :
 
 ```go
-func TestRacer(t *testing.T) {
-	t.Run("compares speeds of servers, returning the url of the fastest one", func(t *testing.T) {
-		slowServer := makeDelayedServer(20 * time.Millisecond)
-		fastServer := makeDelayedServer(0 * time.Millisecond)
+var timeout = 10 * time.Second
 
-		defer slowServer.Close()
-		defer fastServer.Close()
-
-		slowURL := slowServer.URL
-		fastURL := fastServer.URL
-
-		want := fastURL
-		got, _ := Racer(slowURL, fastURL)
-
-		if got != want {
-			t.Errorf("got %q, want %q", got, want)
-		}
-	})
-
-	t.Run("returns an error if a server doesn't respond within 10s", func(t *testing.T) {
-		serverA := makeDelayedServer(11 * time.Second)
-		serverB := makeDelayedServer(12 * time.Second)
-
-		defer serverA.Close()
-		defer serverB.Close()
-
-		_, err := Racer(serverA.URL, serverB.URL)
-
-		if err == nil {
-			t.Error("expected an error but didn't get one")
-		}
-	})
+func CourseDesSites(a, b string) (gagnant string, err error) {
+	return ConfigCourseDesSites(a, b, timeout)
 }
-```
 
-We've made our test servers take longer than 10s to return to exercise this scenario and we are expecting `Racer` to return two values now, the winning URL (which we ignore in this test with `_`) and an `error`.
-
-Note that we've also handled the error return in our original test, we're using	`_` for now to ensure the tests will run.
-
-## Try to run the test
-
-`./racer_test.go:37:10: assignment mismatch: 2 variables but Racer returns 1 value`
-
-## Write the minimal amount of code for the test to run and check the failing test output
-
-```go
-func Racer(a, b string) (winner string, error error) {
-	select {
-	case <-ping(a):
-		return a, nil
-	case <-ping(b):
-		return b, nil
-	}
-}
-```
-
-Change the signature of `Racer` to return the winner and an `error`. Return `nil` for our happy cases.
-
-The compiler will complain about your _first test_ only looking for one value so change that line to `got, err := Racer(slowURL, fastURL)`, knowing that we should check we _don't_ get an error in our happy scenario.
-
-If you run it now after 11 seconds it will fail.
-
-```
---- FAIL: TestRacer (12.00s)
-    --- FAIL: TestRacer/returns_an_error_if_a_server_doesn't_respond_within_10s (12.00s)
-        racer_test.go:40: expected an error but didn't get one
-```
-
-## Write enough code to make it pass
-
-```go
-func Racer(a, b string) (winner string, error error) {
-	select {
-	case <-ping(a):
-		return a, nil
-	case <-ping(b):
-		return b, nil
-	case <-time.After(10 * time.Second):
-		return "", fmt.Errorf("timed out waiting for %s and %s", a, b)
-	}
-}
-```
-
-`time.After` is a very handy function when using `select`. Although it didn't happen in our case you can potentially write code that blocks forever if the channels you're listening on never return a value. `time.After` returns a `chan` (like `ping`) and will send a signal down it after the amount of time you define.
-
-For us this is perfect; if `a` or `b` manage to return they win, but if we get to 10 seconds then our `time.After` will send a signal and we'll return an `error`.
-
-### Slow tests
-
-The problem we have is that this test takes 10 seconds to run. For such a simple bit of logic, this doesn't feel great.
-
-What we can do is make the timeout configurable. So in our test, we can have a very short timeout and then when the code is used in the real world it can be set to 10 seconds.
-
-```go
-func Racer(a, b string, timeout time.Duration) (winner string, error error) {
+func ConfigCourseDesSites(a, b string, timeout time.Duration) (gagnant string, err error) {
 	select {
 	case <-ping(a):
 		return a, nil
 	case <-ping(b):
 		return b, nil
 	case <-time.After(timeout):
-		return "", fmt.Errorf("timed out waiting for %s and %s", a, b)
+		return "", fmt.Errorf("délai d'attente dépassé pour %s et %s", a, b)
 	}
 }
 ```
 
-Our tests now won't compile because we're not supplying a timeout.
+Nous avons ajouté une variable de timeout pour éviter la magie des nombres, et nous avons fourni une fonction supplémentaire qui peut être utilisée par les utilisateurs qui sont plus préoccupés par les timeouts.
 
-Before rushing in to add this default value to both our tests let's _listen to them_.
-
-- Do we care about the timeout in the "happy" test?
-- The requirements were explicit about the timeout.
-
-Given this knowledge, let's do a little refactoring to be sympathetic to both our tests and the users of our code.
-
-```go
-var tenSecondTimeout = 10 * time.Second
-
-func Racer(a, b string) (winner string, error error) {
-	return ConfigurableRacer(a, b, tenSecondTimeout)
-}
-
-func ConfigurableRacer(a, b string, timeout time.Duration) (winner string, error error) {
-	select {
-	case <-ping(a):
-		return a, nil
-	case <-ping(b):
-		return b, nil
-	case <-time.After(timeout):
-		return "", fmt.Errorf("timed out waiting for %s and %s", a, b)
-	}
-}
-```
-
-Our users and our first test can use `Racer` (which uses `ConfigurableRacer` under the hood) and our sad path test can use `ConfigurableRacer`.
-
-```go
-func TestRacer(t *testing.T) {
-
-	t.Run("compares speeds of servers, returning the url of the fastest one", func(t *testing.T) {
-		slowServer := makeDelayedServer(20 * time.Millisecond)
-		fastServer := makeDelayedServer(0 * time.Millisecond)
-
-		defer slowServer.Close()
-		defer fastServer.Close()
-
-		slowURL := slowServer.URL
-		fastURL := fastServer.URL
-
-		want := fastURL
-		got, err := Racer(slowURL, fastURL)
-
-		if err != nil {
-			t.Fatalf("did not expect an error but got one %v", err)
-		}
-
-		if got != want {
-			t.Errorf("got %q, want %q", got, want)
-		}
-	})
-
-	t.Run("returns an error if a server doesn't respond within the specified time", func(t *testing.T) {
-		server := makeDelayedServer(25 * time.Millisecond)
-
-		defer server.Close()
-
-		_, err := ConfigurableRacer(server.URL, server.URL, 20*time.Millisecond)
-
-		if err == nil {
-			t.Error("expected an error but didn't get one")
-		}
-	})
-}
-```
-
-I added one final check on the first test to verify we don't get an `error`.
-
-## Wrapping up
+## Conclusion
 
 ### `select`
 
-- Helps you wait on multiple channels.
-- Sometimes you'll want to include `time.After` in one of your `cases` to prevent your system blocking forever.
+- Utile pour gérer plusieurs canaux.
+- Le premier canal qui envoie une valeur "gagne".
+- Peut être utilisé avec `time.After` pour une gestion élégante des délais d'attente.
 
 ### `httptest`
 
-- A convenient way of creating test servers so you can have reliable and controllable tests.
-- Uses the same interfaces as the "real" `net/http` servers which is consistent and less for you to learn.
+- Une bibliothèque pratique pour tester le code qui utilise HTTP.
+- Utilise la même interface que les serveurs HTTP "réels", ce qui rend vos tests complets mais rapides.
+- Capable de créer des serveurs HTTP factices que nous pouvons injecter dans notre code et contrôler leur temps de réponse.
+
+### Concurrence
+
+- Goroutines - fonctions concurrentes.
+- Canaux - pour communiquer et synchroniser entre goroutines.
+- Select - pour gérer les canaux de manière élégante.
+
+### Liens intéressants
+
+- [Concurrency is not parallelism](https://blog.golang.org/concurrency-is-not-parallelism) par Rob Pike
+- [Go by Example: Select](https://gobyexample.com/select)
+- [Advanced Go Concurrency Patterns](https://blog.golang.org/advanced-go-concurrency-patterns) par Sameer Ajmani
+- [sync.WaitGroup](https://golang.org/pkg/sync/#WaitGroup) est une autre façon de synchroniser les goroutines.
+
+## Récapitulatif
+
+En travaillant avec `select`, nous avons exploré:
+
+1. L'utilisation de goroutines et de canaux pour réaliser une concurrence efficace.
+2. L'utilisation de `select` pour coordonner des opérations concurrentes.
+3. L'utilisation de `httptest` pour tester le code HTTP de manière fiable.
+4. L'implémentation d'un mécanisme de timeout élégant avec `time.After`.
+
+La concurrence en Go est une fonctionnalité puissante, mais elle nécessite une réflexion attentive. Les outils que nous avons explorés ici font partie des mécanismes fondamentaux pour construire des programmes concurrents efficaces et fiables en Go.
