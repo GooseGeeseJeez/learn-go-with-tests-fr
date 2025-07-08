@@ -1,58 +1,100 @@
-# Dependency Injection
+# Injection de dépendances
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/di)**
+**[Vous pouvez trouver tout le code de ce chapitre ici](https://github.com/quii/learn-go-with-tests/tree/main/di)**
 
-It is assumed that you have read the [structs section](./structs-methods-and-interfaces.md) before as some understanding of interfaces will be needed for this.
+Il est supposé que vous avez lu la [section sur les structs](./structs-methods-and-interfaces.md) auparavant, car une certaine compréhension des interfaces sera nécessaire pour cela.
 
-There are _a lot_ of misunderstandings around dependency injection around the programming community. Hopefully, this guide will show you how
+Il y a _beaucoup_ de malentendus autour de l'injection de dépendances dans la communauté de programmation. Nous espérons que ce guide vous montrera que :
 
-* You don't need a framework
-* It does not overcomplicate your design
-* It facilitates testing
-* It allows you to write great, general-purpose functions.
+* Vous n'avez pas besoin d'un framework
+* Cela ne complique pas excessivement votre conception
+* Cela facilite les tests
+* Cela vous permet d'écrire d'excellentes fonctions à usage général.
 
-We want to write a function that greets someone, just like we did in the hello-world chapter but this time we are going to be testing the _actual printing_.
+Nous voulons écrire une fonction qui salue quelqu'un, tout comme nous l'avons fait dans le chapitre hello-world, mais cette fois, nous allons tester _l'impression réelle_.
 
-Just to recap, here is what that function could look like
+Pour rappel, voici à quoi pourrait ressembler cette fonction :
 
 ```go
-func Greet(name string) {
-	fmt.Printf("Hello, %s", name)
+func Saluer(nom string) {
+	fmt.Printf("Bonjour, %s", nom)
 }
 ```
 
-But how can we test this? Calling `fmt.Printf` prints to stdout, which is pretty hard for us to capture using the testing framework.
+Mais comment tester cette fonction ? En appelant `Saluer`, elle va écrire sur la sortie standard, qui est difficile à capturer pour un test.
 
-What we need to do is to be able to **inject** \(which is just a fancy word for pass in\) the dependency of printing.
+En Go, lorsque vous voulez afficher quelque chose, vous l'appelez par `fmt.Printf` qui, sous le capot, utilise `os.Stdout`, un [*os.File](https://golang.org/pkg/os/#File).
 
-**Our function doesn't need to care _where_ or _how_ the printing happens, so we should accept an _interface_ rather than a concrete type.**
+Pour savoir quels sont les défauts de cette approche, commençons par écrire un test :
 
-If we do that, we can then change the implementation to print to something we control so that we can test it. In "real life" you would inject in something that writes to stdout.
-
-If you look at the source code of [`fmt.Printf`](https://pkg.go.dev/fmt#Printf) you can see a way for us to hook in
+## Écrivez le test d'abord
 
 ```go
-// It returns the number of bytes written and any write error encountered.
-func Printf(format string, a ...interface{}) (n int, err error) {
-	return Fprintf(os.Stdout, format, a...)
+func TestSaluer(t *testing.T) {
+	Saluer("Chris")
 }
 ```
 
-Interesting! Under the hood `Printf` just calls `Fprintf` passing in `os.Stdout`.
+Puis exécutez-le :
 
-What exactly _is_ an `os.Stdout`? What does `Fprintf` expect to get passed to it for the 1st argument?
+```text
+=== RUN   TestSaluer
+Bonjour, Chris--- PASS: TestSaluer (0.00s)
+PASS
+```
+
+Maintenant, imaginez-vous qu'il y a des centaines de tests exécutant cette fonction, ce qui entraînerait des centaines de "Bonjour, Chris" à l'écran. À ce moment, vous pourriez vous dire "j'aimerais pouvoir capter ce que la fonction écrit".
+
+Gardez à l'esprit que nous voulons également posséder la manière dont notre fonction affiche. Par exemple, nous pourrions vouloir un jour que la fonction écrire dans une file d'attente de messages plutôt que sur la sortie standard.
+
+Nous avons besoin de :
+
+1. Utiliser l'injection de dépendances pour injecter (ou passer) notre dépendance (à savoir ce qui affiche le contenu)
+2. Intercepter ce qui est écrit, afin que nous puissions tester sa sortie
+
+## Refactoriser
 
 ```go
-func Fprintf(w io.Writer, format string, a ...interface{}) (n int, err error) {
-	p := newPrinter()
-	p.doPrintf(format, a)
-	n, err = w.Write(p.buf)
-	p.free()
-	return
+func Saluer(f *os.File, nom string) {
+	fmt.Fprintf(f, "Bonjour, %s", nom)
 }
 ```
 
-An `io.Writer`
+Nous avons modifié `Saluer` pour qu'elle ne puisse plus écrire sur le terminal directement, et qu'à la place nous lui passions un `File` sur lequel elle écrira. Ce qui est intéressant, c'est que `os.Stdout` est un `*os.File` donc pour utiliser notre fonction normalement, nous appelons `Saluer(os.Stdout, "world")`.
+
+Comment tester cela ?
+
+```go
+func TestSaluer(t *testing.T) {
+	buffer := bytes.Buffer{}
+	Saluer(&buffer, "Chris")
+
+	resultat := buffer.String()
+	attendu := "Bonjour, Chris"
+
+	if resultat != attendu {
+		t.Errorf("resultat '%s', attendu '%s'", resultat, attendu)
+	}
+}
+```
+
+Nous utilisons la struct `bytes.Buffer` qui implémente l'interface `io.Writer`, ce qui nous permet de l'utiliser comme "capteur" d'écriture.
+
+Ce test passera, parfait. Cela semble plutôt simple pour l'instant, mais nous avons introduit une dépendance dans notre fonction qui était auparavant masquée.
+
+Cette façon de faire n'est pas idéale en cas d'utilisation depuis d'autres endroits du codebase :
+
+```go
+func main() {
+	Saluer(os.Stdout, "Elodie")
+}
+```
+
+Nous avons toujours besoin de savoir quoi utiliser pour écrire, mais ça n'est pas très important pour notre fonction `main`.
+
+## Interface orientée
+
+Notre fonction est conforme à l'interface `io.Writer`, qui est définie dans le package standard comme :
 
 ```go
 type Writer interface {
@@ -60,159 +102,87 @@ type Writer interface {
 }
 ```
 
-From this we can infer that `os.Stdout` implements `io.Writer`; `Printf` passes `os.Stdout` to `Fprintf` which expects an `io.Writer`.
-
-As you write more Go code you will find this interface popping up a lot because it's a great general purpose interface for "put this data somewhere".
-
-So we know under the covers we're ultimately using `Writer` to send our greeting somewhere. Let's use this existing abstraction to make our code testable and more reusable.
-
-## Write the test first
+Si nous changeons notre fonction pour qu'elle utilise cette interface au lieu de la struct concrète `*os.File`, alors nous nous ouvrons à un usage plus polyvalent de notre fonction :
 
 ```go
-func TestGreet(t *testing.T) {
-	buffer := bytes.Buffer{}
-	Greet(&buffer, "Chris")
-
-	got := buffer.String()
-	want := "Hello, Chris"
-
-	if got != want {
-		t.Errorf("got %q want %q", got, want)
-	}
+func Saluer(writer io.Writer, nom string) {
+	fmt.Fprintf(writer, "Bonjour, %s", nom)
 }
 ```
 
-The `Buffer` type from the `bytes` package implements the `Writer` interface, because it has the method `Write(p []byte) (n int, err error)`.
+`fmt.Fprintf` est comme `fmt.Printf` mais prend un `io.Writer` comme premier argument. Ce changement signifie que la fonction `Saluer` sera capable d'écrire sur n'importe quel objet supportant l'interface `Writer`, pas uniquement les fichiers.
 
-So we'll use it in our test to send in as our `Writer` and then we can check what was written to it after we invoke `Greet`
-
-## Try and run the test
-
-The test will not compile
-
-```text
-./di_test.go:10:2: undefined: Greet
-```
-
-## Write the minimal amount of code for the test to run and check the failing test output
-
-_Listen to the compiler_ and fix the problem.
-
-```go
-func Greet(writer *bytes.Buffer, name string) {
-	fmt.Printf("Hello, %s", name)
-}
-```
-
-`Hello, Chris di_test.go:16: got '' want 'Hello, Chris'`
-
-The test fails. Notice that the name is getting printed out, but it's going to stdout.
-
-## Write enough code to make it pass
-
-Use the writer to send the greeting to the buffer in our test. Remember `fmt.Fprintf` is like `fmt.Printf` but instead takes a `Writer` to send the string to, whereas `fmt.Printf` defaults to stdout.
-
-```go
-func Greet(writer *bytes.Buffer, name string) {
-	fmt.Fprintf(writer, "Hello, %s", name)
-}
-```
-
-The test now passes.
-
-## Refactor
-
-Earlier the compiler told us to pass in a pointer to a `bytes.Buffer`. This is technically correct but not very useful.
-
-To demonstrate this, try wiring up the `Greet` function into a Go application where we want it to print to stdout.
+Notre test reste inchangé, et notre utilisation par le biais de la fonction `main` est également simple :
 
 ```go
 func main() {
-	Greet(os.Stdout, "Elodie")
+	Saluer(os.Stdout, "Elodie")
 }
 ```
 
-`./di.go:14:7: cannot use os.Stdout (type *os.File) as type *bytes.Buffer in argument to Greet`
+Nous savons qu'`os.Stdout` implémente `io.Writer` donc notre code compilera.
 
-As discussed earlier `fmt.Fprintf` allows you to pass in an `io.Writer` which we know both `os.Stdout` and `bytes.Buffer` implement.
+## Étendre l'utilisation
 
-If we change our code to use the more general purpose interface we can now use it in both tests and in our application.
+Grâce à cette abstraction simple et à bien comprendre ce que nous essayons d'injecter (l'affichage d'un texte), nous pouvons maintenant rajouter d'autres cas d'usage qu'il aurait été difficile d'implémenter avant.
+
+### Serveur HTTP
+
+Dans un nouveau fichier, nous pouvons créer un serveur HTTP qui utilise notre fonction `Saluer` pour dire bonjour à des utilisateurs.
 
 ```go
-package main
-
-import (
-	"fmt"
-	"io"
-	"os"
-)
-
-func Greet(writer io.Writer, name string) {
-	fmt.Fprintf(writer, "Hello, %s", name)
+func HandlerMonSalut(w http.ResponseWriter, r *http.Request) {
+	Saluer(w, "monde")
 }
 
 func main() {
-	Greet(os.Stdout, "Elodie")
+	http.ListenAndServe(":5000", http.HandlerFunc(HandlerMonSalut))
 }
 ```
 
-## More on io.Writer
+Nous avons introduit `HandlerMonSalut` qui prend un `http.ResponseWriter` et un `http.Request`. Lorsque nous implémentons des serveurs HTTP en Go, nous devons écrire une fonction ayant cette signature.
 
-What other places can we write data to using `io.Writer`? Just how general purpose is our `Greet` function?
+`http.ResponseWriter` implémente aussi l'interface `io.Writer`, ce qui signifie que nous pouvons réutiliser notre fonction `Saluer` dans notre gestionnaire. Pour que ce serveur web fonctionne, nous devons encore l'attacher à un port, ce que fait la ligne suivante. `http.HandlerFunc` convertit notre gestionnaire en un `http.Handler`, puis nous l'associons au serveur.
 
-### The Internet
+### Log synchronisé
 
-Run the following
+Nous pourrions également vouloir utiliser notre fonction `Saluer` sur un logger synchronisé.
 
 ```go
-package main
-
-import (
-	"fmt"
-	"io"
-	"log"
-	"net/http"
-)
-
-func Greet(writer io.Writer, name string) {
-	fmt.Fprintf(writer, "Hello, %s", name)
-}
-
-func MyGreeterHandler(w http.ResponseWriter, r *http.Request) {
-	Greet(w, "world")
-}
-
 func main() {
-	log.Fatal(http.ListenAndServe(":5001", http.HandlerFunc(MyGreeterHandler)))
+	Saluer(os.Stdout, "Elodie")
+
+	logger := log.New(os.Stdout, "INFO: ", log.LstdFlags)
+	Saluer(logger.Writer(), "Elodie")
 }
 ```
 
-Run the program and go to [http://localhost:5001](http://localhost:5001). You'll see your greeting function being used.
+Vous pouvez trouver plus d'informations sur le package `log` [ici](https://golang.org/pkg/log/).
 
-HTTP servers will be covered in a later chapter so don't worry too much about the details.
+#### La différence entre Fprintf et Fprint
 
-When you write an HTTP handler, you are given an `http.ResponseWriter` and the `http.Request` that was used to make the request. When you implement your server you _write_ your response using the writer.
+Mais qu'est-ce que c'est que ce `fmt.Fprintf`? Et en quoi est-ce différent de `fmt.Fprint`?
 
-You can probably guess that `http.ResponseWriter` also implements `io.Writer` so this is why we could re-use our `Greet` function inside our handler.
+* `fmt.Fprintf` accepte un format au milieu et des arguments à la fin, permettant d'injecter des variables dans la chaîne formatée.
+* `fmt.Fprint` accepte simplement un Writer et une chaîne.
 
-## Wrapping up
+Il y a aussi des variantes comme `fmt.Printf` et `fmt.Print`. Celles-ci n'acceptent pas de `Writer` et écrivent par défaut sur la sortie standard. Elles sont très pratiques dans les applications simples mais, comme nous l'avons vu, finissent par limiter la testabilité.
 
-Our first round of code was not easy to test because it wrote data to somewhere we couldn't control.
+## Conclusion
 
-_Motivated by our tests_ we refactored the code so we could control _where_ the data was written by **injecting a dependency** which allowed us to:
+Notre première itération n'était pas testable car nous écrivions directement sur la sortie standard, un endroit difficile à surveiller.
 
-* **Test our code** If you can't test a function _easily_, it's usually because of dependencies hard-wired into a function _or_ global state. If you have a global database connection pool for instance that is used by some kind of service layer, it is likely going to be difficult to test and they will be slow to run. DI will motivate you to inject in a database dependency \(via an interface\) which you can then mock out with something you can control in your tests.
-* **Separate our concerns**, decoupling _where the data goes_ from _how to generate it_. If you ever feel like a method/function has too many responsibilities \(generating data _and_ writing to a db? handling HTTP requests _and_ doing domain level logic?\) DI is probably going to be the tool you need.
-* **Allow our code to be re-used in different contexts** The first "new" context our code can be used in is inside tests. But further on if someone wants to try something new with your function they can inject their own dependencies.
+En utilisant l'injection de dépendances, nous avons pu :
 
-### What about mocking? I hear you need that for DI and also it's evil
+* **Tester notre code** : En introduisant la possibilité d'injecter notre dépendance d'écriture, nous pouvons contrôler ce que la fonction écrit pour pouvoir tester son comportement.
+* **Séparer nos préoccupations** : Mettre à jour nos fonctions pour accepter des dépendances plutôt que de les instancier à l'intérieur clarifie ce qui est important pour cette fonction et ce qui ne l'est pas.
+* **Autoriser notre code à être utilisé dans différents contextes** : Grâce à l'utilisation de l'interface `io.Writer` comme abstraction (plutôt que `*os.File`), notre fonction `Saluer` peut être utilisée dans diverses situations, comme le serveur web, les logs et les tests.
 
-Mocking will be covered in detail later \(and it's not evil\). You use mocking to replace real things you inject with a pretend version that you can control and inspect in your tests. In our case though, the standard library had something ready for us to use.
+Cette approche est beaucoup plus simple et explicite que beaucoup de frameworks d'injection de dépendances qui existent pour d'autres langages, qui utilisent souvent la réflexion et parfois des fichiers de configuration pour déterminer quelle fonction a quelle dépendance. Au lieu de cela, nous utilisons simplement la technique de base du langage Go, à savoir les fonctions, les interfaces et la lisibilité pour atteindre les mêmes résultats.
 
-### The Go standard library is really good, take time to study it
-
-By having some familiarity with the `io.Writer` interface we are able to use `bytes.Buffer` in our test as our `Writer` and then we can use other `Writer`s from the standard library to use our function in a command line app or in web server.
-
-The more familiar you are with the standard library the more you'll see these general purpose interfaces which you can then re-use in your own code to make your software reusable in a number of contexts.
-
-This example is heavily influenced by a chapter in [The Go Programming language](https://www.amazon.co.uk/Programming-Language-Addison-Wesley-Professional-Computing/dp/0134190440), so if you enjoyed this, go buy it!
+### À retenir
+* L'injection de dépendances est l'approche où l'on passe (ou injecte) une dépendance dans du code qui en a besoin, plutôt que le code qui crée ou recherche lui-même la dépendance.
+* Cela rend le code plus flexible et testable.
+* Go est particulièrement adapté à cette approche en raison de ses interfaces.
+* Votre code devrait reposer sur des abstractions bien définies, pas sur des détails d'implémentation.
+* Votre code devrait être autour des interfaces, pas des concrétisations.
