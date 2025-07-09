@@ -230,10 +230,10 @@ Si nous pouvons _mocker_ `time.Sleep`, nous pouvons utiliser _l'injection de dé
 
 ## Écrivez le test d'abord
 
-Définissons notre dépendance comme une interface. Cela nous permet ensuite d'utiliser une _vraie_ Dormeuse dans `main` et une _dormeuse espion_ dans nos tests. En utilisant une interface, notre fonction `Compte` n'en a pas conscience et cela ajoute de la flexibilité pour l'appelant.
+Définissons notre dépendance comme une interface. Cela nous permet ensuite d'utiliser une _vraie_ Sleeper dans `main` et une _Sleeper espion_ dans nos tests. En utilisant une interface, notre fonction `Compte` n'en a pas conscience et cela ajoute de la flexibilité pour l'appelant.
 
 ```go
-type Dormeuse interface {
+type Sleeper interface {
 	Dormir()
 }
 ```
@@ -243,11 +243,11 @@ J'ai pris la décision de conception que notre fonction `Compte` ne serait pas r
 Maintenant, nous devons créer un _mock_ pour nos tests.
 
 ```go
-type DormeuseEspion struct {
+type SleeperEspion struct {
 	Appels int
 }
 
-func (s *DormeuseEspion) Dormir() {
+func (s *SleeperEspion) Dormir() {
 	s.Appels++
 }
 ```
@@ -259,9 +259,9 @@ Mettez à jour les tests pour injecter une dépendance à notre Espion et affirm
 ```go
 func TestCompte(t *testing.T) {
 	buffer := &bytes.Buffer{}
-	dormeuseEspion := &DormeuseEspion{}
+	SleeperEspion := &SleeperEspion{}
 
-	Compte(buffer, dormeuseEspion)
+	Compte(buffer, SleeperEspion)
 
 	obtenu := buffer.String()
 	attendu := `3
@@ -273,8 +273,8 @@ Go!`
 		t.Errorf("obtenu %q attendu %q", obtenu, attendu)
 	}
 
-	if dormeuseEspion.Appels != 3 {
-		t.Errorf("pas assez d'appels à dormeuse, attendu 3 obtenu %d", dormeuseEspion.Appels)
+	if SleeperEspion.Appels != 3 {
+		t.Errorf("pas assez d'appels à Sleeper, attendu 3 obtenu %d", SleeperEspion.Appels)
 	}
 }
 ```
@@ -283,16 +283,16 @@ Go!`
 
 ```
 too many arguments in call to Compte
-    have (*bytes.Buffer, *DormeuseEspion)
+    have (*bytes.Buffer, *SleeperEspion)
     want (io.Writer)
 ```
 
 ## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
 
-Nous devons mettre à jour `Compte` pour accepter notre `Dormeuse`
+Nous devons mettre à jour `Compte` pour accepter notre `Sleeper`
 
 ```go
-func Compte(out io.Writer, dormeuse Dormeuse) {
+func Compte(out io.Writer, Sleeper Sleeper) {
 	for i := debutCompteARebours; i > 0; i-- {
 		fmt.Fprintln(out, i)
 		time.Sleep(1 * time.Second)
@@ -307,15 +307,15 @@ Si vous essayez à nouveau, votre `main` ne compilera plus pour la même raison
 ```
 ./main.go:26:11: not enough arguments in call to Compte
     have (*os.File)
-    want (io.Writer, Dormeuse)
+    want (io.Writer, Sleeper)
 ```
 
-Créons une _vraie_ dormeuse qui implémente l'interface dont nous avons besoin
+Créons une _vraie_ Sleeper qui implémente l'interface dont nous avons besoin
 
 ```go
-type DormeuseParDefaut struct{}
+type SleeperParDefaut struct{}
 
-func (d *DormeuseParDefaut) Dormir() {
+func (d *SleeperParDefaut) Dormir() {
 	time.Sleep(1 * time.Second)
 }
 ```
@@ -324,8 +324,8 @@ Nous pouvons ensuite l'utiliser dans notre vraie application comme ceci
 
 ```go
 func main() {
-	dormeuse := &DormeuseParDefaut{}
-	Compte(os.Stdout, dormeuse)
+	Sleeper := &SleeperParDefaut{}
+	Compte(os.Stdout, Sleeper)
 }
 ```
 
@@ -334,10 +334,10 @@ func main() {
 Le test compile maintenant mais ne passe pas car nous appelons toujours le `time.Sleep` plutôt que la dépendance injectée. Corrigeons cela.
 
 ```go
-func Compte(out io.Writer, dormeuse Dormeuse) {
+func Compte(out io.Writer, Sleeper Sleeper) {
 	for i := debutCompteARebours; i > 0; i-- {
 		fmt.Fprintln(out, i)
-		dormeuse.Dormir()
+		Sleeper.Dormir()
 	}
 
 	fmt.Fprint(out, motFinal)
@@ -364,9 +364,9 @@ Notre dernier changement affirme seulement qu'il a dormi 3 fois, mais ces sommei
 Lorsque vous écrivez des tests, si vous n'êtes pas sûr que vos tests vous donnent une confiance suffisante, cassez-les simplement ! (assurez-vous d'avoir d'abord validé vos modifications dans le contrôle de source). Modifiez le code comme suit
 
 ```go
-func Compte(out io.Writer, dormeuse Dormeuse) {
+func Compte(out io.Writer, Sleeper Sleeper) {
 	for i := debutCompteARebours; i > 0; i-- {
-		dormeuse.Dormir()
+		Sleeper.Dormir()
 	}
 
 	for i := debutCompteARebours; i > 0; i-- {
@@ -401,7 +401,7 @@ const ecrire = "écrire"
 const dormir = "dormir"
 ```
 
-Notre `EspionOperationsCompte` implémente à la fois `io.Writer` et `Dormeuse`, en enregistrant chaque appel dans une seule tranche. Dans ce test, nous ne nous soucions que de l'ordre des opérations, donc les enregistrer sous forme de liste d'opérations nommées est suffisant.
+Notre `EspionOperationsCompte` implémente à la fois `io.Writer` et `Sleeper`, en enregistrant chaque appel dans une seule tranche. Dans ce test, nous ne nous soucions que de l'ordre des opérations, donc les enregistrer sous forme de liste d'opérations nommées est suffisant.
 
 Nous pouvons maintenant ajouter un sous-test à notre suite de tests qui vérifie que nos sommeils et impressions fonctionnent dans l'ordre que nous espérons
 
@@ -428,7 +428,7 @@ t.Run("dormir avant chaque impression", func(t *testing.T) {
 
 Ce test devrait maintenant échouer. Remettez `Compte` à ce qu'il était pour corriger le test.
 
-Nous avons maintenant deux tests espionnant la `Dormeuse`, nous pouvons donc refactoriser notre test pour que l'un teste ce qui est imprimé et l'autre s'assure que nous dormons entre les impressions. Enfin, nous pouvons supprimer notre premier espion car il n'est plus utilisé.
+Nous avons maintenant deux tests espionnant la `Sleeper`, nous pouvons donc refactoriser notre test pour que l'un teste ce qui est imprimé et l'autre s'assure que nous dormons entre les impressions. Enfin, nous pouvons supprimer notre premier espion car il n'est plus utilisé.
 
 ```go
 func TestCompte(t *testing.T) {
@@ -471,16 +471,16 @@ Go!`
 
 Nous avons maintenant notre fonction et ses 2 propriétés importantes correctement testées.
 
-## Étendre Dormeuse pour la rendre configurable
+## Étendre Sleeper pour la rendre configurable
 
-Une fonctionnalité intéressante serait que la `Dormeuse` soit configurable. Cela signifie que nous pouvons ajuster le temps de sommeil dans notre programme principal.
+Une fonctionnalité intéressante serait que la `Sleeper` soit configurable. Cela signifie que nous pouvons ajuster le temps de sommeil dans notre programme principal.
 
 ### Écrivez le test d'abord
 
-Créons d'abord un nouveau type pour `DormeuseConfigurable` qui accepte ce dont nous avons besoin pour la configuration et les tests.
+Créons d'abord un nouveau type pour `SleeperConfigurable` qui accepte ce dont nous avons besoin pour la configuration et les tests.
 
 ```go
-type DormeuseConfigurable struct {
+type SleeperConfigurable struct {
 	duree time.Duration
 	dormir func(time.Duration)
 }
@@ -498,15 +498,15 @@ func (s *EspionTemps) Dormir(duree time.Duration) {
 }
 ```
 
-Avec notre espion en place, nous pouvons créer un nouveau test pour la dormeuse configurable.
+Avec notre espion en place, nous pouvons créer un nouveau test pour la Sleeper configurable.
 
 ```go
-func TestDormeuseConfigurable(t *testing.T) {
+func TestSleeperConfigurable(t *testing.T) {
 	tempsDormir := 5 * time.Second
 
 	espionTemps := &EspionTemps{}
-	dormeuse := DormeuseConfigurable{tempsDormir, espionTemps.Dormir}
-	dormeuse.Dormir()
+	Sleeper := SleeperConfigurable{tempsDormir, espionTemps.Dormir}
+	Sleeper.Dormir()
 
 	if espionTemps.dureeDormie != tempsDormir {
 		t.Errorf("aurait dû dormir pendant %v mais a dormi pendant %v", tempsDormir, espionTemps.dureeDormie)
@@ -518,15 +518,15 @@ Il ne devrait y avoir rien de nouveau dans ce test et il est configuré de mani�
 
 ### Essayez d'exécuter le test
 ```
-dormeuse.Dormir undefined (type DormeuseConfigurable has no field or method Dormir, but does have dormir)
+Sleeper.Dormir undefined (type SleeperConfigurable has no field or method Dormir, but does have dormir)
 
 ```
 
-Vous devriez voir un message d'erreur très clair indiquant que nous n'avons pas créé de méthode `Dormir` sur notre `DormeuseConfigurable`.
+Vous devriez voir un message d'erreur très clair indiquant que nous n'avons pas créé de méthode `Dormir` sur notre `SleeperConfigurable`.
 
 ### Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
 ```go
-func (c *DormeuseConfigurable) Dormir() {
+func (c *SleeperConfigurable) Dormir() {
 }
 ```
 
@@ -538,10 +538,10 @@ compte_test.go:56: aurait dû dormir pendant 5s mais a dormi pendant 0s
 
 ### Écrivez assez de code pour le faire passer
 
-Tout ce que nous devons faire maintenant est d'implémenter la fonction `Dormir` pour `DormeuseConfigurable`.
+Tout ce que nous devons faire maintenant est d'implémenter la fonction `Dormir` pour `SleeperConfigurable`.
 
 ```go
-func (c *DormeuseConfigurable) Dormir() {
+func (c *SleeperConfigurable) Dormir() {
 	c.dormir(c.duree)
 }
 ```
@@ -550,18 +550,18 @@ Avec ce changement, tous les tests devraient à nouveau passer et vous pourriez 
 
 ### Nettoyage et refactorisation
 
-La dernière chose que nous devons faire est d'utiliser notre `DormeuseConfigurable` dans la fonction principale.
+La dernière chose que nous devons faire est d'utiliser notre `SleeperConfigurable` dans la fonction principale.
 
 ```go
 func main() {
-	dormeuse := &DormeuseConfigurable{1 * time.Second, time.Sleep}
-	Compte(os.Stdout, dormeuse)
+	Sleeper := &SleeperConfigurable{1 * time.Second, time.Sleep}
+	Compte(os.Stdout, Sleeper)
 }
 ```
 
 Si nous exécutons les tests et le programme manuellement, nous pouvons voir que tout le comportement reste le même.
 
-Puisque nous utilisons la `DormeuseConfigurable`, il est maintenant sûr de supprimer l'implémentation `DormeuseParDefaut`. Finalisant notre programme et ayant une Dormeuse plus [générique](https://stackoverflow.com/questions/19291776/whats-the-difference-between-abstraction-and-generalization) avec des comptes à rebours de durée arbitraire.
+Puisque nous utilisons la `SleeperConfigurable`, il est maintenant sûr de supprimer l'implémentation `SleeperParDefaut`. Finalisant notre programme et ayant une Sleeper plus [générique](https://stackoverflow.com/questions/19291776/whats-the-difference-between-abstraction-and-generalization) avec des comptes à rebours de durée arbitraire.
 
 ## Mais le mocking n'est-il pas mauvais ?
 
@@ -644,10 +644,10 @@ Dans Go 1.23, [les itérateurs ont été introduits](https://tip.golang.org/doc/
 Avant d'aborder la façon dont nous écrivons des itérateurs personnalisés, voyons comment nous les utilisons. Plutôt que d'écrire une boucle assez impérative pour compter à rebours à partir d'un nombre, nous pouvons rendre ce code plus expressif en utilisant `range` sur notre itérateur personnalisé `compteARebroursDepuis`.
 
 ```go
-func Compte(out io.Writer, dormeuse Dormeuse) {
+func Compte(out io.Writer, Sleeper Sleeper) {
 	for i := range compteARebroursDepuis(3) {
 		fmt.Fprintln(out, i)
-		dormeuse.Dormir()
+		Sleeper.Dormir()
 	}
 
 	fmt.Fprint(out, motFinal)

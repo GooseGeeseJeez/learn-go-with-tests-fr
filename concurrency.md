@@ -208,7 +208,7 @@ L'erreur vient de la fermeture que nous avons créée au sein de notre boucle fo
 
 Mais cela n'explique pas vraiment pourquoi nous n'obtenons pas de résultats du tout.
 
-Le problème est dans la façon dont nous utilisons le map `resultats`. Écrire dans un map n'est pas une opération sûre pour les goroutines en Go. En lançant plusieurs goroutines, nous provoquons une _race condition_ où plusieurs processus tentent d'écrire dans le même endroit en même temps.
+Le problème est dans la façon dont nous utilisons le map `resultats`. Écrire dans un map n'est pas une opération sûre pour les goroutines en Go. En lançant plusieurs goroutines, nous provoquons une _race condition_ (*condition de course* en français) où plusieurs processus tentent d'écrire dans le même endroit en même temps.
 
 Exécutons à nouveau les tests, mais cette fois avec le détecteur de race de Go activé : `go test -race`.
 
@@ -223,7 +223,7 @@ WARNING: DATA RACE
 ==================
 ```
 
-Ce n'est pas grave et ce n'est pas fatal - si ça l'était, vous verriez parfois des choses étranges dans les résultats, comme certains des sites web qui manquent ou donnent les mauvais résultats. Les race conditions sont difficiles à reproduire car leur comportement est par nature non déterministe.
+Ce n'est pas grave et ce n'est pas fatal - si ça l'était, vous verriez parfois des choses étranges dans les résultats, comme certains des sites web qui manquent ou donnent les mauvais résultats. Les *race conditions* sont difficiles à reproduire car leur comportement est par nature non déterministe.
 
 ### Channels
 
@@ -342,7 +342,7 @@ PASS
 
 Hmm, c'est à peu près le même que notre test de référence, non ? Voyons pourquoi.
 
-Notre benchmark est généralement correct : il crée une grande liste d'URL, puis une implémentation lente d'un `VerificateurSite` qui prend environ 20 millisecondes à se terminer, puis l'exécute à travers notre fonction.
+Notre benchmark est globalement correct : il crée une grande liste d'URL, puis une implémentation lente d'un `VerificateurSite` qui prend environ 20 millisecondes à se terminer, puis l'exécute à travers notre fonction.
 
 Le problème, c'est qu'on fait une évaluation naïve de ce que notre fonction est censée faire. Oui, elle vérifie chaque URL, mais elle ne fait rien avec le résultat. La raison pour laquelle notre fonction lente est lente est qu'elle a un `time.Sleep(20 * time.Millisecond)` à l'intérieur. Dans un environnement de test, on ne se soucie pas vraiment du résultat, on veut juste savoir que le code fait ce qu'il est censé faire.
 
@@ -467,5 +467,5 @@ Ce chapitre a couvert :
 - L'utilisation de goroutines pour exécuter du code concurremment
 - L'utilisation de fermetures (closures) pour encapsuler des goroutines
 - L'utilisation de canaux pour communiquer entre goroutines
-- Éviter les race conditions lors de l'accès aux données partagées
+- Éviter les *race conditions* lors de l'accès aux données partagées
 - Effectuer des benchmarks sur le code pour mesurer les améliorations de performance

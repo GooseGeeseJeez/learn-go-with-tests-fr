@@ -4,7 +4,7 @@
 
 [De Twitter](https://twitter.com/peterbourgon/status/1011403901419937792?s=09)
 
-> défi golang : écrivez une fonction `walk(x interface{}, fn func(string))` qui prend une struct `x` et appelle `fn` pour tous les champs de type string trouvés à l'intérieur. niveau de difficulté : récursivement.
+> défi golang : écrivez une fonction `walk(x interface{}, fn func(string))` qui prend une struct `x` et appelle `fn` pour tous les champs de type string trouvés à l'intérieur. niveau de difficulté : récursif.
 
 Pour faire cela, nous aurons besoin d'utiliser la _réflexion_.
 

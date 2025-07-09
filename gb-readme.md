@@ -1,27 +1,27 @@
-# Learn Go with Tests
+# Apprenez Go avec les Tests
 
 <div style="text-align: center">
   <img src="red-green-blue-gophers-smaller.png" />
 </div>
 
-[Art by Denise](https://twitter.com/deniseyu21)
+[Art par Denise](https://twitter.com/deniseyu21)
 
-## Support me
+## Soutenez-moi
 
-I am proud to offer this resource for free, but if you wish to give some appreciation
+Je suis fier d'offrir cette ressource gratuitement, mais si vous souhaitez exprimer votre reconnaissance
 
-- [Tweet me @quii](https://twitter.com/quii)
+- [Tweetez-moi @quii](https://twitter.com/quii)
 - <a rel="me" href="https://mastodon.cloud/@quii">Mastodon</a>
-- [Buy me a coffee](https://www.buymeacoffee.com/quii)
-- [Sponsor me on GitHub](https://github.com/sponsors/quii)
+- [Offrez-moi un café](https://www.buymeacoffee.com/quii)
+- [Parrainez-moi sur GitHub](https://github.com/sponsors/quii)
 
-## Learn test-driven development with Go
+## Apprenez le développement piloté par les tests avec Go
 
-* Explore the Go language by writing tests
-* **Get a grounding with TDD**. Go is a good language for learning TDD because it is a simple language to learn and testing is built-in
-* Be confident that you'll be able to start writing robust, well-tested systems in Go
+* Explorez le langage Go en écrivant des tests
+* **Acquérez les bases du TDD**. Go est un bon langage pour apprendre le TDD car c'est un langage simple à apprendre et les tests sont intégrés
+* Soyez confiant dans votre capacité à commencer à écrire des systèmes robustes et bien testés en Go
 
-Translations:
+Traductions :
 
 - [中文](https://studygolang.gitbook.io/learn-go-with-tests)
 - [Português](https://larien.gitbook.io/aprenda-go-com-testes/)
@@ -29,61 +29,61 @@ Translations:
 - [한국어](https://miryang.gitbook.io/learn-go-with-tests/)
 - [Türkçe](https://halilkocaoz.gitbook.io/go-programlama-dilini-ogren/)
 
-## Background
+## Contexte
 
-I have some experience introducing Go to development teams and have tried different approaches as to how to grow a team from some people curious about Go into highly effective writers of Go systems.
+J'ai une certaine expérience dans l'introduction de Go auprès d'équipes de développement et j'ai essayé différentes approches pour faire évoluer une équipe, de personnes curieuses à propos de Go à des développeurs hautement efficaces de systèmes Go.
 
-### What didn't work
+### Ce qui n'a pas fonctionné
 
-#### Read _the_ book
+#### Lire _le_ livre
 
-An approach we tried was to take [the blue book](https://www.amazon.co.uk/Programming-Language-Addison-Wesley-Professional-Computing/dp/0134190440) and every week discuss the next chapter along with the exercises.
+Une approche que nous avons essayée consistait à prendre [le livre bleu](https://www.amazon.co.uk/Programming-Language-Addison-Wesley-Professional-Computing/dp/0134190440) et chaque semaine, à discuter du chapitre suivant ainsi que des exercices.
 
-I love this book but it requires a high level of commitment. The book is very detailed in explaining concepts, which is obviously great but it means that the progress is slow and steady - this is not for everyone.
+J'adore ce livre, mais il exige un niveau d'engagement élevé. Le livre est très détaillé dans l'explication des concepts, ce qui est évidemment excellent, mais cela signifie que le progrès est lent et régulier - ce qui ne convient pas à tout le monde.
 
-I found that whilst a small number of people would read chapter X and do the exercises, many people didn't.
+J'ai constaté que bien qu'un petit nombre de personnes lisaient le chapitre X et faisaient les exercices, beaucoup ne le faisaient pas.
 
-#### Solve some problems
+#### Résoudre des problèmes
 
-Katas are fun but they are usually limited in their scope for learning a language; you're unlikely to use goroutines to solve a kata.
+Les katas sont amusants, mais leur portée pour apprendre un langage est généralement limitée ; il est peu probable que vous utilisiez des goroutines pour résoudre un kata.
 
-Another problem is when you have varying levels of enthusiasm. Some people just learn way more of the language than others and when demonstrating what they have done end up confusing people with features the others are not familiar with.
+Un autre problème se pose lorsque vous avez des niveaux d'enthousiasme variables. Certaines personnes apprennent beaucoup plus du langage que d'autres et, lorsqu'elles démontrent ce qu'elles ont fait, finissent par confondre les gens avec des fonctionnalités que les autres ne connaissent pas.
 
-This ends up making the learning feel quite _unstructured_ and _ad hoc_.
+Cela finit par rendre l'apprentissage assez _non structuré_ et _ad hoc_.
 
-### What did work
+### Ce qui a fonctionné
 
-By far the most effective way was by slowly introducing the fundamentals of the language by reading through [go by example](https://gobyexample.com/), exploring them with examples and discussing them as a group. This was a more interactive approach than "read chapter x for homework".
+De loin, la méthode la plus efficace consistait à introduire lentement les fondamentaux du langage en lisant [go by example](https://gobyexample.com/), en les explorant avec des exemples et en les discutant en groupe. C'était une approche plus interactive que "lire le chapitre x pour les devoirs".
 
-Over time the team gained a solid foundation of the _grammar_ of the language so we could then start to build systems.
+Au fil du temps, l'équipe a acquis une base solide de la _grammaire_ du langage, ce qui nous a permis de commencer à construire des systèmes.
 
-This to me seems analogous to practicing scales when trying to learn guitar.
+Pour moi, cela semble analogue à la pratique des gammes lorsqu'on essaie d'apprendre la guitare.
 
-It doesn't matter how artistic you think you are, you are unlikely to write good music without understanding the fundamentals and practicing the mechanics.
+Peu importe à quel point vous vous considérez artistique, vous êtes peu susceptible d'écrire de la bonne musique sans comprendre les fondamentaux et pratiquer les mécanismes.
 
-### What works for me
+### Ce qui fonctionne pour moi
 
-When _I_ learn a new programming language I usually start by messing around in a REPL but eventually, I need more structure.
+Quand _je_ apprends un nouveau langage de programmation, je commence généralement par expérimenter dans un REPL, mais finalement, j'ai besoin de plus de structure.
 
-What I like to do is explore concepts and then solidify the ideas with tests. Tests verify the code I write is correct and documents the feature I have learned.
+Ce que j'aime faire, c'est explorer des concepts puis solidifier les idées avec des tests. Les tests vérifient que le code que j'écris est correct et documentent la fonctionnalité que j'ai apprise.
 
-Taking my experience of learning with a group and my own personal way I am going to try and create something that hopefully proves useful to other teams. Learning the fundamentals by writing small tests so that you can then take your existing software design skills and ship some great systems.
+En m'appuyant sur mon expérience d'apprentissage en groupe et ma propre méthode personnelle, je vais essayer de créer quelque chose qui, je l'espère, s'avérera utile à d'autres équipes. Apprendre les fondamentaux en écrivant de petits tests afin que vous puissiez ensuite utiliser vos compétences existantes en conception de logiciels et déployer d'excellents systèmes.
 
-## Who this is for
+## À qui cela s'adresse
 
-* People who are interested in picking up Go
-* People who already know some Go, but want to explore testing more
+* Les personnes intéressées par l'apprentissage de Go
+* Les personnes qui connaissent déjà un peu Go, mais qui veulent explorer davantage les tests
 
-## What you'll need
+## Ce dont vous aurez besoin
 
-* A computer!
-* [Installed Go](https://golang.org/)
-* A text editor
-* Some experience with programming. Understanding of concepts like `if`, variables, functions etc.
-* Comfortable using the terminal
+* Un ordinateur !
+* [Go installé](https://golang.org/)
+* Un éditeur de texte
+* Une certaine expérience en programmation. Compréhension des concepts comme `if`, les variables, les fonctions, etc.
+* À l'aise avec l'utilisation du terminal
 
-## Feedback
+## Retour d'information
 
-* Add issues/submit PRs [here](https://github.com/quii/learn-go-with-tests) or [tweet me @quii](https://twitter.com/quii)
+* Ajoutez des issues/soumettez des PR [ici](https://github.com/quii/learn-go-with-tests) ou [tweetez-moi @quii](https://twitter.com/quii)
 
-[MIT license](https://github.com/quii/learn-go-with-tests/blob/main/LICENSE.md)
+[Licence MIT](https://github.com/quii/learn-go-with-tests/blob/main/LICENSE.md)

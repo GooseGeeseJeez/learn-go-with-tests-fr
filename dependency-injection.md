@@ -185,4 +185,4 @@ Cette approche est beaucoup plus simple et explicite que beaucoup de frameworks 
 * Cela rend le code plus flexible et testable.
 * Go est particulièrement adapté à cette approche en raison de ses interfaces.
 * Votre code devrait reposer sur des abstractions bien définies, pas sur des détails d'implémentation.
-* Votre code devrait être autour des interfaces, pas des concrétisations.
+* Votre code devrait s'articuler autour des interfaces, pas autour de leurs implémentations concrètes.
