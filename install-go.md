@@ -54,12 +54,12 @@ Un sujet important de ce livre est l'importance de la refactorisation.
 
 Vos outils peuvent vous aider à faire de plus gros refactorings sereinement.
 
-Vous devriez être suffisamment à l'aise avec votre éditeur pour effectuer les opérations suivantes avec une simple combinaison de touches :
+Vous devriez être suffisamment à l'aise avec votre éditeur de code pour effectuer les opérations suivantes avec une simple combinaison de touches :
 
 - **Extraire/Inliner une variable**. Prendre des valeurs magiques et leur donner un nom vous permet de simplifier votre code rapidement.
 - **Extraire une méthode/fonction**. Il est vital de pouvoir prendre une section de code et extraire des fonctions/méthodes.
 - **Renommer**. Vous devriez pouvoir renommer des symboles à travers les fichiers sereinement.
-- **go fmt**. Go a un formateur opiniâtre appelé `go fmt`. Votre éditeur devrait l'exécuter sur chaque fichier venant d'être sauvegardé.
+- **go fmt**. Go a un formateur opiniâtre appelé `go fmt`. Votre éditeur de code devrait l'exécuter sur chaque fichier venant d'être sauvegardé.
 - **Exécuter les tests**. Vous devriez pouvoir faire n'importe lequel des points ci-dessus puis rapidement relancer vos tests pour vous assurer que votre refactorisation n'a rien cassé.
 
 De plus, pour vous aider à travailler avec votre code, vous devriez pouvoir :
@@ -72,4 +72,4 @@ Maîtriser vos outils vous aidera à vous concentrer sur le code et à réduire 
 
 ## Conclusion
 
-À ce stade, vous devriez avoir Go installé, un éditeur prêt, et quelques outils de base en place. Go a un très large écosystème de produits tiers. Nous en avons identifié quelques uns utiles ici. Pour une liste plus complète, voir [https://awesome-go.com](https://awesome-go.com).
+À ce stade, vous devriez avoir Go installé, un éditeur de code prêt, et quelques outils de base en place. Go a un très large écosystème de produits tiers. Nous en avons identifié quelques uns utiles ici. Pour une liste plus complète, voir [https://awesome-go.com](https://awesome-go.com).

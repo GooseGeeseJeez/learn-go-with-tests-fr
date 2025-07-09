@@ -118,7 +118,7 @@ func Additionner(x, y int) int {
 
 Si vous voulez vraiment aller plus loin, vous pouvez faire des [Exemples testables](https://blog.golang.org/examples). Vous trouverez de nombreux exemples dans la documentation de la bibliothèque standard.
 
-Souvent, les exemples de code qui peuvent être trouvés en dehors de la base de code, comme un fichier readme, deviennent obsolètes et incorrects par rapport au code réel parce qu'ils ne sont pas vérifiés.
+Souvent, les exemples de code qui peuvent être trouvés en dehors de la base de code, comme un fichier README, deviennent obsolètes et incorrects par rapport au code réel parce qu'ils ne sont pas vérifiés.
 
 Les fonctions d'exemple sont compilées chaque fois que les tests sont exécutés. Parce que de tels exemples sont validés par le compilateur Go, vous pouvez être confiant que les exemples de votre documentation reflètent toujours le comportement actuel du code.
 

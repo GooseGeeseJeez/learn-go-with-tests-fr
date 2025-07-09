@@ -535,7 +535,7 @@ Ce n'est pas montré ici, mais cette technique peut être utile quand vous voule
 
 En définissant cette fonction à l'intérieur du test, elle ne peut pas être utilisée par d'autres fonctions dans ce package. Cacher des variables et fonctions qui n'ont pas besoin d'être exportées est une considération de design importante.
 
-Un effet de bord pratique de ceci est que cela ajoute un peu de type-safety à notre code. Si
+Une conséquence pratique de ceci est que cela ajoute un peu de *type-safety* à notre code. Si
 un développeur ajoute par erreur un nouveau test avec `verifierSommes(t, resultat, "dave")`, le compilateur
 l'arrêtera dans ses traces.
 
@@ -553,7 +553,7 @@ Nous avons couvert
   * Les diverses façons de les créer
   * Comment ils ont une capacité _fixe_ mais vous pouvez créer de nouveaux slices depuis les anciens
     en utilisant `append`
-  * Comment slicer, les slices !
+  * Comment slicer les slices !
 * `len` pour obtenir la longueur d'un tableau ou slice
 * Outil de couverture de test
 * `reflect.DeepEqual` et pourquoi c'est utile mais peut réduire la type-safety de votre code

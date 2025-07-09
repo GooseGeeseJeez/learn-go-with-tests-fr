@@ -29,7 +29,7 @@ Avec `import "fmt"` nous importons un package qui contient la fonction `Println`
 
 ## Comment tester
 
-Comment teste-t-on ceci ? Il est bon de séparer votre code "domaine" du monde extérieur \(effets de bord\). Le `fmt.Println` est un effet de bord \(imprimer sur stdout\), et la chaîne que nous envoyons est notre domaine.
+Comment teste-t-on ceci ? Il est bon de séparer votre code "domaine" du monde extérieur \(effets de bord\, ou plus communément *side effects*). Le `fmt.Println` est un effet de bord \(imprimer sur stdout\), et la chaîne que nous envoyons est notre domaine.
 
 Alors séparons ces deux éléments pour que ce soit plus facile à tester
 
@@ -66,7 +66,7 @@ func TestBonjour(t *testing.T) {
 }
 ```
 
-## Des Modules Go ?
+## Des Modules en Go ?
 
 L'étape suivante est d'exécuter les tests. Entrez `go test` dans votre terminal. Si les tests passent, alors vous utilisez probablement une version antérieure de Go. Cependant, si vous utilisez Go 1.16 ou plus récent, les tests ne s'exécuteront probablement pas. À la place, vous verrez un message d'erreur comme celui-ci dans le terminal :
 
@@ -160,7 +160,7 @@ Dans le dernier exemple, nous avons écrit le test _après_ que le code ait ét�
 
 Notre prochaine exigence est de nous permettre de spécifier le destinataire du salut.
 
-Commençons par capturer ces exigences dans un test. C'est du développement piloté par les tests de base et nous permet de nous assurer que notre test teste _réellement_ ce que nous voulons. Quand vous écrivez des tests rétrospectivement, il y a le risque que votre test puisse continuer à passer même si le code ne fonctionne pas comme prévu.
+Commençons par capturer ceci dans un test. C'est du développement piloté par les tests de base et nous permet de nous assurer que notre test teste _réellement_ ce que nous voulons. Quand vous écrivez des tests rétrospectivement, il y a le risque que votre test puisse continuer à passer même si le code ne fonctionne pas comme prévu.
 
 ```go
 package main
@@ -221,9 +221,9 @@ func Bonjour(nom string) string {
 
 Quand vous exécutez les tests, ils devraient maintenant passer. Normalement, dans le cadre du cycle TDD, nous devrions maintenant _refactoriser_.
 
-### Une note sur le contrôle de source
+### Une note sur le *source control*
 
-À ce stade, si vous utilisez le contrôle de source \(ce que vous devriez !\), je committrais le code tel qu'il est. Nous avons un logiciel qui fonctionne soutenu par un test.
+À ce stade, si vous utilisez le *source control* \(ce que vous devriez !\), je committrais le code tel qu'il est. Nous avons un logiciel qui fonctionne soutenu par un test.
 
 Je ne committrais pas le code qui ne fonctionne pas, au cas où je voudrais revenir en arrière plus tard.
 
@@ -327,7 +327,7 @@ Nous refactorisons notre assertion en une fonction. Cela réduit la duplication 
 
 Lorsque vous avez plus d'un argument d'un même type (deux strings dans notre cas), n'écrivez pas `(got string, want string)` mais plutôt la version abrégée `(got, want string)`.
 
-### Retour au contrôle de source
+### Retour au *source control*
 
 Maintenant que le code semble bon, je commiterais pour seulement envoyer en ligne la "jolie" version de notre code avec son test.
 

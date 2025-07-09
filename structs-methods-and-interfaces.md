@@ -384,7 +384,7 @@ En Go **la résolution d'interface est implicite**. Si le type que vous passez c
 
 ### Découplage
 
-Remarquez comment notre aide n'a pas besoin de se préoccuper de savoir si la forme est un `Rectangle` ou un `Cercle` ou un `Triangle`. En déclarant une interface, l'aide est _découplée_ des types concrets et a seulement la méthode dont elle a besoin pour faire son travail.
+Remarquez comment notre Helper n'a pas besoin de se préoccuper de savoir si la forme est un `Rectangle` ou un `Cercle` ou un `Triangle`. En déclarant une interface, le Helper est _découplé_ des types concrets et a seulement la méthode dont il a besoin pour faire son travail.
 
 Ce genre d'approche d'utiliser des interfaces pour déclarer **seulement ce dont vous avez besoin** est très important dans la conception de logiciels et sera couvert plus en détail dans les sections ultérieures.
 

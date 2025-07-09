@@ -6,7 +6,7 @@ Nous avons appris les structs dans la section précédente qui nous permettent d
 
 À un moment donné, vous pourriez souhaiter utiliser des structs pour gérer l'état, en exposant des méthodes pour permettre aux utilisateurs de changer l'état d'une manière que vous pouvez contrôler.
 
-**La fintech adore Go** et euh les bitcoins ? Alors montrons quel système bancaire incroyable nous pouvons créer.
+**La fintech adore Go** et, euh, les bitcoins ? Alors montrons quel système bancaire incroyable nous pouvons créer.
 
 Créons une struct `Portefeuille` qui nous permet de déposer des `Bitcoin`.
 
@@ -79,7 +79,7 @@ Le test échoue toujours, mais étonnamment.
 portefeuille_test.go:13: solde 0, attendu 10
 ```
 
-C'est bizarre ! Nous sommes censés avoir mis à jour le solde, mais il semblerait que nous n'ayons pas fait. 
+C'est bizarre ! Nous sommes censés avoir mis à jour le solde, mais il semblerait que nous ne l'ayons pas fait. 
 
 En Go, lorsque vous appelez une fonction ou une méthode, les arguments sont _copiés_.
 
@@ -342,7 +342,7 @@ Maintenant nous vérifions que l'erreur a la bonne valeur, ce qui est plus préc
 
 ### Factorisation de la fonctionnalité de test
 
-Notre test a encore des aspects qui pourraient être améliorés. Les vérifications d'erreur sont communes, donc nous pouvons faire une fonction d'aide pour cela :
+Notre test a encore des aspects qui pourraient être améliorés. Les vérifications d'erreur sont communes, donc nous pouvons faire une fonction Helper pour cela :
 
 ```go
 verifieErreur := func(t testing.TB, erreur error, attendu error) {
@@ -787,7 +787,7 @@ Rappelez-vous d'importer `errors` dans votre code.
 
 ## Refactoriser
 
-Créons un aide de test rapide pour notre vérification d'erreur pour améliorer la lisibilité du test
+Créons un Helper de test rapide pour notre vérification d'erreur pour améliorer la lisibilité du test
 
 ```go
 verifierErreur := func(t testing.TB, err error) {
@@ -817,7 +817,7 @@ En supposant que l'erreur finit par être retournée à l'utilisateur, mettons �
 
 ## Écrivez le test d'abord
 
-Mettons à jour notre aide pour une `string` à comparer.
+Mettons à jour notre Helper pour une `string` à comparer.
 
 ```go
 verifierErreur := func(t testing.TB, recu error, attendu string) {
@@ -943,7 +943,7 @@ func verifierErreur(t testing.TB, recu, attendu error) {
 
 Et maintenant le test est plus facile à suivre aussi.
 
-J'ai déplacé les aides hors de la fonction de test principale juste pour que quand quelqu'un ouvre un fichier, il puisse commencer à lire nos assertions d'abord, plutôt que quelques aides.
+J'ai déplacé les Helpers hors de la fonction de test principale juste pour que quand quelqu'un ouvre un fichier, il puisse commencer à lire nos assertions d'abord, plutôt que quelques Helpers.
 
 Une autre propriété utile des tests est qu'ils nous aident à comprendre l'usage _réel_ de notre code pour que nous puissions faire du code sympathique. Nous pouvons voir ici qu'un développeur peut simplement appeler notre code et faire une vérification d'égalité avec `ErrFondsInsuffisants` et agir en conséquence.
 
