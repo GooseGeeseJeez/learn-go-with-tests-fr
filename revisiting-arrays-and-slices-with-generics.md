@@ -1,11 +1,11 @@
-# Revisiting arrays and slices with generics
+# Revisiter les tableaux et les slices avec les génériques
 
-**[The code for this chapter is a continuation from Arrays and Slices, found here](https://github.com/quii/learn-go-with-tests/tree/main/arrays)**
+**[Le code pour ce chapitre est une continuation des Tableaux et Slices, disponible ici](https://github.com/quii/learn-go-with-tests/tree/main/arrays)**
 
-Take a look at both `SumAll` and `SumAllTails` that we wrote in [arrays and slices](arrays-and-slices.md). If you don't have your version please copy the code from the [arrays and slices](arrays-and-slices.md) chapter along with the tests.
+Examinez à la fois `SumAll` et `SumAllTails` que nous avons écrits dans [tableaux et slices](arrays-and-slices.md). Si vous n'avez pas votre version, veuillez copier le code du chapitre [tableaux et slices](arrays-and-slices.md) ainsi que les tests.
 
 ```go
-// Sum calculates the total from a slice of numbers.
+// Sum calcule le total à partir d'une slice de nombres.
 func Sum(numbers []int) int {
 	var sum int
 	for _, number := range numbers {
@@ -14,7 +14,7 @@ func Sum(numbers []int) int {
 	return sum
 }
 
-// SumAllTails calculates the sums of all but the first number given a collection of slices.
+// SumAllTails calcule les sommes de tous les nombres sauf le premier, étant donné une collection de slices.
 func SumAllTails(numbersToSum ...[]int) []int {
 	var sums []int
 	for _, numbers := range numbersToSum {
@@ -30,49 +30,49 @@ func SumAllTails(numbersToSum ...[]int) []int {
 }
 ```
 
-Do you see a recurring pattern?
+Voyez-vous un motif récurrent ?
 
-- Create some kind of "initial" result value.
-- Iterate over the collection, applying some kind of operation (or function) to the result and the next item in the slice, setting a new value for the result
-- Return the result.
+- Créer une sorte de valeur de résultat "initiale".
+- Itérer sur la collection, en appliquant une sorte d'opération (ou fonction) au résultat et à l'élément suivant dans la slice, en définissant une nouvelle valeur pour le résultat
+- Retourner le résultat.
 
-This idea is commonly talked about in functional programming circles, often times called 'reduce' or [fold](https://en.wikipedia.org/wiki/Fold_(higher-order_function)).
+Cette idée est couramment évoquée dans les cercles de programmation fonctionnelle, souvent appelée 'reduce' ou [fold](https://fr.wikipedia.org/wiki/Fold_(higher-order_function)).
 
-> In functional programming, fold (also termed reduce, accumulate, aggregate, compress, or inject) refers to a family of higher-order functions that analyze a recursive data structure and through use of a given combining operation, recombine the results of recursively processing its constituent parts, building up a return value. Typically, a fold is presented with a combining function, a top node of a data structure, and possibly some default values to be used under certain conditions. The fold then proceeds to combine elements of the data structure's hierarchy, using the function in a systematic way.
+> En programmation fonctionnelle, fold (également appelé reduce, accumulate, aggregate, compress, ou inject) fait référence à une famille de fonctions d'ordre supérieur qui analysent une structure de données récursive et, par l'utilisation d'une opération de combinaison donnée, recombinent les résultats du traitement récursif de ses parties constitutives, construisant une valeur de retour. Typiquement, un fold est présenté avec une fonction de combinaison, un nœud supérieur d'une structure de données, et éventuellement certaines valeurs par défaut à utiliser dans certaines conditions. Le fold procède ensuite à combiner des éléments de la hiérarchie de la structure de données, en utilisant la fonction de manière systématique.
 
-Go has always had higher-order functions, and as of version 1.18 it also has [generics](./generics.md), so it is now possible to define some of these functions discussed in our wider field. There's no point burying your head in the sand, this is a very common abstraction outside the Go ecosystem and it'll be beneficial to understand it.
+Go a toujours eu des fonctions d'ordre supérieur, et depuis la version 1.18, il dispose également de [génériques](./generics.md), il est donc maintenant possible de définir certaines de ces fonctions dont on parle dans notre domaine plus large. Il n'y a aucune raison de se cacher la tête dans le sable, c'est une abstraction très courante en dehors de l'écosystème Go et il sera bénéfique de la comprendre.
 
-Now, I know some of you are probably cringing at this.
+Maintenant, je sais que certains d'entre vous grimacent probablement.
 
-> Go is supposed to be simple
+> Go est censé être simple
 
-**Don't conflate easiness, with simplicity**. Doing loops and copy-pasting code is easy, but it's not necessarily simple. For more on simple vs easy, watch [Rich Hickey's masterpiece of a talk - Simple Made Easy](https://www.youtube.com/watch?v=SxdOUGdseq4).
+**Ne confondez pas facilité et simplicité**. Faire des boucles et copier-coller du code est facile, mais ce n'est pas nécessairement simple. Pour en savoir plus sur la simplicité et la facilité, regardez [le chef-d'œuvre de Rich Hickey - Simple Made Easy](https://www.youtube.com/watch?v=SxdOUGdseq4).
 
-**Don't conflate unfamiliarity, with complexity**. Fold/reduce may initially sound scary and computer-sciencey but all it really is, is an abstraction over a very common operation. Taking a collection, and combining it into one item. When you step back, you'll realise you probably do this _a lot_.
+**Ne confondez pas non-familiarité et complexité**. Fold/reduce peut initialement sembler effrayant et informatique, mais ce n'est en réalité qu'une abstraction d'une opération très courante. Prendre une collection et la combiner en un seul élément. Quand vous prenez du recul, vous réaliserez que vous faites probablement cela _très souvent_.
 
-## A generic refactor
+## Un refactoring générique
 
-A mistake people often make with shiny new language features is they start by using them without having a concrete use-case. They rely on conjecture and guesswork to guide their efforts.
+Une erreur que les gens font souvent avec les nouvelles fonctionnalités de langage est qu'ils commencent par les utiliser sans avoir de cas d'utilisation concret. Ils s'appuient sur des conjectures et des suppositions pour guider leurs efforts.
 
-Thankfully we've written our "useful" functions and have tests around them, so now we are free to experiment with ideas in the refactoring stage of TDD and know that whatever we're trying, has a verification of its value via our unit tests.
+Heureusement, nous avons écrit nos fonctions "utiles" et avons des tests autour d'elles, donc nous sommes maintenant libres d'expérimenter des idées dans la phase de refactoring du TDD et de savoir que quoi que nous essayions, il y a une vérification de sa valeur via nos tests unitaires.
 
-Using generics as a tool for simplifying code via the refactoring step is far more likely to guide you to useful improvements, rather than premature abstractions.
+Utiliser les génériques comme outil pour simplifier le code via l'étape de refactoring est beaucoup plus susceptible de vous guider vers des améliorations utiles, plutôt que des abstractions prématurées.
 
-We are safe to try things out, re-run our tests, if we like the change we can commit. If not, just revert the change. This freedom to experiment is one of the truly huge values of TDD.
+Nous sommes libres d'essayer des choses, de relancer nos tests, si nous aimons le changement, nous pouvons le valider. Sinon, il suffit d'annuler le changement. Cette liberté d'expérimenter est l'une des valeurs vraiment énormes du TDD.
 
-You should be familiar with the generics syntax [from the previous chapter](generics.md), try and write your own `Reduce` function and use it inside `Sum` and `SumAllTails`.
+Vous devriez être familier avec la syntaxe des génériques [du chapitre précédent](generics.md), essayez d'écrire votre propre fonction `Reduce` et utilisez-la dans `Sum` et `SumAllTails`.
 
-### Hints
+### Indices
 
-If you think about the arguments to your function first, it'll give you a very small set of valid solutions
-  - The array you want to reduce
-  - Some kind of combining function
+Si vous réfléchissez d'abord aux arguments de votre fonction, cela vous donnera un très petit ensemble de solutions valides
+  - Le tableau que vous souhaitez réduire
+  - Une sorte de fonction de combinaison
 
-"Reduce" is an incredibly well documented pattern, there's no need to re-invent the wheel. [Read the wiki, in particular the lists section](https://en.wikipedia.org/wiki/Fold_(higher-order_function)), it should prompt you for another argument you'll need.
+"Reduce" est un modèle incroyablement bien documenté, il n'est pas nécessaire de réinventer la roue. [Lisez le wiki, en particulier la section sur les listes](https://en.wikipedia.org/wiki/Fold_(higher-order_function)), cela devrait vous suggérer un autre argument dont vous aurez besoin.
 
-> In practice, it is convenient and natural to have an initial value
+> En pratique, il est pratique et naturel d'avoir une valeur initiale
 
-### My first-pass of `Reduce`
+### Ma première version de `Reduce`
 
 ```go
 func Reduce[A any](collection []A, f func(A, A) A, initialValue A) A {
@@ -84,20 +84,20 @@ func Reduce[A any](collection []A, f func(A, A) A, initialValue A) A {
 }
 ```
 
-Reduce captures the _essence_ of the pattern, it's a function that takes a collection, an accumulating function, an initial value, and returns a single value. There's no messy distractions around concrete types.
+Reduce capture l'_essence_ du modèle, c'est une fonction qui prend une collection, une fonction d'accumulation, une valeur initiale, et renvoie une seule valeur. Il n'y a pas de distractions désordonnées autour des types concrets.
 
-If you understand generics syntax, you should have no problem understanding what this function does. By using the recognised term `Reduce`, programmers from other languages understand the intent too.
+Si vous comprenez la syntaxe des génériques, vous ne devriez avoir aucun problème à comprendre ce que fait cette fonction. En utilisant le terme reconnu `Reduce`, les programmeurs d'autres langages comprennent également l'intention.
 
-### The usage
+### L'utilisation
 
 ```go
-// Sum calculates the total from a slice of numbers.
+// Sum calcule le total à partir d'une slice de nombres.
 func Sum(numbers []int) int {
 	add := func(acc, x int) int { return acc + x }
 	return Reduce(numbers, add, 0)
 }
 
-// SumAllTails calculates the sums of all but the first number given a collection of slices.
+// SumAllTails calcule les sommes de tous les nombres sauf le premier, étant donné une collection de slices.
 func SumAllTails(numbers ...[]int) []int {
 	sumTail := func(acc, x []int) []int {
 		if len(x) == 0 {
@@ -112,15 +112,15 @@ func SumAllTails(numbers ...[]int) []int {
 }
 ```
 
-`Sum` and `SumAllTails` now describe the behaviour of their computations as the functions declared on their first lines respectively. The act of running the computation on the collection is abstracted away in `Reduce`.
+`Sum` et `SumAllTails` décrivent maintenant le comportement de leurs calculs comme les fonctions déclarées sur leurs premières lignes respectives. L'acte d'exécuter le calcul sur la collection est abstrait dans `Reduce`.
 
-## Further applications of reduce
+## Autres applications de reduce
 
-Using tests we can play around with our reduce function to see how re-usable it is. I have copied over our generic assertion functions from the previous chapter.
+En utilisant des tests, nous pouvons jouer avec notre fonction reduce pour voir à quel point elle est réutilisable. J'ai copié nos fonctions d'assertion génériques du chapitre précédent.
 
 ```go
 func TestReduce(t *testing.T) {
-	t.Run("multiplication of all elements", func(t *testing.T) {
+	t.Run("multiplication de tous les éléments", func(t *testing.T) {
 		multiply := func(x, y int) int {
 			return x * y
 		}
@@ -128,7 +128,7 @@ func TestReduce(t *testing.T) {
 		AssertEqual(t, Reduce([]int{1, 2, 3}, multiply, 1), 6)
 	})
 
-	t.Run("concatenate strings", func(t *testing.T) {
+	t.Run("concaténation de chaînes", func(t *testing.T) {
 		concatenate := func(x, y string) string {
 			return x + y
 		}
@@ -138,29 +138,29 @@ func TestReduce(t *testing.T) {
 }
 ```
 
-### The zero value
+### La valeur zéro
 
-In the multiplication example, we show the reason for having a default value as an argument to `Reduce`. If we relied on Go's default value of 0 for `int`, we'd multiply our initial value by 0, and then the following ones, so you'd only ever get 0. By setting it to 1, the first element in the slice will stay the same, and the rest will multiply by the next elements.
+Dans l'exemple de multiplication, nous montrons la raison d'avoir une valeur par défaut comme argument pour `Reduce`. Si nous nous appuyions sur la valeur par défaut de Go de 0 pour `int`, nous multiplierions notre valeur initiale par 0, puis les suivantes, donc vous n'obtiendriez jamais que 0. En la définissant à 1, le premier élément de la slice restera le même, et le reste se multipliera par les éléments suivants.
 
-If you wish to sound clever with your nerd friends, you'd call this [The Identity Element](https://en.wikipedia.org/wiki/Identity_element).
+Si vous souhaitez paraître intelligent avec vos amis nerds, vous appelleriez cela [L'élément neutre](https://fr.wikipedia.org/wiki/Élément_neutre).
 
-> In mathematics, an identity element, or neutral element, of a binary operation operating on a set is an element of the set which leaves unchanged every element of the set when the operation is applied.
+> En mathématiques, un élément neutre, ou élément identité, d'une opération binaire opérant sur un ensemble est un élément de l'ensemble qui laisse inchangé tout élément de l'ensemble lorsque l'opération est appliquée.
 
-In addition, the identity element is 0.
+Dans l'addition, l'élément neutre est 0.
 
 `1 + 0 = 1`
 
-With multiplication, it is 1.
+Avec la multiplication, c'est 1.
 
 `1 * 1 = 1`
 
-## What if we wish to reduce into a different type from `A`?
+## Et si nous voulons réduire dans un type différent de `A` ?
 
-Suppose we had a list of transactions `Transaction` and we wanted a function that would take them, plus a name to figure out their bank balance.
+Supposons que nous ayons une liste de transactions `Transaction` et que nous voulions une fonction qui les prendrait, plus un nom pour calculer leur solde bancaire.
 
-Let's follow the TDD process.
+Suivons le processus TDD.
 
-## Write the test first
+## Écrire le test d'abord
 
 ```go
 func TestBadBank(t *testing.T) {
@@ -183,16 +183,16 @@ func TestBadBank(t *testing.T) {
 }
 ```
 
-## Try to run the test
+## Essayer d'exécuter le test
 ```
 # github.com/quii/learn-go-with-tests/arrays/v8 [github.com/quii/learn-go-with-tests/arrays/v8.test]
 ./bad_bank_test.go:6:20: undefined: Transaction
 ./bad_bank_test.go:18:14: undefined: BalanceFor
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Écrire le minimum de code pour que le test s'exécute et vérifier la sortie du test en échec
 
-We don't have our types or functions yet, add them to make the test run.
+Nous n'avons pas encore nos types ou fonctions, ajoutons-les pour faire fonctionner le test.
 
 ```go
 type Transaction struct {
@@ -206,7 +206,7 @@ func BalanceFor(transactions []Transaction, name string) float64 {
 }
 ```
 
-When you run the test you should see the following:
+Lorsque vous exécutez le test, vous devriez voir ce qui suit :
 
 ```
 === RUN   TestBadBank
@@ -216,9 +216,9 @@ When you run the test you should see the following:
 --- FAIL: TestBadBank (0.00s)
 ```
 
-## Write enough code to make it pass
+## Écrire suffisamment de code pour le faire passer
 
-Let's write the code as if we didn't have a `Reduce` function first.
+Écrivons d'abord le code comme si nous n'avions pas de fonction `Reduce`.
 
 ```go
 func BalanceFor(transactions []Transaction, name string) float64 {
@@ -235,11 +235,11 @@ func BalanceFor(transactions []Transaction, name string) float64 {
 }
 ```
 
-## Refactor
+## Refactoring
 
-At this point, have some source control discipline and commit your work. We have working software, ready to challenge Monzo, Barclays, et al.
+À ce stade, ayez une discipline de contrôle de source et validez votre travail. Nous avons un logiciel fonctionnel, prêt à défier Monzo, Barclays, et al.
 
-Now our work is committed, we are free to play around with it, and try some different ideas out in the refactoring phase. To be fair, the code we have isn't exactly bad, but for the sake of this exercise, I want to demonstrate the same code using `Reduce`.
+Maintenant que notre travail est validé, nous sommes libres de jouer avec, et d'essayer des idées différentes dans la phase de refactoring. Pour être honnête, le code que nous avons n'est pas vraiment mauvais, mais pour les besoins de cet exercice, je veux démontrer le même code en utilisant `Reduce`.
 
 ```go
 func BalanceFor(transactions []Transaction, name string) float64 {
@@ -256,13 +256,13 @@ func BalanceFor(transactions []Transaction, name string) float64 {
 }
 ```
 
-But this won't compile.
+Mais cela ne compilera pas.
 
 ```
 ./bad_bank.go:19:35: type func(acc float64, t Transaction) float64 of adjustBalance does not match inferred type func(Transaction, Transaction) Transaction for func(A, A) A
 ```
 
-The reason is we're trying to reduce to a _different_ type than the type of the collection. This sounds scary, but actually just requires us to adjust the type signature of `Reduce` to make it work. We won't have to change the function body, and we won't have to change any of our existing callers.
+La raison est que nous essayons de réduire à un type _différent_ du type de la collection. Cela semble effrayant, mais en réalité, il suffit d'ajuster la signature de type de `Reduce` pour que cela fonctionne. Nous n'aurons pas à changer le corps de la fonction, et nous n'aurons pas à changer nos appelants existants.
 
 ```go
 func Reduce[A, B any](collection []A, f func(B, A) B, initialValue B) B {
@@ -274,13 +274,13 @@ func Reduce[A, B any](collection []A, f func(B, A) B, initialValue B) B {
 }
 ```
 
-We've added a second type constraint which has allowed us to loosen the constraints on `Reduce`. This allows people to `Reduce` from a collection of `A` into a `B`. In our case from `Transaction` to `float64`.
+Nous avons ajouté une seconde contrainte de type qui nous a permis d'assouplir les contraintes sur `Reduce`. Cela permet aux gens de `Reduce` d'une collection de `A` en un `B`. Dans notre cas, de `Transaction` à `float64`.
 
-This makes `Reduce` more general-purpose and reusable, and still type-safe. If you try and run the tests again they should compile, and pass.
+Cela rend `Reduce` plus polyvalent et réutilisable, tout en restant sûr au niveau des types. Si vous essayez de relancer les tests, ils devraient compiler et passer.
 
-## Extending the bank
+## Extension de la banque
 
-For fun, I wanted to improve the ergonomics of the bank code. I've omitted the TDD process for brevity.
+Pour le plaisir, j'ai voulu améliorer l'ergonomie du code bancaire. J'ai omis le processus TDD par souci de brièveté.
 
 ```go
 func TestBadBank(t *testing.T) {
@@ -305,7 +305,7 @@ func TestBadBank(t *testing.T) {
 }
 ```
 
-And here's the updated code
+Et voici le code mis à jour
 
 ```go
 package main
@@ -344,30 +344,30 @@ func applyTransaction(a Account, transaction Transaction) Account {
 }
 ```
 
-I feel this really shows the power of using concepts like `Reduce`. The `NewBalanceFor` feels more _declarative_, describing _what_ happens, rather than _how_. Often when we're reading code, we're darting through lots of files, and we're trying to understand _what_ is happening, rather than _how_, and this style of code facilitates this well.
+Je pense que cela montre vraiment la puissance de l'utilisation de concepts comme `Reduce`. Le `NewBalanceFor` semble plus _déclaratif_, décrivant _ce qui_ se passe, plutôt que _comment_. Souvent, lorsque nous lisons du code, nous parcourons de nombreux fichiers, et nous essayons de comprendre _ce qui_ se passe, plutôt que _comment_, et ce style de code facilite bien cela.
 
-If I wish to dig in to the detail I can, and I can see the _business logic_ of `applyTransaction` without worrying about loops and mutating state; `Reduce` takes care of that separately.
+Si je souhaite approfondir les détails, je peux, et je peux voir la _logique métier_ de `applyTransaction` sans me soucier des boucles et de l'état changeant; `Reduce` s'en occupe séparément.
 
 
-### Fold/reduce are pretty universal
+### Fold/reduce sont assez universels
 
-The possibilities are endless™️ with `Reduce` (or `Fold`). It's a common pattern for a reason, it's not just for arithmetic or string concatenation. Try a few other applications.
+Les possibilités sont infinies™️ avec `Reduce` (ou `Fold`). C'est un modèle commun pour une raison, ce n'est pas seulement pour l'arithmétique ou la concaténation de chaînes. Essayez quelques autres applications.
 
-- Why not mix some `color.RGBA` into a single colour?
-- Total up the number of votes in a poll, or items in a shopping basket.
-- More or less anything involving processing a list.
+- Pourquoi ne pas mélanger certains `color.RGBA` en une seule couleur ?
+- Totaliser le nombre de votes dans un sondage, ou d'articles dans un panier d'achat.
+- Plus ou moins tout ce qui implique le traitement d'une liste.
 
 ## Find
 
-Now that Go has generics, combining them with higher-order-functions, we can reduce a lot of boilerplate code within our projects, to help our systems be easier to understand and manage.
+Maintenant que Go a des génériques, en les combinant avec des fonctions d'ordre supérieur, nous pouvons réduire beaucoup de code passe-partout dans nos projets, pour aider nos systèmes à être plus faciles à comprendre et à gérer.
 
-No longer do you need to write specific `Find` functions for each type of collection you want to search, instead re-use or write a `Find` function. If you understood the `Reduce` function above, writing a `Find` function will be trivial.
+Vous n'avez plus besoin d'écrire des fonctions `Find` spécifiques pour chaque type de collection que vous souhaitez rechercher, réutilisez plutôt ou écrivez une fonction `Find`. Si vous avez compris la fonction `Reduce` ci-dessus, écrire une fonction `Find` sera trivial.
 
-Here's a test
+Voici un test
 
 ```go
 func TestFind(t *testing.T) {
-	t.Run("find first even number", func(t *testing.T) {
+	t.Run("trouver le premier nombre pair", func(t *testing.T) {
 		numbers := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 
 		firstEvenNumber, found := Find(numbers, func(x int) bool {
@@ -379,7 +379,7 @@ func TestFind(t *testing.T) {
 }
 ```
 
-And here's the implementation
+Et voici l'implémentation
 
 ```go
 func Find[A any](items []A, predicate func(A) bool) (value A, found bool) {
@@ -392,14 +392,14 @@ func Find[A any](items []A, predicate func(A) bool) (value A, found bool) {
 }
 ```
 
-Again, because it takes a generic type, we can re-use it in many ways
+Encore une fois, comme elle prend un type générique, nous pouvons la réutiliser de nombreuses façons
 
 ```go
 type Person struct {
 	Name string
 }
 
-t.Run("Find the best programmer", func(t *testing.T) {
+t.Run("Trouver le meilleur programmeur", func(t *testing.T) {
 	people := []Person{
 		Person{Name: "Kent Beck"},
 		Person{Name: "Martin Fowler"},
@@ -415,38 +415,38 @@ t.Run("Find the best programmer", func(t *testing.T) {
 })
 ```
 
-As you can see, this code is flawless.
+Comme vous pouvez le voir, ce code est sans faille.
 
-## Wrapping up
+## Conclusion
 
-When done tastefully, higher-order functions like these will make your code simpler to read and maintain, but remember the rule of thumb:
+Lorsqu'elles sont utilisées avec goût, les fonctions d'ordre supérieur comme celles-ci rendront votre code plus simple à lire et à maintenir, mais rappelez-vous la règle empirique :
 
-Use the TDD process to drive out real, specific behaviour that you actually need, in the refactoring stage you then _might_ discover some useful abstractions to help tidy the code up.
+Utilisez le processus TDD pour développer un comportement réel et spécifique dont vous avez réellement besoin, dans la phase de refactoring, vous _pourriez_ alors découvrir des abstractions utiles pour aider à nettoyer le code.
 
-Practice combining TDD with good source control habits. Commit your work when your test is passing, _before_ trying to refactor. This way if you make a mess, you can easily get yourself back to your working state.
+Pratiquez la combinaison du TDD avec de bonnes habitudes de contrôle de source. Validez votre travail lorsque votre test passe, _avant_ d'essayer de refactoriser. De cette façon, si vous faites un gâchis, vous pouvez facilement revenir à votre état de fonctionnement.
 
-### Names matter
+### Les noms sont importants
 
-Make an effort to do some research outside of Go, so you don't re-invent patterns that already exist with an already established name.
+Faites un effort pour faire des recherches en dehors de Go, afin de ne pas réinventer des modèles qui existent déjà avec un nom déjà établi.
 
-Writing a function takes a collection of `A` and converts them to `B`? Don't call it `Convert`, that's [`Map`](https://en.wikipedia.org/wiki/Map_(higher-order_function)). Using the "proper" name for these items will reduce the cognitive burden for others and make it more search engine friendly to learn more.
+Écrire une fonction qui prend une collection de `A` et les convertit en `B` ? Ne l'appelez pas `Convert`, c'est [`Map`](https://en.wikipedia.org/wiki/Map_(higher-order_function)). Utiliser le nom "propre" pour ces éléments réduira la charge cognitive pour les autres et rendra plus facile la recherche pour en apprendre davantage.
 
-### This doesn't feel idiomatic?
+### Cela ne semble pas idiomatique ?
 
-Try to have an open-mind.
+Essayez d'avoir l'esprit ouvert.
 
-Whilst the idioms of Go won't, and shouldn't _radically_ change due to generics being released, the idioms _will_ change - due to the language changing! This should not be a controversial point.
+Bien que les idiomes de Go ne changeront pas, et ne devraient pas changer _radicalement_ en raison de la sortie des génériques, les idiomes _vont_ changer - en raison du changement de langage ! Ce ne devrait pas être un point controversé.
 
-Saying
+Dire
 
-> This is not idiomatic
+> Ce n'est pas idiomatique
 
-Without any more detail, is not an actionable, or useful thing to say. Especially when discussing new language features.
+Sans plus de détails, n'est pas une chose actionnable ou utile à dire. Surtout lorsqu'on discute de nouvelles fonctionnalités de langage.
 
-Discuss with your colleagues patterns and style of code based on their merits rather than dogma. So long as you have well-designed tests, you'll always be able to refactor and shift things as you understand what works well for you, and your team.
+Discutez avec vos collègues des modèles et du style de code en fonction de leurs mérites plutôt que du dogme. Tant que vous avez des tests bien conçus, vous pourrez toujours refactoriser et faire évoluer les choses au fur et à mesure que vous comprendrez ce qui fonctionne bien pour vous et votre équipe.
 
-### Resources
+### Ressources
 
-Fold is a real fundamental in computer science. Here's some interesting resources if you wish to dig more into it
+Fold est un véritable fondamental en informatique. Voici quelques ressources intéressantes si vous souhaitez en savoir plus
 - [Wikipedia: Fold](https://en.wikipedia.org/wiki/Fold)
-- [A tutorial on the universality and expressiveness of fold](http://www.cs.nott.ac.uk/~pszgmh/fold.pdf)
+- [Un tutoriel sur l'universalité et l'expressivité de fold](http://www.cs.nott.ac.uk/~pszgmh/fold.pdf)
