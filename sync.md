@@ -139,7 +139,7 @@ Le problème ici est que nous avons plusieurs goroutines essayant d'accéder à 
 
 ## Écrivez assez de code pour le faire passer
 
-Nous devons protéger l'accès à la valeur partagée en utilisant un mutex. Go fournit un mutex dans le package `sync`.
+Nous devons protéger l'accès à la valeur partagée en utilisant un mutex (pour *mutual exclusion*, exclusion mutuelle en français). Go fournit un mutex dans le package `sync`.
 
 ```go
 type Compteur struct {

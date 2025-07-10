@@ -31,7 +31,7 @@ func TestRepeter(t *testing.T) {
 
 ## Écrivez la quantité minimale de code pour que le test s'exécute et vérifiez la sortie du test qui échoue
 
-_Gardez la discipline !_ Vous n'avez pas besoin de connaître quoi que ce soit de nouveau maintenant pour faire échouer le test correctement.
+_Restez discipliné !_ Vous n'avez pas besoin de connaître quoi que ce soit de nouveau maintenant pour faire échouer le test correctement.
 
 Tout ce que vous devez faire maintenant est suffisant pour le faire compiler afin que vous puissiez vérifier que votre test est bien écrit.
 
@@ -49,7 +49,7 @@ N'est-ce pas agréable de savoir que vous connaissez déjà assez de Go pour éc
 
 ## Écrivez assez de code pour le faire passer
 
-La syntaxe `for` est très peu remarquable et suit la plupart des langages de type C.
+La syntaxe `for` n'a rien de spécial et suit la plupart des langages de type C.
 
 ```go
 func Repeter(caractere string) string {
@@ -75,7 +75,7 @@ Les variantes supplémentaires de la boucle for sont décrites [ici](https://gob
 
 ## Refactoriser
 
-Maintenant il est temps de refactoriser et d'introduire une autre construction `+=` l'opérateur d'affectation.
+Maintenant il est temps de refactoriser et d'introduire une autre construction : `+=`, l'opérateur d'affectation.
 
 ```go
 const nombreRepetitions = 5
@@ -89,7 +89,7 @@ func Repeter(caractere string) string {
 }
 ```
 
-`+=` appelé _"l'opérateur d'addition ET d'affectation"_, ajoute l'opérande de droite à l'opérande de gauche et affecte le résultat à l'opérande de gauche. Il fonctionne avec d'autres types comme les entiers.
+`+=` appelé _"l'opérateur d'addition ET d'affectation"_, il ajoute l'opérande de droite à l'opérande de gauche et affecte le résultat à l'opérande de gauche. Il fonctionne avec d'autres types comme les entiers.
 
 ### Benchmarking
 
@@ -139,7 +139,7 @@ func Benchmark(b *testing.B) {
 
 Les chaînes en Go sont immuables, ce qui signifie que chaque concaténation, comme dans notre fonction `Repeter`, implique de copier de la mémoire pour accommoder la nouvelle chaîne. Cela impacte les performances, particulièrement lors de concaténations lourdes de chaînes.
 
-La bibliothèque standard fournit le type `strings.Builder`[stringsBuilder] qui minimise la copie de mémoire.
+La bibliothèque standard fournit le type `strings.Builder` (voir [stringsBuilder]) qui minimise la copie de mémoire.
 Il implémente une méthode `WriteString` que nous pouvons utiliser pour concaténer des chaînes :
 
 ```go
@@ -172,7 +172,7 @@ Le flag `-benchmem` rapporte des informations sur les allocations mémoire :
 * `B/op` : le nombre d'octets alloués par itération
 * `allocs/op` : le nombre d'allocations mémoire par itération
 
-## Exercices de pratique
+## Exercices d'entraînement
 
 * Changez le test pour qu'un appelant puisse spécifier combien de fois le caractère est répété et puis corrigez le code
 * Écrivez `ExampleRepeter` pour documenter votre fonction

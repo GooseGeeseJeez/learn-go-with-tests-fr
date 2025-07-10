@@ -182,7 +182,7 @@ Il devrait échouer, se plaignant de ne pas avoir la chaîne que nous attendons,
 
 ## Écrire suffisamment de code pour le faire passer
 
-Essayez de le faire vous-même plutôt que de copier le code. Ce que vous devriez constater, c'est que faire passer ce test _est un peu ennuyeux_ ! Quand j'ai essayé, ma première tentative a obtenu cette erreur
+Essayez de le faire vous-même plutôt que de copier le code. Ce que vous devriez constater, c'est que faire passer ce test _est un peu ennuyeux_ ! Quand j'ai essayé, ma première tentative a renvoyé cette erreur
 
 ```
 === RUN   TestRender
@@ -807,7 +807,7 @@ Alors que pourrions-nous faire à la place ?
 
 Nous pouvons appeler des méthodes dans notre code de templating sur les types que nous envoyons, nous pourrions donc ajouter une méthode `SanitisedTitle` à `Post`. Cela simplifierait le template et nous pourrions facilement tester unitairement cette logique séparément si nous le souhaitons. C'est probablement la solution la plus simple, bien que pas nécessairement la plus simple.
 
-Un inconvénient de cette approche est que c'est toujours une logique de _vue_. Ce n'est pas intéressant pour le reste du système, mais cela devient une partie de l'API pour un objet de domaine principal. Ce type d'approche peut, au fil du temps, vous amener à créer des [objets God](https://en.wikipedia.org/wiki/God_object).
+Un inconvénient de cette approche est que c'est toujours une logique de _vue_. Ce n'est pas intéressant pour le reste du système, mais cela devient une partie de l'API pour un objet de domaine principal. Ce type d'approche peut, au fil du temps, vous amener à créer des [God Objects (Objets omniscients)](https://en.wikipedia.org/wiki/God_object).
 
 #### Créer un type de modèle de vue dédié, tel que `PostViewModel` avec exactement les données dont nous avons besoin
 

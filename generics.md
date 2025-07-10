@@ -616,7 +616,7 @@ Les génériques nous donnent une nouvelle façon d'exprimer des contraintes dan
 
 - Non.
 
-Il y a beaucoup de [FUD (peur, incertitude et doute)](https://fr.wikipedia.org/wiki/Fear,_uncertainty_and_doubt) dans la communauté Go concernant les génériques menant à des abstractions cauchemardesque et des bases de code déroutantes. Cela est généralement nuancé par "ils doivent être utilisés avec prudence".
+Il y a beaucoup de [FUD (*Fear, Uncertainty and Doubt*; peur, incertitude et doute)](https://fr.wikipedia.org/wiki/Fear,_uncertainty_and_doubt) dans la communauté Go concernant les génériques menant à des abstractions cauchemardesques et des bases de code déroutantes. Cela est généralement nuancé par "ils doivent être utilisés avec prudence".
 
 Bien que ce soit vrai, ce n'est pas un conseil particulièrement utile car c'est vrai pour toute fonctionnalité de langage.
 
