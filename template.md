@@ -1,12 +1,12 @@
-# Chapter template
+# Modèle de chapitre
 
-Some intro
+Une introduction
 
-## Write the test first
-## Try to run the test
-## Write the minimal amount of code for the test to run and check the failing test output
-## Write enough code to make it pass
-## Refactor
+## Écrire le test d'abord
+## Essayer d'exécuter le test
+## Écrire le minimum de code pour que le test s'exécute et vérifier la sortie du test en échec
+## Écrire suffisamment de code pour le faire passer
+## Refactoriser
 
-## Repeat for new requirements
-## Wrapping up
+## Répéter pour de nouvelles exigences
+## Résumé
