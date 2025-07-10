@@ -74,7 +74,7 @@ func ConvertToRoman(arabic int) string {
 
 Pas grand-chose à refactoriser pour l'instant.
 
-_Je sais_ que ça semble bizarre de simplement coder en dur le résultat, mais avec le TDD, nous voulons rester hors du "rouge" aussi longtemps que possible. Cela peut _sembler_ que nous n'avons pas accompli grand-chose, mais nous avons défini notre API et obtenu un test capturant l'une de nos règles ; même si le code "réel" est assez simpliste.
+_Je sais_ que ça semble bizarre de simplement coder en dur le résultat, mais avec le TDD, nous voulons rester hors de la "zone rouge" aussi longtemps que possible. Cela peut _sembler_ que nous n'avons pas accompli grand-chose, mais nous avons défini notre API et obtenu un test capturant l'une de nos règles ; même si le code "réel" est assez simpliste.
 
 Maintenant, utilisez ce sentiment d'inconfort pour écrire un nouveau test qui nous force à écrire un code légèrement moins simpliste.
 
@@ -607,7 +607,7 @@ func ConvertToArabic(roman string) int {
 }
 ```
 
-À travers la simplicité du _vrai code qui fonctionne_, nous pouvons commencer à voir un modèle comme avant. Nous devons parcourir l'entrée et construire _quelque chose_, dans ce cas un total.
+À travers la simplicité du _vrai code qui fonctionne_, nous pouvons commencer à voir un modèle similaire à celui construit précédemment. Nous devons parcourir l'entrée et construire _quelque chose_, dans ce cas un total.
 
 ```go
 func ConvertToArabic(roman string) int {
@@ -756,7 +756,7 @@ Simplement exécuter cette propriété très simple a révélé une faille dans 
 
 C'est génial ! Nous avons été forcés de réfléchir plus profondément à notre domaine, ce qui est une véritable force des tests basés sur les propriétés.
 
-Clairement, `int` n'est pas un excellent type. Et si nous essayions quelque chose d'un peu plus approprié ?
+Clairement, `int` n'est pas un excellent type pour cette tâche. Et si nous essayions quelque chose d'un peu plus approprié ?
 
 ### [`uint16`](https://golang.org/pkg/builtin/#uint16)
 

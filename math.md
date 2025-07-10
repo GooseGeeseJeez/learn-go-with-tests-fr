@@ -46,7 +46,7 @@ Donc ce que nous allons faire, c'est reconstruire ce qui précède d'une manièr
 
 ## Un Test d'Acceptation
 
-Avant de trop nous plonger, réfléchissons à un test d'acceptation.
+Avant de trop nous plonger dans le problème, réfléchissons à un test d'acceptation (*acceptance test*).
 
 Attendez, vous ne savez pas encore ce qu'est un test d'acceptation. Laissez-moi essayer de l'expliquer.
 
@@ -80,7 +80,7 @@ Donc nous dirons que
 
 Une chose à noter à propos des SVG : l'origine - le point (0,0) - est dans le coin _supérieur gauche_, pas dans le coin _inférieur gauche_ comme on pourrait s'y attendre. Il sera important de s'en souvenir lorsque nous déterminerons quels nombres utiliser dans nos lignes.
 
-Enfin, je ne décide pas _comment_ construire le SVG - nous pourrions utiliser un modèle du package [`text/template`][texttemplate], ou nous pourrions simplement envoyer des octets dans un `bytes.Buffer` ou un writer. Mais nous savons que nous aurons besoin de ces nombres, alors concentrons-nous sur le test de quelque chose qui les crée.
+Enfin, je ne décide pas _comment_ construire le SVG - nous pourrions utiliser un modèle du package `text/template`, ou nous pourrions simplement envoyer des octets dans un `bytes.Buffer` ou un writer. Mais nous savons que nous aurons besoin de ces nombres, alors concentrons-nous sur le test de quelque chose qui les crée.
 
 ### Écrire le test en premier
 
