@@ -1,123 +1,123 @@
-# Refactoring step, starting checklist
+# Liste de contrôle pour le refactoring
 
-Refactoring is a skill that, once practised enough, becomes, in most cases, second nature reasonably easy.
+Le refactoring est une compétence qui, une fois suffisamment pratiquée, devient, dans la plupart des cas, une seconde nature relativement facile à acquérir.
 
-The activity often gets conflated with more significant design changes, but they are separate. Delineating between refactoring and other programming activities is helpful because it allows me to work with clarity and discipline.
+Cette activité est souvent confondue avec des changements de conception plus importants, mais ce sont des activités distinctes. Faire la distinction entre le refactoring et les autres activités de programmation est utile car cela permet de travailler avec clarté et discipline.
 
-## Refactoring vs other activities
+## Refactoring vs autres activités
 
-Refactoring is just improving existing code and <u>not changing behaviour</u>; therefore, tests shouldn't have to change.
+Le refactoring consiste simplement à améliorer du code existant <u>sans changer son comportement</u> ; par conséquent, les tests ne devraient pas avoir à changer.
 
-This is why it's the 3rd step of the TDD cycle. Once you have added a behaviour and a test to back it up, refactoring should be an activity which requires no change to your test code. **You're doing something else** if you are "refactoring" some code and having to change tests at the same time.
+C'est pourquoi c'est la 3ème étape du cycle TDD. Une fois que vous avez ajouté un comportement et un test pour le valider, le refactoring devrait être une activité qui ne nécessite aucun changement dans votre code de test. **Vous faites autre chose** si vous "refactorisez" du code et que vous devez modifier des tests en même temps.
 
-Many very helpful refactorings are simple to learn and easy to do (your IDE almost entirely automates many) but, over time, become hugely impactful to the quality of our system.
+De nombreux refactorings très utiles sont simples à apprendre et faciles à réaliser (votre IDE en automatise presque entièrement plusieurs), mais, avec le temps, ils ont un impact énorme sur la qualité de votre système.
 
-### Other activities, such as "big" design
+### Autres activités, comme la "grande" conception
 
-> So I'm not changing the "real" behaviour, but I must change my tests? What is that?
+> Je ne change pas le comportement "réel", mais je dois changer mes tests ? Qu'est-ce que c'est ?
 
-Let's say you're working on a type and want to improve its code's quality. *Refactoring shouldn't require you to change the tests*, so you can't:
+Supposons que vous travaillez sur un type et que vous souhaitez améliorer la qualité de son code. *Le refactoring ne devrait pas vous obliger à modifier les tests*, vous ne pouvez donc pas :
 
-- Change behaviour
-- Change method signatures
+- Changer le comportement
+- Changer les signatures des méthodes
 
-...as your tests are coupled to those two things, but you can:
+...car vos tests sont couplés à ces deux éléments, mais vous pouvez :
 
-- Introduce private methods, fields and even new types & interfaces
-- Change the internals of public methods
+- Introduire des méthodes privées, des champs et même de nouveaux types et interfaces
+- Changer les mécanismes internes des méthodes publiques
 
-What if you want to change the signature of a method?
+Et si vous voulez changer la signature d'une méthode ?
 
 ```go
 func (b BirthdayGreeter) WishHappyBirthday(age int, firstname, lastname string, email Email) {
-	// some fascinating emailing code
+	// un code fascinant d'envoi d'emails
 }
 ```
 
-You may feel its argument list is too long and want to bring more cohesion and meaning to the code.
+Vous pourriez trouver que sa liste d'arguments est trop longue et vouloir apporter plus de cohésion et de sens au code.
 
 ```go
 func (b BirthdayGreeter) WishHappyBirthday(person Person)
 ```
 
-Well, you're **designing** now and must ensure you tread carefully. If you don't do this with discipline, you can make a mess of your code, the test behind it, *and* probably the things that depend on it - remember, it's not just your tests using `WishHappyBirthday`. Hopefully, it's used by "real" code too!
+Eh bien, vous êtes maintenant dans une phase de **conception** et vous devez vous assurer de procéder avec prudence. Si vous ne le faites pas avec discipline, vous risquez de faire un gâchis de votre code, du test qui le soutient, *et* probablement des éléments qui en dépendent - rappelez-vous, ce n'est pas seulement vos tests qui utilisent `WishHappyBirthday`. Espérons qu'il est également utilisé par du code "réel" !
 
-**You should still be able to drive this change with a test first**. You can split hairs over whether this is a "behaviour" change, but you want your method to behave differently.
+**Vous devriez toujours pouvoir piloter ce changement avec un test d'abord**. On peut ergoter sur la question de savoir s'il s'agit d'un changement de "comportement", mais vous voulez que votre méthode se comporte différemment.
 
-As this is a behaviour change, apply the TDD process here too. One benefit of TDD is that it gives you a simple, safe, repeatable way of driving behaviour change in your system; why abandon it in these situations just because it *feels* different?
+Comme il s'agit d'un changement de comportement, appliquez également le processus TDD ici. L'un des avantages du TDD est qu'il vous offre un moyen simple, sûr et reproductible de piloter les changements de comportement dans votre système ; pourquoi l'abandonner dans ces situations simplement parce qu'il *semble* différent ?
 
-In this case, you'll change your existing tests to use the new type. The iterative, small steps you usually do with TDD to reduce risk and bring discipline & clarity will help you in these situations, too.
+Dans ce cas, vous allez modifier vos tests existants pour utiliser le nouveau type. Les étapes itératives et petites que vous faites habituellement avec le TDD pour réduire les risques et apporter discipline et clarté vous aideront également dans ces situations.
 
-Chances are you'll have several tests that call `WishHappyBirthday`; in these scenarios, I'd suggest commenting out all but one of the tests, driving out the change, and then working through the rest of the tests as you see fit.
+Il y a des chances que vous ayez plusieurs tests qui appellent `WishHappyBirthday` ; dans ces scénarios, je suggérerais de mettre en commentaire tous les tests sauf un, de réaliser le changement, puis de retravailler le reste des tests comme vous le jugez approprié.
 
-### Big design
+### Grande conception
 
-Design can require more significant changes and more extensive conversations and usually has a level of subjectivity to it. Changing the design of parts of your system is usually a longer process than refactoring; nonetheless, you should still endeavour to reduce risk by thinking about how to do it in small steps.
+La conception peut nécessiter des changements plus importants et des conversations plus approfondies, et comporte généralement un niveau de subjectivité. Changer la conception de parties de votre système est généralement un processus plus long que le refactoring ; néanmoins, vous devriez toujours vous efforcer de réduire les risques en réfléchissant à la façon de le faire par petites étapes.
 
-### Seeing the wood for the trees
+### Voir la forêt plutôt que les arbres
 
-> [If someone can't **see the wood for the trees** in British English, or can't see the forest for the trees in American English, they are very involved in the details of something and so they do not notice what is important about the thing as a whole.](https://www.collinsdictionary.com/dictionary/english/cant-see-the-wood-for-the-trees)
+> [Si quelqu'un ne peut pas **voir la forêt à cause des arbres** en anglais britannique, ou ne peut pas voir la forêt à cause des arbres en anglais américain, c'est qu'il est très impliqué dans les détails de quelque chose et ne remarque donc pas ce qui est important dans l'ensemble.](https://www.collinsdictionary.com/dictionary/english/cant-see-the-wood-for-the-trees)
 
-Talking about the "big" design issues is more accessible when the **underlying code is well-factored**. If you and your colleagues have to spend a significant amount of time mentally parsing a mess of code every time they open a file, what chance do you have to think about the design of the code?
+Parler des questions de "grande" conception est plus facile lorsque **le code sous-jacent est bien factorisé**. Si vous et vos collègues devez passer un temps considérable à analyser mentalement un fouillis de code chaque fois que vous ouvrez un fichier, quelle chance avez-vous de réfléchir à la conception du code ?
 
-This is why **constant refactoring is so significant in the TDD process**. If we fail to address the minor design issues, we'll find it hard to engineer the overall design of our more extensive system.
+C'est pourquoi **le refactoring constant est si important dans le processus TDD**. Si nous ne résolvons pas les petits problèmes de conception, nous aurons du mal à concevoir la conception globale de notre système plus vaste.
 
-Sadly, badly-factored code gets exponentially worse as engineers pile on complexity on top of shaky foundations.
+Malheureusement, un code mal factorisé empire de façon exponentielle à mesure que les ingénieurs empilent de la complexité sur des fondations instables.
 
-## Starting mental-checklist
+## Liste de contrôle mentale de départ
 
-**Get in the habit of running through a mental checklist every TDD cycle.** The more you force yourself to practice, the easier it gets. **It is a skill that needs practice.** Remember, each of these changes should not require any change in your tests.
+**Prenez l'habitude de passer en revue une liste de contrôle mentale à chaque cycle TDD.** Plus vous vous forcez à pratiquer, plus cela devient facile. **C'est une compétence qui nécessite de la pratique.** Rappelez-vous, chacun de ces changements ne devrait nécessiter aucun changement dans vos tests.
 
-I have included shortcuts for IntelliJ/GoLand, which my colleagues and I use. Whenever I coach a new engineer, I encourage them to try and gain the muscle memory and habit of using these tools to refactor quickly and safely.
+J'ai inclus des raccourcis pour IntelliJ/GoLand, que mes collègues et moi utilisons. Chaque fois que je forme un nouvel ingénieur, je l'encourage à essayer d'acquérir la mémoire musculaire et l'habitude d'utiliser ces outils pour refactoriser rapidement et en toute sécurité.
 
-### Inline variables
+### Inliner les variables
 
-If you create a variable, only for it to be passed on to another method/function:
+Si vous créez une variable, uniquement pour la transmettre à une autre méthode/fonction :
 
 ```go
 url := baseURL + "/user/" + id
 res, err := client.Get(url)
 ```
 
-Consider inlining it (`command+option+n`) *unless* the variable name adds significant meaning.
+Envisagez de l'inliner (`command+option+n`) *sauf si* le nom de la variable ajoute une signification importante.
 
 ```go
 res, err := client.Get(baseURL + "/user/" + id)
 ```
 
-Don't be _too_ clever about inlining; the goal is not to have zero variables and instead have ridiculous one-liners that no one can read. If you can add significant naming to a value, it might be best to leave it be.
+Ne soyez pas _trop_ malin en inlinant ; l'objectif n'est pas d'avoir zéro variable et à la place d'avoir des one-liners ridicules que personne ne peut lire. Si vous pouvez ajouter un nom significatif à une valeur, il peut être préférable de la laisser telle quelle.
 
-### DRY up values with extract variables
+### DRY-ifier les valeurs avec des variables extraites
 
-"Don't repeat yourself" (DRY). Using the same value multiple times in a function? Consider extracting and capturing a variable in a meaningful variable name (`command+option+v`).
+"Don't repeat yourself" (DRY - Ne vous répétez pas). Vous utilisez la même valeur plusieurs fois dans une fonction ? Envisagez d'extraire et de capturer une variable dans un nom de variable significatif (`command+option+v`).
 
-This helps with readability and makes changing the value easier in future, as you won't have to remember to update multiple occurrences of the same value.
+Cela aide à la lisibilité et facilite la modification de la valeur à l'avenir, car vous n'aurez pas à vous souvenir de mettre à jour plusieurs occurrences de la même valeur.
 
-### DRY up stuff in general
+### DRY-ifier les choses en général
 
-[DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) gets a bad rep these days, with some justification. DRY is one of those concepts that is *too* easy to understand at a superficial level and then gets misapplied.
+[DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) a mauvaise réputation ces jours-ci, avec quelques justifications. DRY est l'un de ces concepts qui est *trop* facile à comprendre à un niveau superficiel et qui est ensuite mal appliqué.
 
-An engineer can easily take DRY too far, creating baffling, entangled abstractions to save some lines of code rather than the *real* idea of DRY, which is capturing an _idea_ in one place. Reducing the number of lines of code is often a side-effect of DRY, **but it is not the actual goal**.
+Un ingénieur peut facilement pousser DRY trop loin, créant des abstractions déconcertantes et enchevêtrées pour économiser quelques lignes de code plutôt que l'_idée_ *réelle* de DRY, qui est de capturer une _idée_ en un seul endroit. Réduire le nombre de lignes de code est souvent un effet secondaire de DRY, **mais ce n'est pas l'objectif réel**.
 
-So yes, DRY can be misapplied, but the extreme opposite of refusing to DRY up anything is also evil. Repeated code adds noise and increases maintenance costs. A refusal to gather related concepts or values into one thing due to fear of DRY misuse causes *different* problems.
+Alors oui, DRY peut être mal appliqué, mais l'extrême opposé consistant à refuser de DRY-ifier quoi que ce soit est également mauvais. Le code répété ajoute du bruit et augmente les coûts de maintenance. Un refus de rassembler des concepts ou des valeurs connexes en une seule chose par peur d'une mauvaise utilisation de DRY cause des problèmes *différents*.
 
-So rather than being extremist on either side of "must DRY everything" or "DRY is bad", engage your brain and think about the code you see in front of you. What is repeated? Does it need to be? Does the parameter list look sensible if you encapsulate some repeated code into a method? Does it feel self-documenting and encapsulate the "idea" clearly?
+Donc, plutôt que d'être extrémiste d'un côté ou de l'autre entre "tout doit être DRY" ou "DRY est mauvais", engagez votre cerveau et réfléchissez au code que vous voyez devant vous. Qu'est-ce qui est répété ? Est-ce nécessaire ? La liste des paramètres semble-t-elle raisonnable si vous encapsulez du code répété dans une méthode ? Cela semble-t-il s'auto-documenter et encapsuler clairement l'"idée" ?
 
-Nine times out of 10, you can look at the argument list of a function, and if it looks messy and confusing, then it is likely to be a poor application of DRY.
+Neuf fois sur dix, vous pouvez regarder la liste d'arguments d'une fonction, et si elle semble désordonnée et confuse, c'est probablement une mauvaise application de DRY.
 
-If making some code DRY feels hard, you're probably making things more complex; consider stopping.
+Si DRY-ifier du code semble difficile, vous rendez probablement les choses plus complexes ; envisagez de vous arrêter.
 
-DRY with care, **but practising this frequently will improve your judgement**. I encourage my colleagues to "just try it" and use source control to get back to safety if it is wrong.
+DRY-ifiez avec soin, **mais pratiquer cela fréquemment améliorera votre jugement**. J'encourage mes collègues à "simplement essayer" et à utiliser le contrôle de source pour revenir à la sécurité si c'est faux.
 
-<u>**Trying these things will teach you more than discussing it**</u>, and source control coupled with good automated tests gives you the perfect setup to experiment and learn.
+<u>**Essayer ces choses vous apprendra plus que d'en discuter**</u>, et le contrôle de source associé à de bons tests automatisés vous donne la configuration parfaite pour expérimenter et apprendre.
 
-### Extract "Magic" values.
+### Extraire les valeurs "magiques"
 
-> [Unique values with unexplained meaning or multiple occurrences which could (preferably) be replaced with named constants](https://en.wikipedia.org/wiki/Magic_number_(programming))
+> [Valeurs uniques dont la signification n'est pas expliquée ou qui apparaissent plusieurs fois et qui pourraient (de préférence) être remplacées par des constantes nommées](https://en.wikipedia.org/wiki/Magic_number_(programming))
 
-Use extract variable (command+option+v) or constant (command+option+c) to give meaning to magic values. This can be seen as the inverse of the inlining refactor. I often find myself "toggling" the code with inline and extract to help me judge what I think reads better.
+Utilisez la variable d'extraction (command+option+v) ou la constante (command+option+c) pour donner un sens aux valeurs magiques. Cela peut être considéré comme l'inverse du refactoring d'inlining. Je me retrouve souvent à "basculer" le code avec inline et extract pour m'aider à juger ce que je pense être plus lisible.
 
-Remember that extracting repeated values also adds a level of _coupling_. Everything that uses that value is now coupled. Consider the following code:
+Rappelez-vous que l'extraction de valeurs répétées ajoute également un niveau de _couplage_. Tout ce qui utilise cette valeur est maintenant couplé. Considérez le code suivant :
 
 ```go
 func main() {
@@ -134,11 +134,11 @@ func main() {
 }
 ```
 
-We are setting up some HTTP clients for our application. There are some _magic values_ here, and we could DRY up the `Timeout` by extracting a variable and giving it a meaningful name.
+Nous configurons des clients HTTP pour notre application. Il y a quelques _valeurs magiques_ ici, et nous pourrions DRY-ifier le `Timeout` en extrayant une variable et en lui donnant un nom significatif.
 
-![A screenshot of me extracting variable](https://i.imgur.com/4sgUG7L.png)
+![Une capture d'écran de moi extrayant une variable](https://i.imgur.com/4sgUG7L.png)
 
-Now the code looks like this
+Maintenant, le code ressemble à ceci
 
 ```go
 func main() {
@@ -156,17 +156,17 @@ func main() {
 }
 ```
 
-We no longer have a magic value; we have given it a meaningful name, but we have also made it so all three clients **share the same timeout**. That _may_ be what you want; refactors are quite context-specific, but it's something to be wary of.
+Nous n'avons plus de valeur magique ; nous lui avons donné un nom significatif, mais nous avons également fait en sorte que les trois clients **partagent le même timeout**. C'est _peut-être_ ce que vous voulez ; les refactorings sont assez spécifiques au contexte, mais c'est quelque chose dont il faut se méfier.
 
-If you can use your IDE well, you can do the _inline_ refactor to let the clients have separate `Timeout` values again.
+Si vous savez bien utiliser votre IDE, vous pouvez faire le refactoring _inline_ pour permettre aux clients d'avoir à nouveau des valeurs `Timeout` séparées.
 
-### Make public methods/functions easy to scan
+### Rendre les méthodes/fonctions publiques faciles à scanner
 
-Does your code have excessively long public methods or functions?
+Votre code a-t-il des méthodes ou des fonctions publiques excessivement longues ?
 
-Encapsulate the steps in private methods/functions with the extract method (`command+option+m`) refactor.
+Encapsulez les étapes dans des méthodes/fonctions privées avec le refactoring de méthode d'extraction (`command+option+m`).
 
-The code below has some boring, distracting ceremony around creating a JSON string and turning it into an `io.Reader` so that we can `POST` it in an HTTP request.
+Le code ci-dessous contient des cérémonies ennuyeuses et distrayantes autour de la création d'une chaîne JSON et de sa transformation en `io.Reader` afin que nous puissions la `POST` dans une requête HTTP.
 
 ```go
 func (ws *WidgetService) CreateWidget(name string) error {
@@ -178,11 +178,11 @@ func (ws *WidgetService) CreateWidget(name string) error {
 		url,
 		bytes.NewBuffer(payload),
 	)
-	//todo: handle codes, err etc
+	//todo: gérer les codes, err etc
 }
 ```
 
-First, use the inline variable refactor (command+option+n) to put the `payload` into the buffer creation.
+D'abord, utilisez le refactoring de variable inline (command+option+n) pour mettre le `payload` dans la création du buffer.
 
 ```go
 func (ws *WidgetService) CreateWidget(name string) error {
@@ -196,7 +196,7 @@ func (ws *WidgetService) CreateWidget(name string) error {
 }
 ```
 
-Now, we can extract the creation of the JSON payload into a function using the extract method refactor (`command+option+m`) to remove the noise from the method.
+Maintenant, nous pouvons extraire la création du payload JSON dans une fonction en utilisant le refactoring de méthode d'extraction (`command+option+m`) pour supprimer le bruit de la méthode.
 
 ```go
 func (ws *WidgetService) CreateWidget(name string) error {
@@ -210,33 +210,33 @@ func (ws *WidgetService) CreateWidget(name string) error {
 }
 ```
 
-Public methods and functions should describe *what* they do rather than *how* they do it.
+Les méthodes et fonctions publiques devraient décrire *ce qu'elles font* plutôt que *comment elles le font*.
 
-> **Whenever I have to think to understand what the code is doing, I ask myself if I can refactor the code to make that understanding more immediately apparent**
+> **Chaque fois que je dois réfléchir pour comprendre ce que fait le code, je me demande si je peux refactoriser le code pour rendre cette compréhension plus immédiatement évidente**
 
 -- Martin Fowler
 
-This helps you understand the overall design better, and it then allows you to ask questions about responsibilities:
+Cela vous aide à mieux comprendre la conception globale, et cela vous permet ensuite de poser des questions sur les responsabilités :
 
->  Why does this method do X? Shouldn't that live in Y?
+>  Pourquoi cette méthode fait-elle X ? Cela ne devrait-il pas être dans Y ?
 
-> Why does this method do so many tasks? Can we consolidate this elsewhere?
+> Pourquoi cette méthode fait-elle tant de tâches ? Pouvons-nous consolider cela ailleurs ?
 
-Private functions and methods are great; they let you wrap up irrelevant hows into whats.
+Les fonctions et méthodes privées sont excellentes ; elles vous permettent d'envelopper des "comment" non pertinents en "quoi".
 
-#### But now I don't know how it works!
+#### Mais maintenant je ne sais pas comment ça marche !
 
-A common objection to this refactoring, favouring smaller functions and methods composed of others, is that it can make understanding how the code works difficult. My blunt reply to this is
+Une objection courante à ce refactoring, favorisant des fonctions et méthodes plus petites composées d'autres, est qu'il peut rendre difficile la compréhension du fonctionnement du code. Ma réponse directe à cela est
 
-> Have you learned how to navigate codebases using your tooling effectively?
+> Avez-vous appris à naviguer efficacement dans les bases de code à l'aide de vos outils ?
 
-Quite deliberately, as the _writer_ of `CreateWidget`, I do not want the creation of a specific string to be an essential character in the narration of the method. It is distracting, irrelevant noise for the reader 99% of the time.
+Assez délibérément, en tant que _rédacteur_ de `CreateWidget`, je ne veux pas que la création d'une chaîne spécifique soit un personnage essentiel dans la narration de la méthode. C'est un bruit distrayant et non pertinent pour le lecteur 99 % du temps.
 
-However, if someone _does_ care, you press `command+b`  (or whatever "navigate to symbol" is for you) on `createWidgetPayload` ... and read it. Press `command+left-arrow` to go back again.
+Cependant, si quelqu'un _s'en soucie_, vous appuyez sur `command+b` (ou quel que soit le "naviguer vers le symbole" pour vous) sur `createWidgetPayload` ... et le lisez. Appuyez sur `command+flèche gauche` pour revenir en arrière.
 
-### Move value creation to construction time.
+### Déplacer la création de valeur au moment de la construction
 
-Methods often have to create value and use them, like the `url` in our `CreateWidget` method from before.
+Les méthodes doivent souvent créer des valeurs et les utiliser, comme l'`url` dans notre méthode `CreateWidget` précédente.
 
 ```go
 type WidgetService struct {
@@ -262,7 +262,7 @@ func (ws *WidgetService) CreateWidget(name string) error {
 }
 ```
 
-A refactoring technique you could apply here is, if a value is being created **that is not dependant on the arguments to the method**, then you can instead create a _field_ in your type and calculate it in your constructor function.
+Une technique de refactoring que vous pourriez appliquer ici est, si une valeur est créée **qui ne dépend pas des arguments de la méthode**, vous pouvez plutôt créer un _champ_ dans votre type et le calculer dans votre fonction constructeur.
 
 ```go
 type WidgetService struct {
@@ -290,11 +290,11 @@ func (ws *WidgetService) CreateWidget(name string) error {
 }
 ```
 
-By moving them to construction time, you can simplify your methods.
+En les déplaçant au moment de la construction, vous pouvez simplifier vos méthodes.
 
-#### Comparing and contrasting `CreateWidget`
+#### Comparaison de `CreateWidget`
 
-Starting with
+En commençant par
 
 ```go
 func (ws *WidgetService) CreateWidget(name string) error {
@@ -310,7 +310,7 @@ func (ws *WidgetService) CreateWidget(name string) error {
 
 ```
 
-With a few basic refactors, driven almost entirely using automated tooling, we resulted in
+Avec quelques refactorings de base, pilotés presque entièrement à l'aide d'outils automatisés, nous avons obtenu
 
 ```go
 func (ws *WidgetService) CreateWidget(name string) error {
@@ -323,51 +323,50 @@ func (ws *WidgetService) CreateWidget(name string) error {
 }
 ```
 
-This is a small improvement, but it undoubtedly reads better. If you are well-practised, this kind of improvement will barely take you a minute, and so long as you have applied TDD well, you'll have the safety net of tests to ensure you're not breaking anything. These continuous minor improvements are vital to the long-term health of a codebase.
+C'est une petite amélioration, mais elle se lit certainement mieux. Si vous êtes bien exercé, ce type d'amélioration vous prendra à peine une minute, et tant que vous avez bien appliqué le TDD, vous aurez le filet de sécurité des tests pour vous assurer que vous ne cassez rien. Ces améliorations mineures continues sont vitales pour la santé à long terme d'une base de code.
 
-### Try to remove comments.
+### Essayez de supprimer les commentaires
 
-> A heuristic we follow is that whenever we feel the need to comment something, we write a method instead.
+> Une heuristique que nous suivons est que chaque fois que nous ressentons le besoin de commenter quelque chose, nous écrivons plutôt une méthode.
 
 -- Martin Fowler
 
-Again, the extract method refactor can be your friend here.
+Encore une fois, le refactoring de méthode d'extraction peut être votre ami ici.
 
-## Exceptions to the rule
+## Exceptions à la règle
 
-There are improvements you can make to your code that require a change in your tests, which I would still be happy to put into the "refactoring" bucket, even though it breaks the rule.
+Il existe des améliorations que vous pouvez apporter à votre code qui nécessitent un changement dans vos tests, que je serais quand même heureux de mettre dans le panier "refactoring", même si cela enfreint la règle.
 
-A simple example would be renaming a public symbol (e.g., a method, type, or function) with `shift+F6`. This will, of course, change the production and test codes.
+Un exemple simple serait de renommer un symbole public (par exemple, une méthode, un type ou une fonction) avec `shift+F6`. Cela modifiera, bien sûr, les codes de production et de test.
 
-However, as it is an **automated and safe** change, the risk of going into a spiral of breaking tests and production code that so many fall into with other kinds of *design* changes is minimal.
+Cependant, comme il s'agit d'un changement **automatisé et sûr**, le risque de tomber dans une spirale de tests et de code de production défaillants que tant de personnes connaissent avec d'autres types de changements de *conception* est minime.
 
-For that reason, any changes you can safely perform with your IDE/editor, I would still happily call refactoring.
+Pour cette raison, tout changement que vous pouvez effectuer en toute sécurité avec votre IDE/éditeur, je l'appellerais volontiers du refactoring.
 
-## Use your tools to help you practice refactoring.
+## Utilisez vos outils pour vous aider à pratiquer le refactoring
 
-- You should run your unit tests every time you do one of these small changes. We invest time in making our code unit-testable, and the feedback loop of a few milliseconds is one of the significant benefits; use it!
-- Lean on source control. You shouldn't feel shy about trying out ideas. If you're happy, commit it; if not, revert. This should feel comfortable and easy and not a big deal.
-- The better you leverage your unit tests and source control, the easier to *practice* refactoring. Once you master this discipline, **your design skills increase quickly** because you have a reliable and effective feedback loop and safety net.
-- Too often in my career, I've heard developers complain about not having time to refactor; unfortunately, it is clear that it takes so much time for them because they don't do it with discipline - and they have not practised it enough.
-- Whilst typing is never the bottleneck, you should be able to use whatever editor/IDE you use to refactor safely and quickly. For instance, if your tool doesn't let you extract variables at a keystroke, you'll do it less because it's more labour-intensive and risky.
+- Vous devriez exécuter vos tests unitaires chaque fois que vous effectuez l'un de ces petits changements. Nous investissons du temps pour rendre notre code testable par unité, et la boucle de rétroaction de quelques millisecondes est l'un des avantages significatifs ; utilisez-la !
+- Appuyez-vous sur le contrôle de source. Vous ne devriez pas avoir peur d'essayer des idées. Si vous êtes satisfait, faites un commit ; sinon, revenez en arrière. Cela devrait vous sembler confortable et facile, et ne pas être un gros problème.
+- Plus vous tirez parti de vos tests unitaires et du contrôle de source, plus il est facile de *pratiquer* le refactoring. Une fois que vous maîtrisez cette discipline, **vos compétences en conception augmentent rapidement** car vous disposez d'une boucle de rétroaction et d'un filet de sécurité fiables et efficaces.
+- Trop souvent dans ma carrière, j'ai entendu des développeurs se plaindre de ne pas avoir le temps de refactoriser ; malheureusement, il est clair que cela leur prend tellement de temps parce qu'ils ne le font pas avec discipline - et ils ne l'ont pas assez pratiqué.
+- Bien que la frappe ne soit jamais le goulot d'étranglement, vous devriez être en mesure d'utiliser n'importe quel éditeur/IDE que vous utilisez pour refactoriser en toute sécurité et rapidement. Par exemple, si votre outil ne vous permet pas d'extraire des variables en une frappe de touche, vous le ferez moins car c'est plus laborieux et risqué.
 
-## Don't ask permission to refactor
+## Ne demandez pas la permission de refactoriser
 
-Refactoring should be a frequent occurrence in your work, something you're doing all the time. It also, shouldn't be a time-sink, especially if it's done little and often.
+Le refactoring devrait être une occurrence fréquente dans votre travail, quelque chose que vous faites tout le temps. Cela ne devrait pas non plus être un gouffre temporel, surtout si c'est fait peu et souvent.
 
-If you don't refactor, your internal quality will suffer, your team's capacity will drop, and pressure will increase.
+Si vous ne refactorisez pas, votre qualité interne en souffrira, la capacité de votre équipe diminuera et la pression augmentera.
 
-Martin Fowler has one more fantastic quote for us.
+Martin Fowler a une autre citation fantastique pour nous.
 
-> Other than when you are very close to a deadline, however, you should not put off refactoring because you haven’t got time. Experience with several projects has shown that a bout of refactoring results in increased productivity. Not having enough time usually is a sign that you need to do some refactoring.
+> Sauf lorsque vous êtes très proche d'une échéance, vous ne devriez pas reporter le refactoring parce que vous n'avez pas le temps. L'expérience de plusieurs projets a montré qu'une séance de refactoring entraîne une augmentation de la productivité. Ne pas avoir assez de temps est généralement un signe que vous avez besoin de faire du refactoring.
 
-## Wrap up
+## Conclusion
 
-This is not an extensive list, just a start. Read Martin Fowler's Refactoring book (2nd ed) to become a pro.
+Ce n'est pas une liste exhaustive, juste un début. Lisez le livre Refactoring de Martin Fowler (2e éd.) pour devenir un pro.
 
-Refactoring should be extremely quick and safe when you're well-practised, so there's little excuse not to do it. Too many view refactoring as a decision for others to make rather than a skill to learn to where it's a regular part of your work.
+Le refactoring devrait être extrêmement rapide et sûr lorsque vous êtes bien exercé, il y a donc peu d'excuses pour ne pas le faire. Trop de personnes considèrent le refactoring comme une décision que d'autres doivent prendre plutôt que comme une compétence à apprendre jusqu'à ce qu'elle fasse partie régulière de votre travail.
 
-We should always strive to leave code in an *exemplary* state.
+Nous devrions toujours nous efforcer de laisser le code dans un état *exemplaire*.
 
-Good refactoring leads to code that is easier to understand. An understanding of the code means better designs are easier to spot. It is much harder to find designs in systems with massive functions, needlessly duplicated code, deep nesting, etc. **Frequent, small refactoring is necessary for better design**.
-
+Un bon refactoring conduit à un code plus facile à comprendre. Une compréhension du code signifie que de meilleures conceptions sont plus faciles à repérer. Il est beaucoup plus difficile de trouver des conceptions dans des systèmes avec des fonctions massives, du code inutilement dupliqué, une imbrication profonde, etc. **Un refactoring fréquent et petit est nécessaire pour une meilleure conception**.
