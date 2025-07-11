@@ -257,7 +257,7 @@ Nous pratiquons toujours le TDD ici ! C'est un grand premier pas que nous devons
 
 ## Écrire le minimum de code pour que le test s'exécute et vérifier la sortie du test qui échoue
 
-Retenez votre nez ; n'oubliez pas, nous pourrons refactoriser une fois le test passé. Voici le code du pilote dans `driver.go` que nous placerons à la racine du projet :
+Bouchez-vous le nez pour l'instant ; n'oubliez pas, nous pourrons refactoriser une fois le test passé. Voici le code du pilote dans `driver.go` que nous placerons à la racine du projet :
 
 ```go
 package go_specs_greet
@@ -632,7 +632,7 @@ func Greet(name string) string {
 }
 ```
 
-## Une légère digression dans le patron de conception "adaptateur"
+## Une légère digression dans le Design Pattern (patron de conception) "adaptateur"
 
 Maintenant que nous avons séparé notre logique de domaine de salutation des personnes dans une fonction séparée, nous sommes maintenant libres d'écrire des tests unitaires pour notre fonction de salutation. C'est sans aucun doute beaucoup plus simple que de la tester à travers une spécification qui passe par un pilote qui frappe un serveur web, pour obtenir une chaîne !
 

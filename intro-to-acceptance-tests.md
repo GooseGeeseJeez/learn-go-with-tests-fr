@@ -146,7 +146,7 @@ func main() {
 Vous avez peut-être deviné que `SlowHandler` a un `time.Sleep` pour retarder la réponse, afin que j'aie le temps d'envoyer un `SIGTERM` et voir ce qui se passe. Le reste est assez standard :
 
 - Créer un `net/http/Server` ;
-- L'envelopper dans la bibliothèque (voir : [Patron Décorateur](https://en.wikipedia.org/wiki/Decorator_pattern)) ;
+- L'envelopper dans la bibliothèque (voir : [Pattern Décorateur](https://en.wikipedia.org/wiki/Decorator_pattern)) ;
 - Utiliser la version enveloppée pour `ListenAndServe`.
 
 ### Étapes de haut niveau pour le test d'acceptation
@@ -364,7 +364,7 @@ ok  	github.com/quii/go-graceful-shutdown/acceptancetests/withoutgracefulshutdow
 
 ## Conclusion
 
-Dans ce billet de blog, nous avons introduit les tests d'acceptation dans votre boîte à outils de test. Ils sont inestimables lorsque vous commencez à construire de vrais systèmes et sont un complément important à vos tests unitaires.
+Dans cette section, nous avons introduit les tests d'acceptation dans votre boîte à outils de test. Ils sont inestimables lorsque vous commencez à construire de vrais systèmes et sont un complément important à vos tests unitaires.
 
 La nature de *comment* écrire des tests d'acceptation dépend du système que vous construisez, mais les principes restent les mêmes. Traitez votre système comme une "boîte noire". Si vous créez un site web, vos tests devraient agir comme un utilisateur, vous voudrez donc utiliser un navigateur web headless comme [Selenium](https://www.selenium.dev/), pour cliquer sur des liens, remplir des formulaires, etc. Pour une API RESTful, vous enverrez des requêtes HTTP à l'aide d'un client.
 
@@ -374,7 +374,7 @@ Les systèmes non triviaux n'ont pas tendance à être des applications à proce
 
 ### Le prochain chapitre
 
-Dans ce billet, le test d'acceptation a été écrit rétrospectivement. Cependant, dans [Growing Object-Oriented Software](http://www.growing-object-oriented-software.com), les auteurs montrent que nous pouvons utiliser les tests d'acceptation dans une approche dirigée par les tests pour agir comme une "étoile du nord" pour guider nos efforts.
+Dans cette section, le test d'acceptation a été écrit rétrospectivement. Cependant, dans [Growing Object-Oriented Software](http://www.growing-object-oriented-software.com), les auteurs montrent que nous pouvons utiliser les tests d'acceptation dans une approche dirigée par les tests pour agir comme une "étoile du nord" pour guider nos efforts.
 
 À mesure que les systèmes deviennent plus complexes, les coûts d'écriture et de maintenance des tests d'acceptation peuvent rapidement s'envoler. Il existe d'innombrables histoires d'équipes de développement entravées par des suites de tests d'acceptation coûteuses.
 
