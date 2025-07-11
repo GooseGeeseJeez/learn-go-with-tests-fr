@@ -1,18 +1,18 @@
-# Build an application
+# Construire une application
 
-Now that you have hopefully digested the _Go Fundamentals_ section you have a solid grounding of a majority of Go's language features and how to do TDD.
+Maintenant que vous avez, espérons-le, assimilé la section _Fondamentaux de Go_, vous possédez une solide connaissance de la majorité des fonctionnalités du langage Go et savez comment pratiquer le TDD.
 
-This next section will involve building an application.
+Cette prochaine section consistera à construire une application.
 
-Each chapter will iterate on the previous one, expanding the application's functionality as our product owner dictates.
+Chaque chapitre s'appuiera sur le précédent, en élargissant les fonctionnalités de l'application selon les directives de notre product owner.
 
-New concepts will be introduced to help facilitate writing great code but most of the new material will be learning what can be accomplished from Go's standard library.
+De nouveaux concepts seront introduits pour vous aider à écrire du code de qualité, mais la plupart des nouveaux éléments seront l'apprentissage de ce que permet la bibliothèque standard de Go.
 
-By the end of this, you should have a strong grasp as to how to iteratively write an application in Go, backed by tests.
+À la fin de cette section, vous devriez avoir une bonne compréhension de la façon d'écrire itérativement une application en Go, soutenue par des tests.
 
-- [HTTP server](http-server.md) - We will create an application which listens to HTTP requests and responds to them.
-- [JSON, routing and embedding](json.md) - We will make our endpoints return JSON and explore how to do routing.
-- [IO and sorting](io.md) - We will persist and read our data from disk and we'll cover sorting data.
-- [Command line & project structure](command-line.md) - Support multiple applications from one code base and read input from command line.
-- [Time](time.md) - using the `time` package to schedule activities.
-- [WebSockets](websockets.md) - learn how to write and test a server that uses WebSockets.
+- [Serveur HTTP](http-server.md) - Nous créerons une application qui écoute les requêtes HTTP et y répond.
+- [JSON, routage et intégration](json.md) - Nous ferons en sorte que nos points de terminaison renvoient du JSON et explorerons comment faire du routage.
+- [IO et tri](io.md) - Nous persisterons et lirons nos données depuis le disque et nous aborderons le tri des données.
+- [Ligne de commande et structure de projet](command-line.md) - Prise en charge de plusieurs applications à partir d'une même base de code et lecture des entrées à partir de la ligne de commande.
+- [Temps](time.md) - utilisation du package `time` pour planifier des activités.
+- [WebSockets](websockets.md) - apprenez à écrire et à tester un serveur qui utilise les WebSockets.
