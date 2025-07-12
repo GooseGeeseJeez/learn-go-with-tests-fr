@@ -998,7 +998,7 @@ func TestRecordingWinsAndRetrievingThem(t *testing.T) {
 
 ## Écrire suffisamment de code pour le faire passer
 
-Je vais prendre quelques libertés ici et écrire plus de code que vous pourriez être à l'aise sans écrire de test.
+Je vais prendre quelques libertés ici et écrire plus de code sans écrire de test.
 
 _C'est permis !_ Nous avons toujours un test vérifiant que les choses devraient fonctionner correctement, mais ce n'est pas autour de l'unité spécifique avec laquelle nous travaillons (`InMemoryPlayerStore`).
 

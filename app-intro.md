@@ -12,7 +12,7 @@ De nouveaux concepts seront introduits pour vous aider à écrire du code de qua
 
 - [Serveur HTTP](http-server.md) - Nous créerons une application qui écoute les requêtes HTTP et y répond.
 - [JSON, routage et intégration](json.md) - Nous ferons en sorte que nos points de terminaison renvoient du JSON et explorerons comment faire du routage.
-- [IO et tri](io.md) - Nous persisterons et lirons nos données depuis le disque et nous aborderons le tri des données.
+- [IO et tri](io.md) - Nous lirons nos données depuis le disque et nous aborderons le tri des données.
 - [Ligne de commande et structure de projet](command-line.md) - Prise en charge de plusieurs applications à partir d'une même base de code et lecture des entrées à partir de la ligne de commande.
 - [Temps](time.md) - utilisation du package `time` pour planifier des activités.
 - [WebSockets](websockets.md) - apprenez à écrire et à tester un serveur qui utilise les WebSockets.

@@ -1,22 +1,22 @@
-# Liste de contrôle pour le refactoring
+# Checklist pour la refactorisation
 
-Le refactoring est une compétence qui, une fois suffisamment pratiquée, devient, dans la plupart des cas, une seconde nature relativement facile à acquérir.
+la refactorisation est une compétence qui, une fois suffisamment pratiquée, devient, dans la plupart des cas, une seconde nature relativement facile à acquérir.
 
-Cette activité est souvent confondue avec des changements de conception plus importants, mais ce sont des activités distinctes. Faire la distinction entre le refactoring et les autres activités de programmation est utile car cela permet de travailler avec clarté et discipline.
+Cette activité est souvent confondue avec des changements de conception plus importants, mais ce sont des activités distinctes. Faire la distinction entre la refactorisation et les autres activités de programmation est utile car cela permet de travailler avec clarté et discipline.
 
 ## Refactoring vs autres activités
 
-Le refactoring consiste simplement à améliorer du code existant <u>sans changer son comportement</u> ; par conséquent, les tests ne devraient pas avoir à changer.
+la refactorisation consiste simplement à améliorer du code existant <u>sans changer son comportement</u> ; par conséquent, les tests ne devraient pas avoir à changer.
 
-C'est pourquoi c'est la 3ème étape du cycle TDD. Une fois que vous avez ajouté un comportement et un test pour le valider, le refactoring devrait être une activité qui ne nécessite aucun changement dans votre code de test. **Vous faites autre chose** si vous "refactorisez" du code et que vous devez modifier des tests en même temps.
+C'est pourquoi c'est la 3ème étape du cycle TDD. Une fois que vous avez ajouté un comportement et un test pour le valider, la refactorisation devrait être une activité qui ne nécessite aucun changement dans votre code de test. **Vous faites autre chose** si vous "refactorisez" du code et que vous devez modifier des tests en même temps.
 
 De nombreux refactorings très utiles sont simples à apprendre et faciles à réaliser (votre IDE en automatise presque entièrement plusieurs), mais, avec le temps, ils ont un impact énorme sur la qualité de votre système.
 
 ### Autres activités, comme la "grande" conception
 
-> Je ne change pas le comportement "réel", mais je dois changer mes tests ? Qu'est-ce que c'est ?
+> Je ne change pas le comportement "réel", mais je dois changer mes tests ? Qu'est-ce que ça signifie ?
 
-Supposons que vous travaillez sur un type et que vous souhaitez améliorer la qualité de son code. *Le refactoring ne devrait pas vous obliger à modifier les tests*, vous ne pouvez donc pas :
+Supposons que vous travaillez sur un type et que vous souhaitez améliorer la qualité de son code. *la refactorisation ne devrait pas vous obliger à modifier les tests*, vous ne pouvez donc pas :
 
 - Changer le comportement
 - Changer les signatures des méthodes
@@ -52,7 +52,7 @@ Il y a des chances que vous ayez plusieurs tests qui appellent `WishHappyBirthda
 
 ### Grande conception
 
-La conception peut nécessiter des changements plus importants et des conversations plus approfondies, et comporte généralement un niveau de subjectivité. Changer la conception de parties de votre système est généralement un processus plus long que le refactoring ; néanmoins, vous devriez toujours vous efforcer de réduire les risques en réfléchissant à la façon de le faire par petites étapes.
+La conception peut nécessiter des changements plus importants et des conversations plus approfondies, et comporte généralement un niveau de subjectivité. Changer la conception de parties de votre système est généralement un processus plus long que la refactorisation ; néanmoins, vous devriez toujours vous efforcer de réduire les risques en réfléchissant à la façon de le faire par petites étapes.
 
 ### Voir la forêt plutôt que les arbres
 
@@ -60,9 +60,9 @@ La conception peut nécessiter des changements plus importants et des conversati
 
 Parler des questions de "grande" conception est plus facile lorsque **le code sous-jacent est bien factorisé**. Si vous et vos collègues devez passer un temps considérable à analyser mentalement un fouillis de code chaque fois que vous ouvrez un fichier, quelle chance avez-vous de réfléchir à la conception du code ?
 
-C'est pourquoi **le refactoring constant est si important dans le processus TDD**. Si nous ne résolvons pas les petits problèmes de conception, nous aurons du mal à concevoir la conception globale de notre système plus vaste.
+C'est pourquoi **la refactorisation constante est si important dans le processus TDD**. Si nous ne résolvons pas les petits problèmes de conception, nous aurons du mal à concevoir la conception globale de notre système plus vaste.
 
-Malheureusement, un code mal factorisé empire de façon exponentielle à mesure que les ingénieurs empilent de la complexité sur des fondations instables.
+Malheureusement, un code mal construit empire de façon exponentielle à mesure que les ingénieurs empilent de la complexité sur des fondations instables.
 
 ## Liste de contrôle mentale de départ
 
@@ -158,13 +158,13 @@ func main() {
 
 Nous n'avons plus de valeur magique ; nous lui avons donné un nom significatif, mais nous avons également fait en sorte que les trois clients **partagent le même timeout**. C'est _peut-être_ ce que vous voulez ; les refactorings sont assez spécifiques au contexte, mais c'est quelque chose dont il faut se méfier.
 
-Si vous savez bien utiliser votre IDE, vous pouvez faire le refactoring _inline_ pour permettre aux clients d'avoir à nouveau des valeurs `Timeout` séparées.
+Si vous savez bien utiliser votre IDE, vous pouvez faire la refactorisation _inline_ pour permettre aux clients d'avoir à nouveau des valeurs `Timeout` séparées.
 
 ### Rendre les méthodes/fonctions publiques faciles à scanner
 
 Votre code a-t-il des méthodes ou des fonctions publiques excessivement longues ?
 
-Encapsulez les étapes dans des méthodes/fonctions privées avec le refactoring de méthode d'extraction (`command+option+m`).
+Encapsulez les étapes dans des méthodes/fonctions privées avec la refactorisation de méthode d'extraction (`command+option+m`).
 
 Le code ci-dessous contient des cérémonies ennuyeuses et distrayantes autour de la création d'une chaîne JSON et de sa transformation en `io.Reader` afin que nous puissions la `POST` dans une requête HTTP.
 
@@ -182,7 +182,7 @@ func (ws *WidgetService) CreateWidget(name string) error {
 }
 ```
 
-D'abord, utilisez le refactoring de variable inline (command+option+n) pour mettre le `payload` dans la création du buffer.
+D'abord, utilisez la refactorisation de variable inline (command+option+n) pour mettre le `payload` dans la création du buffer.
 
 ```go
 func (ws *WidgetService) CreateWidget(name string) error {
@@ -196,7 +196,7 @@ func (ws *WidgetService) CreateWidget(name string) error {
 }
 ```
 
-Maintenant, nous pouvons extraire la création du payload JSON dans une fonction en utilisant le refactoring de méthode d'extraction (`command+option+m`) pour supprimer le bruit de la méthode.
+Maintenant, nous pouvons extraire la création du payload JSON dans une fonction en utilisant la refactorisation de méthode d'extraction (`command+option+m`) pour supprimer le bruit de la méthode.
 
 ```go
 func (ws *WidgetService) CreateWidget(name string) error {
@@ -331,7 +331,7 @@ C'est une petite amélioration, mais elle se lit certainement mieux. Si vous êt
 
 -- Martin Fowler
 
-Encore une fois, le refactoring de méthode d'extraction peut être votre ami ici.
+Encore une fois, la refactorisation de méthode d'extraction peut être votre ami ici.
 
 ## Exceptions à la règle
 
@@ -343,29 +343,29 @@ Cependant, comme il s'agit d'un changement **automatisé et sûr**, le risque de
 
 Pour cette raison, tout changement que vous pouvez effectuer en toute sécurité avec votre IDE/éditeur, je l'appellerais volontiers du refactoring.
 
-## Utilisez vos outils pour vous aider à pratiquer le refactoring
+## Utilisez vos outils pour vous aider à pratiquer la refactorisation
 
 - Vous devriez exécuter vos tests unitaires chaque fois que vous effectuez l'un de ces petits changements. Nous investissons du temps pour rendre notre code testable par unité, et la boucle de rétroaction de quelques millisecondes est l'un des avantages significatifs ; utilisez-la !
 - Appuyez-vous sur le contrôle de source. Vous ne devriez pas avoir peur d'essayer des idées. Si vous êtes satisfait, faites un commit ; sinon, revenez en arrière. Cela devrait vous sembler confortable et facile, et ne pas être un gros problème.
-- Plus vous tirez parti de vos tests unitaires et du contrôle de source, plus il est facile de *pratiquer* le refactoring. Une fois que vous maîtrisez cette discipline, **vos compétences en conception augmentent rapidement** car vous disposez d'une boucle de rétroaction et d'un filet de sécurité fiables et efficaces.
+- Plus vous tirez parti de vos tests unitaires et du contrôle de source, plus il est facile de *pratiquer* la refactorisation. Une fois que vous maîtrisez cette discipline, **vos compétences en conception augmentent rapidement** car vous disposez d'une boucle de rétroaction et d'un filet de sécurité fiables et efficaces.
 - Trop souvent dans ma carrière, j'ai entendu des développeurs se plaindre de ne pas avoir le temps de refactoriser ; malheureusement, il est clair que cela leur prend tellement de temps parce qu'ils ne le font pas avec discipline - et ils ne l'ont pas assez pratiqué.
-- Bien que la frappe ne soit jamais le goulot d'étranglement, vous devriez être en mesure d'utiliser n'importe quel éditeur/IDE que vous utilisez pour refactoriser en toute sécurité et rapidement. Par exemple, si votre outil ne vous permet pas d'extraire des variables en une frappe de touche, vous le ferez moins car c'est plus laborieux et risqué.
+- Bien que votre vitesse de frappe ne soit jamais la cause principale d'une perte de temps, vous devriez être en mesure d'utiliser n'importe quel éditeur/IDE que vous utilisez pour refactoriser en toute sécurité et rapidement. Par exemple, si votre outil ne vous permet pas d'extraire des variables en une frappe de touche, vous le ferez moins car c'est plus laborieux et risqué.
 
 ## Ne demandez pas la permission de refactoriser
 
-Le refactoring devrait être une occurrence fréquente dans votre travail, quelque chose que vous faites tout le temps. Cela ne devrait pas non plus être un gouffre temporel, surtout si c'est fait peu et souvent.
+la refactorisation devrait être une occurrence fréquente dans votre travail, quelque chose que vous faites tout le temps. Cela ne devrait pas non plus être un gouffre temporel, surtout si c'est fait peu et souvent.
 
 Si vous ne refactorisez pas, votre qualité interne en souffrira, la capacité de votre équipe diminuera et la pression augmentera.
 
 Martin Fowler a une autre citation fantastique pour nous.
 
-> Sauf lorsque vous êtes très proche d'une échéance, vous ne devriez pas reporter le refactoring parce que vous n'avez pas le temps. L'expérience de plusieurs projets a montré qu'une séance de refactoring entraîne une augmentation de la productivité. Ne pas avoir assez de temps est généralement un signe que vous avez besoin de faire du refactoring.
+> Sauf lorsque vous êtes très proche d'une échéance, vous ne devriez pas reporter la refactorisation parce que vous n'avez pas le temps. L'expérience de plusieurs projets a montré qu'une séance de refactoring entraîne une augmentation de la productivité. Ne pas avoir assez de temps est généralement un signe que vous avez besoin de faire du refactoring.
 
 ## Conclusion
 
 Ce n'est pas une liste exhaustive, juste un début. Lisez le livre Refactoring de Martin Fowler (2e éd.) pour devenir un pro.
 
-Le refactoring devrait être extrêmement rapide et sûr lorsque vous êtes bien exercé, il y a donc peu d'excuses pour ne pas le faire. Trop de personnes considèrent le refactoring comme une décision que d'autres doivent prendre plutôt que comme une compétence à apprendre jusqu'à ce qu'elle fasse partie régulière de votre travail.
+la refactorisation devrait être extrêmement rapide et sûr lorsque vous êtes bien exercé, il y a donc peu d'excuses pour ne pas le faire. Trop de personnes considèrent la refactorisation comme une décision que d'autres doivent prendre plutôt que comme une compétence à apprendre jusqu'à ce qu'elle fasse partie régulière de votre travail.
 
 Nous devrions toujours nous efforcer de laisser le code dans un état *exemplaire*.
 

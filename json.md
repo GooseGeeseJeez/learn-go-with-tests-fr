@@ -455,7 +455,7 @@ type StubPlayerStore struct {
 }
 ```
 
-Next, update our current test by putting some players in the league property of our stub and assert they get returned from our server.
+Ensuite, mettons à jour notre test actuel en mettant quelques *players* dans la proprété *league* de notre stub et assurons-nous qu'ils soient reçus de notre serveur.
 
 ```go
 //server_test.go

@@ -12,7 +12,7 @@ C'est un chapitre plus long que d'habitude, donc pour vous rafraîchir les idée
 
 ---
 
-Dans [Mocking,](https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/mocking), nous avons appris comment les mocks, stubs et spies sont des outils utiles pour contrôler et inspecter le comportement des unités de code en conjonction avec [l'Injection de Dépendance](https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/dependency-injection).
+Dans le chapitre sur le [Mocking](https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/mocking), nous avons appris comment les mocks, stubs et spies sont des outils utiles pour contrôler et inspecter le comportement des unités de code en conjonction avec [l'Injection de Dépendance](https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/dependency-injection).
 
 Cependant, à mesure qu'un projet se développe, ces types de doublures de test *peuvent* devenir un fardeau de maintenance, et nous devrions plutôt nous tourner vers d'autres idées de conception pour maintenir notre système facile à raisonner et à tester.
 
@@ -119,7 +119,7 @@ func (f *FakeRecipeStore) AddRecipes(r ...Recipe) error {
 
 Les fakes sont utiles parce que :
 
-- Leur caractère stateful est utile pour les tests impliquant plusieurs sujets et invocations, comme un test d'intégration. Gérer l'état avec les autres types de doublures de test est généralement déconseillé.
+- Leur caractère *stateful* (e.g le fait qu'ils aient un état bien précis) est utile pour les tests impliquant plusieurs sujets et invocations, comme un test d'intégration. Gérer l'état d'un objet à tester avec les autres types de doublures de test est généralement déconseillé.
 - S'ils ont une API sensée, ils offrent une manière plus naturelle d'affirmer l'état. Plutôt que d'espionner des appels spécifiques à une dépendance, vous pouvez interroger son état final pour voir si l'effet réel que vous voulez s'est produit.
 - Vous pouvez les utiliser pour exécuter votre application localement sans démarrer ou dépendre de vraies dépendances. Cela améliorera généralement l'expérience développeur (DX) car les fakes seront plus rapides et plus fiables que leurs homologues réels.
 
@@ -127,7 +127,7 @@ Les spies, mocks et stubs peuvent généralement être autogénérés à partir 
 
 ## Le problème avec les stubs et les mocks
 
-Dans [Anti-patterns,](https://quii.gitbook.io/learn-go-with-tests/meta/anti-patterns), il y a des détails sur la façon dont l'utilisation des doublures de test doit être faite avec précaution. Il est facile de créer une suite de tests désordonnée si vous ne les utilisez pas avec goût. À mesure qu'un projet se développe, d'autres problèmes peuvent s'insinuer.
+Dans le chapitre [Anti-patterns](https://quii.gitbook.io/learn-go-with-tests/meta/anti-patterns), il y a des détails sur la façon dont l'utilisation des doublures de test doit être faite avec précaution. Il est facile de créer une suite de tests désordonnée si vous ne les utilisez pas avec goût. À mesure qu'un projet se développe, d'autres problèmes peuvent s'insinuer.
 
 Lorsque vous encodez le comportement dans des doublures de test, vous ajoutez vos hypothèses sur le fonctionnement de la véritable dépendance dans le test. S'il y a une divergence entre le comportement du double et de la véritable dépendance, ou si cela se produit au fil du temps (par exemple, la véritable dépendance change, ce qui *doit* être attendu), **vous pourriez avoir des tests réussis mais un logiciel défaillant**.
 
@@ -177,7 +177,7 @@ Les tests d'intégration prouvent que deux ou plusieurs "unités" fonctionnent c
 
 Vous pourriez être tenté d'écrire plus de tests d'acceptation en boîte noire, mais ils deviennent rapidement coûteux en termes de temps de construction et de coûts de maintenance. Il peut être trop coûteux de démarrer un système entier lorsque vous voulez seulement vérifier qu'un *sous-ensemble* du système (mais pas seulement une seule unité) se comporte comme il le devrait. Écrire des tests coûteux en boîte noire pour chaque fonctionnalité que vous réalisez n'est pas durable pour les systèmes plus grands.
 
-#### Entrez : les Fakes
+#### La solution : les Fakes
 
 Le problème était que la façon dont nos unités étaient testées reposait sur des stubs, qui sont, pour la plupart, *sans état*. Nous voulions écrire des tests couvrant plusieurs appels d'API *avec état*, où nous pourrions créer une ressource au début puis la modifier plus tard.
 
@@ -326,10 +326,10 @@ func (c API1Contract) Test(t *testing.T) {
 }
 ```
 
-Comme discuté dans [Scaling Acceptance Tests](https://quii.gitbook.io/learn-go-with-tests/testing-fundamentals/scaling-acceptance-tests), en testant contre une interface plutôt qu'un type concret, le test devient :
+Comme discuté dans la partie [Scaling Acceptance Tests](https://quii.gitbook.io/learn-go-with-tests/testing-fundamentals/scaling-acceptance-tests), en testant contre une interface plutôt qu'un type concret, le test devient :
 
 - Découplé des détails d'implémentation
-- Peut être réutilisé dans différents contextes.
+- réutilisable dans différents contextes.
 
 Ce qui sont les exigences pour un contrat. Il nous permet de vérifier et développer notre fake _et_ de le tester contre l'implémentation réelle.
 
@@ -416,11 +416,10 @@ Pour les scénarios d'erreur, les stubs sont plus pratiques car vous avez un acc
 
 Comment faisons-nous échouer les fakes, pour exercer des préoccupations hors du chemin heureux ?
 
-Il existe de nombreux scénarios où, en tant que développeur, vous devez modifier le comportement d'un code sans changer sa source. Le **modèle décorateur** est souvent un moyen de prendre une unité de code et d'ajouter des choses comme la journalisation, la télémétrie, les nouvelles tentatives et plus encore. Nous pouvons l'utiliser pour envelopper nos fakes afin de remplacer les comportements lorsque c'est nécessaire.
+Il existe de nombreux scénarios où, en tant que développeur, vous devez modifier le comportement d'un code sans changer sa source. Le **design pattern "décorateur"** est souvent un moyen de prendre une unité de code et d'ajouter des choses comme la journalisation, la télémétrie, les nouvelles tentatives et plus encore. Nous pouvons l'utiliser pour envelopper nos fakes afin de remplacer les comportements lorsque c'est nécessaire.
 
 Revenant à l'exemple `API1`, nous pouvons créer un type qui implémente l'interface nécessaire et enveloppe le fake.
 
-```go
 ```go
 type API1Decorator struct {
 	delegate           API1
@@ -479,7 +478,7 @@ Les tests automatisés ne profitent pas directement aux clients, mais nous les �
 
 Les ingénieurs doivent facilement simuler des scénarios (de manière répétable, et non ad hoc) pour déboguer, tester et résoudre des problèmes. **Les fakes en mémoire et une bonne conception modulaire nous permettent d'isoler les acteurs pertinents pour un scénario afin d'écrire des tests rapides et appropriés à très faible coût**. Cette flexibilité permet aux développeurs d'itérer sur un système de manière beaucoup plus gérable qu'un enchevêtrement désordonné, testé via des tests en boîte noire coûteux à écrire et à exécuter ou, pire encore, des tests manuels sur un environnement partagé.
 
-C'est un exemple de [simple vs. facile](https://www.youtube.com/watch?v=SxdOUGdseq4). Bien sûr, les fakes et les contrats entraîneront plus de code écrit que les stubs et les spies à court terme, mais le résultat est un système plus simple et moins coûteux à maintenir à long terme. La mise à jour des spies, des stubs et des mocks au cas par cas est laborieuse et sujette aux erreurs, car vous n'aurez pas de contrats correspondants pour vérifier que vos doublures de test se comportent correctement.
+C'est un exemple de la distinction entre ["simple" vs. "facile"](https://www.youtube.com/watch?v=SxdOUGdseq4). Bien sûr, les fakes et les contrats entraîneront plus de code écrit que les stubs et les spies à court terme, mais le résultat est un système plus simple et moins coûteux à maintenir à long terme. La mise à jour des spies, des stubs et des mocks au cas par cas est laborieuse et sujette aux erreurs, car vous n'aurez pas de contrats correspondants pour vérifier que vos doublures de test se comportent correctement.
 
 Cette approche représente un coût initial _légèrement_ plus élevé, mais avec des coûts bien moindres une fois que les contrats et les fakes sont configurés. Les fakes sont plus réutilisables et plus fiables que les doublures de test ad hoc comme les stubs.
 
@@ -489,7 +488,7 @@ Cela semble *très* libérateur et vous donne **confiance** lorsque vous utilise
 
 Je ne recommanderais pas de _commencer_ par un contrat ; c'est une conception ascendante, pour laquelle, en général, je trouve que je dois être plus intelligent, et il y a un danger que je réfléchisse trop à des exigences hypothétiques.
 
-Cette technique est compatible avec "l'approche pilotée par les tests d'acceptation" comme discuté dans les chapitres précédents, [Le Pourquoi du TDD](https://quii.dev/The_Why_of_TDD) et dans [GOOS](http://www.growing-object-oriented-software.com)
+Cette technique est compatible avec "l'approche pilotée par les tests d'acceptation" comme discuté dans les chapitres précédents, [Le Pourquoi du TDD](https://quii.dev/The_Why_of_TDD) et [GOOS](http://www.growing-object-oriented-software.com)
 
 - Écrivez un [test d'acceptation](https://quii.gitbook.io/learn-go-with-tests/testing-fundamentals/scaling-acceptance-tests) qui échoue.
 - Produisez suffisamment de code pour le faire passer, ce qui aboutira généralement à une "couche de service" qui dépendra d'une API, d'une base de données ou autre. Habituellement, vous aurez du code de logique métier découplé des préoccupations externes (telles que la persistance, l'appel à une base de données, etc.) via une interface.
@@ -502,7 +501,7 @@ Cette technique est compatible avec "l'approche pilotée par les tests d'accepta
 
 C'est une demande courante que j'ai reportée pendant plus de cinq ans. La raison est que ce chapitre sera toujours ma réponse.
 
-<u>Ne moquez pas le pilote de base de données et n'espionnez pas les appels</u>. Ces tests sont difficiles à écrire et apportent potentiellement très peu de valeur. Vous ne devriez pas affirmer si une déclaration `SQL` particulière a été envoyée à la base de données, c'est un détail d'implémentation ; **vos tests ne devraient se soucier que du comportement**. Prouver qu'une déclaration SQL spécifique a été compilée _ne prouve pas_ que votre code _se comporte_ comme vous en avez besoin.
+<u>Ne mockez pas le pilote de base de données et n'espionnez pas les appels</u>. Ces tests sont difficiles à écrire et apportent potentiellement très peu de valeur. Vous ne devriez pas affirmer si une déclaration `SQL` particulière a été envoyée à la base de données, c'est un détail d'implémentation ; **vos tests ne devraient se soucier que du comportement**. Prouver qu'une déclaration SQL spécifique a été compilée _ne prouve pas_ que votre code _se comporte_ comme vous en avez besoin.
 
 Les **contrats** vous obligent à découpler vos tests des détails d'implémentation et à vous concentrer sur le comportement.
 
