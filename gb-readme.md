@@ -1,4 +1,4 @@
-# Apprenez Go avec les Tests
+# Apprenez Go par les Tests
 
 <div style="text-align: center">
   <img src="red-green-blue-gophers-smaller.png" />
