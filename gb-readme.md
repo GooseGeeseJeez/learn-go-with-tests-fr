@@ -21,7 +21,11 @@ Je suis fier d'offrir cette ressource gratuitement, mais si vous souhaitez expri
 * **Acquérez les bases du TDD**. Go est un bon langage pour apprendre le TDD car c'est un langage simple à apprendre et les tests sont intégrés
 * Soyez confiant dans votre capacité à commencer à écrire des systèmes robustes et bien testés en Go
 
+Version originale (Anglais) : [Learn Go With Tests](https://github.com/quii/learn-go-with-tests)
+
 Traductions :
+
+Cette traduction a été effectuée par [GooseGeeseJeez](https://github.com/GooseGeeseJeez). Voici les autres :
 
 - [中文](https://studygolang.gitbook.io/learn-go-with-tests)
 - [Português](https://larien.gitbook.io/aprenda-go-com-testes/)
