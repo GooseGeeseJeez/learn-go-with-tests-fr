@@ -41,7 +41,7 @@ func GetData() string {
 ```
 
 - Il utilise `exec.Command` qui vous permet d'exécuter une commande externe au processus
-- Nous capturons la sortie dans `cmd.StdoutPipe` qui nous renvoie un `io.ReadCloser` (cela deviendra important)
+- Nous capturons la sortie dans `cmd.StdoutPipe` qui nous renvoie un `io.ReadCloser` (cela est important pour plus tard)
 - Le reste du code est plus ou moins copié-collé de la [documentation excellente](https://golang.org/pkg/os/exec/#example_Cmd_StdoutPipe).
     - Nous capturons toute sortie de stdout dans un `io.ReadCloser`, puis nous `Start` (démarrons) la commande et attendons que toutes les données soient lues en appelant `Wait`. Entre ces deux appels, nous décodons les données dans notre structure `Payload`.
 

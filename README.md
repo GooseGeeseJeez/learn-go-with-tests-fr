@@ -10,18 +10,12 @@
 
 ## Formats
 
-- [Gitbook original (Anglais)](https://quii.gitbook.io/learn-go-with-tests)
-- [Gitbook]()
+### En Français
+- [Gitbook](https://goosegeesejeez.gitbook.io/apprendre-go-par-les-tests/)
+
+### En Anglais
+- [Gitbook original](https://quii.gitbook.io/learn-go-with-tests)
 - [EPUB ou PDF](https://github.com/quii/learn-go-with-tests/releases)
-
-## Traductions
-
-- [中文](https://studygolang.gitbook.io/learn-go-with-tests)
-- [Português](https://larien.gitbook.io/aprenda-go-com-testes/)
-- [日本語](https://andmorefine.gitbook.io/learn-go-with-tests/)
-- [한국어](https://miryang.gitbook.io/learn-go-with-tests/)
-- [Türkçe](https://halilkocaoz.gitbook.io/go-programlama-dilini-ogren/)
-- [فارسی](https://go-yaad-begir.gitbook.io/go-ba-test/)
 
 ## Soutenez-moi
 
@@ -67,7 +61,7 @@ Je suis fier d'offrir cette ressource gratuitement, mais si vous souhaitez montr
 
 ### Construire une application
 
-Maintenant que vous avez espérons-le digéré la section _Fondamentaux de Go_, vous avez une base solide de la majorité des fonctionnalités du langage Go et comment faire du TDD.
+Maintenant que vous avez (espérons-le) digéré la section _Fondamentaux de Go_, vous avez une base solide de la majorité des fonctionnalités du langage Go et comment faire du TDD.
 
 Cette section suivante impliquera de construire une application.
 
