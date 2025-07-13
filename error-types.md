@@ -1,26 +1,26 @@
-# Error types
+# Types d'erreurs
 
-**[You can find all the code here](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/error-types)**
+**[Vous pouvez trouver tout le code ici](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/error-types)**
 
-**Creating your own types for errors can be an elegant way of tidying up your code, making your code easier to use and test.**
+**Créer vos propres types pour les erreurs peut être une façon élégante de rendre votre code plus propre, plus facile à utiliser et à tester.**
 
-Pedro on the Gopher Slack asks
+Pedro sur le Slack Gopher demande
 
-> If I’m creating an error like `fmt.Errorf("%s must be foo, got %s", bar, baz)`, is there a way to test equality without comparing the string value?
+> Si je crée une erreur comme `fmt.Errorf("%s must be foo, got %s", bar, baz)`, existe-t-il un moyen de tester l'égalité sans comparer la valeur de la chaîne ?
 
-Let's make up a function to help explore this idea.
+Créons une fonction pour explorer cette idée.
 
 ```go
-// DumbGetter will get the string body of url if it gets a 200
+// DumbGetter va récupérer le corps en chaîne de caractères de l'url s'il obtient un 200
 func DumbGetter(url string) (string, error) {
 	res, err := http.Get(url)
 
 	if err != nil {
-		return "", fmt.Errorf("problem fetching from %s, %v", url, err)
+		return "", fmt.Errorf("problème lors de la récupération depuis %s, %v", url, err)
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("did not get 200 from %s, got %d", url, res.StatusCode)
+		return "", fmt.Errorf("n'a pas obtenu 200 de %s, mais %d", url, res.StatusCode)
 	}
 
 	defer res.Body.Close()
@@ -30,12 +30,12 @@ func DumbGetter(url string) (string, error) {
 }
 ```
 
-It's not uncommon to write a function that might fail for different reasons and we want to make sure we handle each scenario correctly.
+Il n'est pas rare d'écrire une fonction qui pourrait échouer pour différentes raisons, et nous voulons nous assurer de gérer correctement chaque scénario.
 
-As Pedro says, we _could_ write a test for the status error like so.
+Comme Pedro le dit, nous _pourrions_ écrire un test pour l'erreur de statut comme ceci.
 
 ```go
-t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
+t.Run("lorsque vous n'obtenez pas un 200, vous obtenez une erreur de statut", func(t *testing.T) {
 
 	svr := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		res.WriteHeader(http.StatusTeapot)
@@ -45,10 +45,10 @@ t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
 	_, err := DumbGetter(svr.URL)
 
 	if err == nil {
-		t.Fatal("expected an error")
+		t.Fatal("une erreur était attendue")
 	}
 
-	want := fmt.Sprintf("did not get 200 from %s, got %d", svr.URL, http.StatusTeapot)
+	want := fmt.Sprintf("n'a pas obtenu 200 de %s, mais %d", svr.URL, http.StatusTeapot)
 	got := err.Error()
 
 	if got != want {
@@ -57,29 +57,29 @@ t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
 })
 ```
 
-This test creates a server which always returns `StatusTeapot` and then we use its URL as the argument to `DumbGetter` so we can see it handles non `200` responses correctly.
+Ce test crée un serveur qui renvoie toujours `StatusTeapot` et nous utilisons ensuite son URL comme argument pour `DumbGetter` afin de vérifier qu'il gère correctement les réponses autres que `200`.
 
-## Problems with this way of testing
+## Problèmes avec cette façon de tester
 
-This book tries to emphasise _listen to your tests_ and this test doesn't _feel_ good:
+Ce livre essaie d'insister sur _l'écoute de vos tests_ et ce test ne _semble_ pas bon :
 
-- We're constructing the same string as production code does to test it
-- It's annoying to read and write
-- Is the exact error message string what we're _actually concerned with_ ?
+- Nous construisons la même chaîne de caractères que le code de production pour la tester
+- C'est ennuyeux à lire et à écrire
+- Est-ce que le message d'erreur exact est ce qui nous _préoccupe vraiment_ ?
 
-What does this tell us? The ergonomics of our test would be reflected on another bit of code trying to use our code.
+Qu'est-ce que cela nous dit ? L'ergonomie de notre test se refléterait sur un autre morceau de code essayant d'utiliser notre code.
 
-How does a user of our code react to the specific kind of errors we return? The best they can do is look at the error string which is extremely error prone and horrible to write.
+Comment un utilisateur de notre code réagit-il aux types spécifiques d'erreurs que nous renvoyons ? Le mieux qu'il puisse faire est d'examiner la chaîne d'erreur, ce qui est extrêmement sujet aux erreurs et horrible à écrire.
 
-## What we should do
+## Ce que nous devrions faire
 
-With TDD we have the benefit of getting into the mindset of:
+Avec le TDD, nous avons l'avantage d'adopter l'état d'esprit suivant :
 
-> How would _I_ want to use this code?
+> Comment _voudrais-je_ utiliser ce code ?
 
-What we could do for `DumbGetter` is provide a way for users to use the type system to understand what kind of error has happened.
+Ce que nous pourrions faire pour `DumbGetter`, c'est fournir un moyen aux utilisateurs d'utiliser le système de types pour comprendre quel genre d'erreur s'est produite.
 
-What if `DumbGetter` could return us something like
+Et si `DumbGetter` pouvait nous renvoyer quelque chose comme
 
 ```go
 type BadStatusError struct {
@@ -88,12 +88,12 @@ type BadStatusError struct {
 }
 ```
 
-Rather than a magical string, we have actual _data_ to work with.
+Plutôt qu'une chaîne magique, nous avons de véritables _données_ avec lesquelles travailler.
 
-Let's change our existing test to reflect this need
+Modifions notre test existant pour refléter ce besoin
 
 ```go
-t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
+t.Run("lorsque vous n'obtenez pas un 200, vous obtenez une erreur de statut", func(t *testing.T) {
 
 	svr := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		res.WriteHeader(http.StatusTeapot)
@@ -103,13 +103,13 @@ t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
 	_, err := DumbGetter(svr.URL)
 
 	if err == nil {
-		t.Fatal("expected an error")
+		t.Fatal("une erreur était attendue")
 	}
 
 	got, isStatusErr := err.(BadStatusError)
 
 	if !isStatusErr {
-		t.Fatalf("was not a BadStatusError, got %T", err)
+		t.Fatalf("ce n'était pas une BadStatusError, mais %T", err)
 	}
 
 	want := BadStatusError{URL: svr.URL, Status: http.StatusTeapot}
@@ -120,19 +120,19 @@ t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
 })
 ```
 
-We'll have to make `BadStatusError` implement the error interface.
+Nous devrons faire en sorte que `BadStatusError` implémente l'interface error.
 
 ```go
 func (b BadStatusError) Error() string {
-	return fmt.Sprintf("did not get 200 from %s, got %d", b.URL, b.Status)
+	return fmt.Sprintf("n'a pas obtenu 200 de %s, mais %d", b.URL, b.Status)
 }
 ```
 
-### What does the test do?
+### Que fait le test ?
 
-Instead of checking the exact string of the error, we are doing a [type assertion](https://tour.golang.org/methods/15) on the error to see if it is a `BadStatusError`. This reflects our desire for the _kind_ of error clearer. Assuming the assertion passes we can then check the properties of the error are correct.
+Au lieu de vérifier la chaîne exacte de l'erreur, nous faisons une [assertion de type](https://tour.golang.org/methods/15) sur l'erreur pour voir si c'est une `BadStatusError`. Cela reflète plus clairement notre désir concernant le _type_ d'erreur. En supposant que l'assertion réussisse, nous pouvons alors vérifier que les propriétés de l'erreur sont correctes.
 
-When we run the test, it tells us we didn't return the right kind of error
+Lorsque nous exécutons le test, il nous indique que nous n'avons pas renvoyé le bon type d'erreur
 
 ```
 --- FAIL: TestDumbGetter (0.00s)
@@ -140,7 +140,7 @@ When we run the test, it tells us we didn't return the right kind of error
     	error-types_test.go:56: was not a BadStatusError, got *errors.errorString
 ```
 
-Let's fix `DumbGetter` by updating our error handling code to use our type
+Corrigeons `DumbGetter` en mettant à jour notre code de gestion d'erreurs pour utiliser notre type
 
 ```go
 if res.StatusCode != http.StatusOK {
@@ -148,26 +148,26 @@ if res.StatusCode != http.StatusOK {
 }
 ```
 
-This change has had some _real positive effects_
+Ce changement a eu des _effets positifs réels_
 
-- Our `DumbGetter` function has become simpler, it's no longer concerned with the intricacies of an error string, it just creates a `BadStatusError`.
-- Our tests now reflect (and document) what a user of our code _could_ do if they decided they wanted to do some more sophisticated error handling than just logging. Just do a type assertion and then you get easy access to the properties of the error.
-- It is still "just" an `error`, so if they choose to they can pass it up the call stack or log it like any other `error`.
+- Notre fonction `DumbGetter` est devenue plus simple, elle n'est plus concernée par les subtilités d'une chaîne d'erreur, elle crée simplement une `BadStatusError`.
+- Nos tests reflètent maintenant (et documentent) ce qu'un utilisateur de notre code _pourrait_ faire s'il décidait de vouloir faire une gestion d'erreurs plus sophistiquée que simplement journaliser. Il suffit de faire une assertion de type et vous avez facilement accès aux propriétés de l'erreur.
+- C'est toujours "juste" une `error`, donc s'ils le choisissent, ils peuvent la transmettre dans la pile d'appels ou la journaliser comme toute autre `error`.
 
-## Wrapping up
+## Conclusion
 
-If you find yourself testing for multiple error conditions don't fall in to the trap of comparing the error messages.
+Si vous vous retrouvez à tester plusieurs conditions d'erreur, ne tombez pas dans le piège de comparer les messages d'erreur.
 
-This leads to flaky and difficult to read/write tests and it reflects the difficulties the users of your code will have if they also need to start doing things differently depending on the kind of errors that have occurred.
+Cela conduit à des tests instables et difficiles à lire/écrire, et cela reflète les difficultés que les utilisateurs de votre code auront s'ils doivent également commencer à faire les choses différemment selon le type d'erreurs qui se sont produites.
 
-Always make sure your tests reflect how _you'd_ like to use your code, so in this respect consider creating error types to encapsulate your kinds of errors. This makes handling different kinds of errors easier for users of your code and also makes writing your error handling code simpler and easier to read.
+Assurez-vous toujours que vos tests reflètent la façon dont _vous_ aimeriez utiliser votre code. À cet égard, envisagez de créer des types d'erreur pour encapsuler vos types d'erreurs. Cela facilite la gestion de différents types d'erreurs pour les utilisateurs de votre code et rend également l'écriture de votre code de gestion d'erreurs plus simple et plus facile à lire.
 
 ## Addendum
 
-As of Go 1.13 there are new ways to work with errors in the standard library which is covered in the [Go Blog](https://blog.golang.org/go1.13-errors)
+À partir de Go 1.13, il existe de nouvelles façons de travailler avec les erreurs dans la bibliothèque standard, ce qui est couvert dans le [Blog Go](https://blog.golang.org/go1.13-errors)
 
 ```go
-t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
+t.Run("lorsque vous n'obtenez pas un 200, vous obtenez une erreur de statut", func(t *testing.T) {
 
 	svr := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		res.WriteHeader(http.StatusTeapot)
@@ -177,7 +177,7 @@ t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
 	_, err := DumbGetter(svr.URL)
 
 	if err == nil {
-		t.Fatal("expected an error")
+		t.Fatal("une erreur était attendue")
 	}
 
 	var got BadStatusError
@@ -185,7 +185,7 @@ t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
 	want := BadStatusError{URL: svr.URL, Status: http.StatusTeapot}
 
 	if !isBadStatusError {
-		t.Fatalf("was not a BadStatusError, got %T", err)
+		t.Fatalf("ce n'était pas une BadStatusError, mais %T", err)
 	}
 
 	if got != want {
@@ -194,4 +194,4 @@ t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
 })
 ```
 
-In this case we are using [`errors.As`](https://pkg.go.dev/errors#example-As) to try and extract our error into our custom type. It returns a `bool` to denote success and extracts it into `got` for us.
+Dans ce cas, nous utilisons [`errors.As`](https://pkg.go.dev/errors#example-As) pour essayer d'extraire notre erreur dans notre type personnalisé. Il renvoie un `bool` pour indiquer le succès et l'extrait dans `got` pour nous.
