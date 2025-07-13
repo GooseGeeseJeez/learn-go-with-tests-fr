@@ -1,47 +1,47 @@
 # WebSockets
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/websockets)**
+**[Vous pouvez trouver tout le code de ce chapitre ici](https://github.com/quii/learn-go-with-tests/tree/main/websockets)**
 
-In this chapter we'll learn how to use WebSockets to improve our application.
+Dans ce chapitre, nous allons apprendre à utiliser les WebSockets pour améliorer notre application.
 
-## Project recap
+## Rappel du projet
 
-We have two applications in our poker codebase
+Nous avons deux applications dans notre code poker :
 
-- *Command line app*. Prompts the user to enter the number of players in a game. From then on informs the players of what the "blind bet" value is, which increases over time. At any point a user can enter `"{Playername} wins"` to finish the game and record the victor in a store.
-- *Web app*. Allows users to record winners of games and displays a league table. Shares the same store as the command line app.
+- *Application en ligne de commande*. Elle demande à l'utilisateur d'entrer le nombre de joueurs dans une partie. Ensuite, elle informe les joueurs de la valeur de la "mise obligatoire" (blind bet), qui augmente avec le temps. À tout moment, un utilisateur peut entrer `"{NomJoueur} wins"` pour terminer la partie et enregistrer le vainqueur dans un stockage.
+- *Application web*. Elle permet aux utilisateurs d'enregistrer les gagnants des parties et affiche un classement. Elle partage le même stockage que l'application en ligne de commande.
 
-## Next steps
+## Prochaines étapes
 
-The product owner is thrilled with the command line application but would prefer it if we could bring that functionality to the browser. She imagines a web page with a text box that allows the user to enter the number of players and when they submit the form the page displays the blind value and automatically updates it when appropriate. Like the command line application the user can declare the winner and it'll get saved in the database.
+Le propriétaire du produit est ravi de l'application en ligne de commande mais préférerait que nous puissions apporter cette fonctionnalité au navigateur. Elle imagine une page web avec une zone de texte permettant à l'utilisateur d'entrer le nombre de joueurs et, lorsqu'il soumet le formulaire, la page affiche la valeur de la mise obligatoire et la met à jour automatiquement au moment approprié. Comme pour l'application en ligne de commande, l'utilisateur peut déclarer le gagnant qui sera enregistré dans la base de données.
 
-On the face of it, it sounds quite simple but as always we must emphasise taking an _iterative_ approach to writing software.
+À première vue, cela semble assez simple, mais comme toujours, nous devons insister sur l'approche _itérative_ du développement logiciel.
 
-First we will need to serve HTML. So far all of our HTTP endpoints have returned either plaintext or JSON. We _could_ use the same techniques we know (as they're all ultimately strings) but we can also use the [html/template](https://golang.org/pkg/html/template/) package for a cleaner solution.
+Tout d'abord, nous devrons servir du HTML. Jusqu'à présent, tous nos points de terminaison HTTP ont renvoyé soit du texte brut, soit du JSON. Nous _pourrions_ utiliser les mêmes techniques que nous connaissons (car ce sont toutes des chaînes de caractères au final), mais nous pouvons également utiliser le package [html/template](https://golang.org/pkg/html/template/) pour une solution plus élégante.
 
-We also need to be able to asynchronously send messages to the user saying `The blind is now *y*` without having to refresh the browser. We can use [WebSockets](https://en.wikipedia.org/wiki/WebSocket) to facilitate this.
+Nous devons également pouvoir envoyer de manière asynchrone des messages à l'utilisateur disant `La mise obligatoire est maintenant *y*` sans avoir à rafraîchir le navigateur. Nous pouvons utiliser les [WebSockets](https://en.wikipedia.org/wiki/WebSocket) pour faciliter cela.
 
-> WebSocket is a computer communications protocol, providing full-duplex communication channels over a single TCP connection
+> WebSocket est un protocole de communication informatique, fournissant des canaux de communication full-duplex via une seule connexion TCP
 
-Given we are taking on a number of techniques it's even more important we do the smallest amount of useful work possible first and then iterate.
+Étant donné que nous adoptons un certain nombre de techniques, il est encore plus important que nous fassions d'abord le minimum de travail utile possible, puis que nous itérions.
 
-For that reason the first thing we'll do is create a web page with a form for the user to record a winner. Rather than using a plain form, we will use WebSockets to send that data to our server for it to record.
+Pour cette raison, la première chose que nous ferons sera de créer une page web avec un formulaire permettant à l'utilisateur d'enregistrer un gagnant. Au lieu d'utiliser un formulaire simple, nous utiliserons WebSockets pour envoyer ces données à notre serveur afin qu'il puisse les enregistrer.
 
-After that we'll work on the blind alerts by which point we will have a bit of infrastructure code set up.
+Après cela, nous travaillerons sur les alertes de mise obligatoire, à quel moment nous aurons mis en place un peu de code d'infrastructure.
 
-### What about tests for the JavaScript ?
+### Qu'en est-il des tests pour le JavaScript ?
 
-There will be some JavaScript written to do this but I won't go in to writing tests.
+Il y aura du JavaScript écrit pour cela, mais je n'entrerai pas dans l'écriture de tests.
 
-It is of course possible but for the sake of brevity I won't be including any explanations for it.
+C'est bien sûr possible, mais pour des raisons de concision, je n'inclurai aucune explication à ce sujet.
 
-Sorry folks. Lobby O'Reilly to pay me to make a "Learn JavaScript with tests".
+Désolé. Faites pression sur O'Reilly pour qu'ils me payent pour créer un "Learn JavaScript with tests".
 
-## Write the test first
+## Écrivez d'abord le test
 
-First thing we need to do is serve up some HTML to users when they hit `/game`.
+La première chose que nous devons faire est de servir du HTML aux utilisateurs lorsqu'ils accèdent à `/game`.
 
-Here's a reminder of the pertinent code in our web server
+Voici un rappel du code pertinent dans notre serveur web :
 
 ```go
 type PlayerServer struct {
@@ -66,7 +66,7 @@ func NewPlayerServer(store PlayerStore) *PlayerServer {
 }
 ```
 
-The _easiest_ thing we can do for now is check when we `GET /game` that we get a `200`.
+La chose la plus _simple_ que nous puissions faire pour l'instant est de vérifier que lorsque nous faisons un `GET /game`, nous obtenons un `200`.
 
 ```go
 func TestGame(t *testing.T) {
@@ -83,7 +83,7 @@ func TestGame(t *testing.T) {
 }
 ```
 
-## Try to run the test
+## Essayez d'exécuter le test
 ```
 --- FAIL: TestGame (0.00s)
 === RUN   TestGame/GET_/game_returns_200
@@ -91,17 +91,17 @@ func TestGame(t *testing.T) {
     	server_test.go:109: did not get correct status, got 404, want 200
 ```
 
-## Write enough code to make it pass
+## Écrivez suffisamment de code pour le faire passer
 
-Our server has a router setup so it's relatively easy to fix.
+Notre serveur a un routeur configuré, il est donc relativement facile à corriger.
 
-To our router add
+Ajoutez à notre routeur :
 
 ```go
 router.Handle("/game", http.HandlerFunc(p.game))
 ```
 
-And then write the `game` method
+Et écrivez ensuite la méthode `game` :
 
 ```go
 func (p *PlayerServer) game(w http.ResponseWriter, r *http.Request) {
@@ -109,11 +109,11 @@ func (p *PlayerServer) game(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-## Refactor
+## Refactorisation
 
-The server code is already fine due to us slotting in more code into the existing well-factored code very easily.
+Le code du serveur est déjà bien structuré grâce au fait que nous insérons plus de code dans le code existant bien factorisé très facilement.
 
-We can tidy up the test a little by adding a test helper function `newGameRequest` to make the request to `/game`. Try writing this yourself.
+Nous pouvons nettoyer un peu le test en ajoutant une fonction d'aide `newGameRequest` pour faire la requête à `/game`. Essayez de l'écrire vous-même.
 
 ```go
 func TestGame(t *testing.T) {
@@ -130,12 +130,11 @@ func TestGame(t *testing.T) {
 }
 ```
 
-You'll also notice I changed `assertStatus` to accept `response` rather than `response.Code` as I feel it reads better.
+Vous remarquerez également que j'ai changé `assertStatus` pour accepter `response` plutôt que `response.Code` car je trouve que c'est plus lisible.
 
-Now we need to make the endpoint return some HTML, here it is
+Maintenant, nous devons faire en sorte que le point de terminaison renvoie du HTML, le voici :
 
 ```html
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -167,27 +166,27 @@ Now we need to make the endpoint return some HTML, here it is
 </html>
 ```
 
-We have a very simple web page
+Nous avons une page web très simple :
 
- - A text input for the user to enter the winner into
- - A button they can click to declare the winner.
- - Some JavaScript to open a WebSocket connection to our server and handle the submit button being pressed
+ - Une entrée de texte pour que l'utilisateur puisse saisir le gagnant
+ - Un bouton sur lequel il peut cliquer pour déclarer le gagnant
+ - Du JavaScript pour ouvrir une connexion WebSocket à notre serveur et gérer l'appui sur le bouton de soumission
 
-`WebSocket` is built into most modern browsers so we don't need to worry about bringing in any libraries. The web page won't work for older browsers, but we're ok with that for this scenario.
+`WebSocket` est intégré à la plupart des navigateurs modernes, nous n'avons donc pas à nous soucier d'importer des bibliothèques. La page web ne fonctionnera pas pour les navigateurs plus anciens, mais c'est acceptable pour ce scénario.
 
-### How do we test we return the correct markup?
+### Comment tester que nous renvoyons le bon balisage ?
 
-There are a few ways. As has been emphasised throughout the book, it is important that the tests you write have sufficient value to justify the cost.
+Il y a plusieurs façons. Comme cela a été souligné tout au long du livre, il est important que les tests que vous écrivez aient une valeur suffisante pour justifier le coût.
 
-1. Write a browser based test, using something like Selenium. These tests are the most "realistic" of all approaches because they start an actual web browser of some kind and simulates a user interacting with it. These tests can give you a lot of confidence your system works but are more difficult to write than unit tests and much slower to run. For the purposes of our product this is overkill.
-2. Do an exact string match. This _can_ be ok but these kind of tests end up being very brittle. The moment someone changes the markup you will have a test failing when in practice nothing has _actually broken_.
-3. Check we call the correct template. We will be using a templating library from the standard lib to serve the HTML (discussed shortly) and we could inject in the _thing_ to generate the HTML and spy on its call to check we're doing it right. This would have an impact on our code's design but doesn't actually test a great deal; other than we're calling it with the correct template file. Given we will only have the one template in our project the chance of failure here seems low.
+1. Écrire un test basé sur un navigateur, en utilisant quelque chose comme Selenium. Ces tests sont les plus "réalistes" de toutes les approches car ils démarrent un vrai navigateur web et simulent un utilisateur interagissant avec lui. Ces tests peuvent vous donner beaucoup de confiance que votre système fonctionne, mais ils sont plus difficiles à écrire que les tests unitaires et beaucoup plus lents à exécuter. Pour les besoins de notre produit, c'est exagéré.
+2. Faire une correspondance exacte de chaîne. Cela _peut_ être correct, mais ces types de tests finissent par être très fragiles. Dès que quelqu'un change le balisage, vous aurez un test qui échoue alors qu'en pratique rien n'est _réellement cassé_.
+3. Vérifier que nous appelons le bon modèle. Nous utiliserons une bibliothèque de modèles de la bibliothèque standard pour servir le HTML (discuté sous peu) et nous pourrions injecter la _chose_ pour générer le HTML et espionner son appel pour vérifier que nous le faisons correctement. Cela aurait un impact sur la conception de notre code mais ne teste pas grand-chose ; seulement que nous l'appelons avec le bon fichier de modèle. Étant donné que nous n'aurons qu'un seul modèle dans notre projet, le risque d'échec semble faible.
 
-So in the book "Learn Go with Tests" for the first time, we're not going to write a test.
+Donc, dans le livre "Learn Go with Tests" pour la première fois, nous n'allons pas écrire de test.
 
-Put the markup in a file called `game.html`
+Placez le balisage dans un fichier appelé `game.html`
 
-Next change the endpoint we just wrote to the following
+Ensuite, modifiez le point de terminaison que nous venons d'écrire comme suit :
 
 ```go
 func (p *PlayerServer) game(w http.ResponseWriter, r *http.Request) {
@@ -202,23 +201,23 @@ func (p *PlayerServer) game(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-[`html/template`](https://golang.org/pkg/html/template/) is a Go package for creating HTML. In our case we call `template.ParseFiles`, giving the path of our html file. Assuming there is no error you can then `Execute` the template, which writes it to an `io.Writer`. In our case we want it to `Write` to the internet, so we give it our `http.ResponseWriter`.
+[`html/template`](https://golang.org/pkg/html/template/) est un package Go pour créer du HTML. Dans notre cas, nous appelons `template.ParseFiles`, en donnant le chemin de notre fichier html. En supposant qu'il n'y ait pas d'erreur, vous pouvez ensuite `Execute` le modèle, qui l'écrit dans un `io.Writer`. Dans notre cas, nous voulons qu'il `Write` sur internet, nous lui donnons donc notre `http.ResponseWriter`.
 
-As we have not written a test, it would be prudent to manually test our web server just to make sure things are working as we'd hope. Go to `cmd/webserver` and run the `main.go` file. Visit `http://localhost:5000/game`.
+Comme nous n'avons pas écrit de test, il serait prudent de tester manuellement notre serveur web juste pour s'assurer que les choses fonctionnent comme nous l'espérions. Allez dans `cmd/webserver` et exécutez le fichier `main.go`. Visitez `http://localhost:5000/game`.
 
-You _should_ have got an error about not being able to find the template. You can either change the path to be relative to your folder, or you can have a copy of the `game.html` in the `cmd/webserver` directory. I chose to create a symlink (`ln -s ../../game.html game.html`) to the file inside the root of the project so if I make changes they are reflected when running the server.
+Vous _devriez_ avoir obtenu une erreur concernant l'impossibilité de trouver le modèle. Vous pouvez soit modifier le chemin pour qu'il soit relatif à votre dossier, soit avoir une copie du fichier `game.html` dans le répertoire `cmd/webserver`. J'ai choisi de créer un lien symbolique (`ln -s ../../game.html game.html`) vers le fichier à la racine du projet afin que si je fais des modifications, elles soient reflétées lors de l'exécution du serveur.
 
-If you make this change and run again you should see our UI.
+Si vous effectuez cette modification et exécutez à nouveau, vous devriez voir notre interface utilisateur.
 
-Now we need to test that when we get a string over a WebSocket connection to our server that we declare it as a winner of a game.
+Maintenant, nous devons tester que lorsque nous recevons une chaîne via une connexion WebSocket à notre serveur, nous la déclarons comme gagnante d'une partie.
 
-## Write the test first
+## Écrivez d'abord le test
 
-For the first time we are going to use an external library so that we can work with WebSockets.
+Pour la première fois, nous allons utiliser une bibliothèque externe afin de pouvoir travailler avec les WebSockets.
 
-Run `go get github.com/gorilla/websocket`
+Exécutez `go get github.com/gorilla/websocket`
 
-This will fetch the code for the excellent [Gorilla WebSocket](https://github.com/gorilla/websocket) library. Now we can update our tests for our new requirement.
+Cela récupérera le code de l'excellente bibliothèque [Gorilla WebSocket](https://github.com/gorilla/websocket). Maintenant, nous pouvons mettre à jour nos tests pour notre nouvelle exigence.
 
 ```go
 t.Run("when we get a message over a websocket it is a winner of a game", func(t *testing.T) {
@@ -243,34 +242,34 @@ t.Run("when we get a message over a websocket it is a winner of a game", func(t 
 })
 ```
 
-Make sure that you have an import for the `websocket` library. My IDE automatically did it for me, so should yours.
+Assurez-vous que vous avez un import pour la bibliothèque `websocket`. Mon IDE l'a fait automatiquement pour moi, le vôtre devrait le faire aussi.
 
-To test what happens from the browser we have to open up our own WebSocket connection and write to it.
+Pour tester ce qui se passe depuis le navigateur, nous devons ouvrir notre propre connexion WebSocket et y écrire.
 
-Our previous tests around our server just called methods on our server but now we need to have a persistent connection to our server. To do that we use `httptest.NewServer` which takes a `http.Handler` and will spin it up and listen for connections.
+Nos tests précédents concernant notre serveur se contentaient d'appeler des méthodes sur notre serveur, mais maintenant nous devons avoir une connexion persistante à notre serveur. Pour ce faire, nous utilisons `httptest.NewServer` qui prend un `http.Handler` et le démarrera pour écouter les connexions.
 
-Using `websocket.DefaultDialer.Dial` we try to dial in to our server and then we'll try and send a message with our `winner`.
+En utilisant `websocket.DefaultDialer.Dial`, nous essayons de nous connecter à notre serveur, puis nous essayerons d'envoyer un message avec notre `winner`.
 
-Finally, we assert on the player store to check the winner was recorded.
+Enfin, nous affirmons sur le magasin de joueurs pour vérifier que le gagnant a été enregistré.
 
-## Try to run the test
+## Essayez d'exécuter le test
 ```
 === RUN   TestGame/when_we_get_a_message_over_a_websocket_it_is_a_winner_of_a_game
     --- FAIL: TestGame/when_we_get_a_message_over_a_websocket_it_is_a_winner_of_a_game (0.00s)
         server_test.go:124: could not open a ws connection on ws://127.0.0.1:55838/ws websocket: bad handshake
 ```
 
-We have not changed our server to accept WebSocket connections on `/ws` so we're not shaking hands yet.
+Nous n'avons pas modifié notre serveur pour accepter les connexions WebSocket sur `/ws`, nous ne faisons donc pas encore de poignée de main.
 
-## Write enough code to make it pass
+## Écrivez suffisamment de code pour le faire passer
 
-Add another listing to our router
+Ajoutez une autre entrée à notre routeur :
 
 ```go
 router.Handle("/ws", http.HandlerFunc(p.webSocket))
 ```
 
-Then add our new `webSocket` handler
+Puis ajoutez notre nouveau gestionnaire `webSocket` :
 
 ```go
 func (p *PlayerServer) webSocket(w http.ResponseWriter, r *http.Request) {
@@ -282,7 +281,7 @@ func (p *PlayerServer) webSocket(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-To accept a WebSocket connection we `Upgrade` the request. If you now re-run the test you should move on to the next error.
+Pour accepter une connexion WebSocket, nous `Upgrade` la requête. Si vous réexécutez maintenant le test, vous devriez passer à l'erreur suivante.
 
 ```
 === RUN   TestGame/when_we_get_a_message_over_a_websocket_it_is_a_winner_of_a_game
@@ -290,7 +289,7 @@ To accept a WebSocket connection we `Upgrade` the request. If you now re-run the
         server_test.go:132: got 0 calls to RecordWin want 1
 ```
 
-Now that we have a connection opened, we'll want to listen for a message and then record it as the winner.
+Maintenant que nous avons ouvert une connexion, nous voudrons écouter un message puis l'enregistrer comme gagnant.
 
 ```go
 func (p *PlayerServer) webSocket(w http.ResponseWriter, r *http.Request) {
@@ -304,30 +303,30 @@ func (p *PlayerServer) webSocket(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-(Yes, we're ignoring a lot of errors right now!)
+(Oui, nous ignorons beaucoup d'erreurs pour l'instant !)
 
-`conn.ReadMessage()` blocks on waiting for a message on the connection. Once we get one we use it to `RecordWin`. This would finally close the WebSocket connection.
+`conn.ReadMessage()` bloque en attendant un message sur la connexion. Une fois que nous en obtenons un, nous l'utilisons pour `RecordWin`. Cela fermerait finalement la connexion WebSocket.
 
-If you try and run the test, it's still failing.
+Si vous essayez d'exécuter le test, il échoue toujours.
 
-The issue is timing. There is a delay between our WebSocket connection reading the message and recording the win and our test finishes before it happens. You can test this by putting a short `time.Sleep` before the final assertion.
+Le problème est le timing. Il y a un délai entre notre connexion WebSocket lisant le message et enregistrant la victoire, et notre test se termine avant que cela ne se produise. Vous pouvez tester cela en mettant un court `time.Sleep` avant l'assertion finale.
 
-Let's go with that for now but acknowledge that putting in arbitrary sleeps into tests **is very bad practice**.
+Allons-y pour l'instant mais reconnaissons que mettre des pauses arbitraires dans les tests **est une très mauvaise pratique**.
 
 ```go
 time.Sleep(10 * time.Millisecond)
 AssertPlayerWin(t, store, winner)
 ```
 
-## Refactor
+## Refactorisation
 
-We committed many sins to make this test work both in the server code and the test code but remember this is the easiest way for us to work.
+Nous avons commis de nombreux péchés pour faire fonctionner ce test, à la fois dans le code du serveur et dans le code de test, mais souvenez-vous que c'est la façon la plus simple de travailler.
 
-We have nasty, horrible, _working_ software backed by a test, so now we are free to make it nice and know we won't break anything accidentally.
+Nous avons un logiciel désagréable, horrible, mais _fonctionnel_ soutenu par un test, donc maintenant nous sommes libres de l'améliorer et de savoir que nous ne casserons rien accidentellement.
 
-Let's start with the server code.
+Commençons par le code du serveur.
 
-We can move the `upgrader` to a private value inside our package because we don't need to redeclare it on every WebSocket connection request
+Nous pouvons déplacer l'`upgrader` vers une valeur privée à l'intérieur de notre package car nous n'avons pas besoin de le redéclarer à chaque demande de connexion WebSocket :
 
 ```go
 var wsUpgrader = websocket.Upgrader{
@@ -342,9 +341,9 @@ func (p *PlayerServer) webSocket(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-Our call to `template.ParseFiles("game.html")` will run on every `GET /game` which means we'll go to the file system on every request even though we have no need to re-parse the template. Let's refactor our code so that we parse the template once in `NewPlayerServer` instead. We'll have to make it so this function can now return an error in case we have problems fetching the template from disk or parsing it.
+Notre appel à `template.ParseFiles("game.html")` s'exécutera à chaque `GET /game`, ce qui signifie que nous irons sur le système de fichiers à chaque requête alors que nous n'avons pas besoin de réanalyser le modèle. Refactorisons notre code pour que nous analysions le modèle une fois dans `NewPlayerServer` à la place. Nous devrons faire en sorte que cette fonction puisse maintenant renvoyer une erreur au cas où nous aurions des problèmes pour récupérer le modèle sur le disque ou l'analyser.
 
-Here's the relevant changes to `PlayerServer`
+Voici les modifications pertinentes à `PlayerServer` :
 
 ```go
 type PlayerServer struct {
@@ -383,9 +382,9 @@ func (p *PlayerServer) game(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-By changing the signature of `NewPlayerServer` we now have compilation problems. Try and fix them yourself or refer to the source code if you struggle.
+En changeant la signature de `NewPlayerServer`, nous avons maintenant des problèmes de compilation. Essayez de les résoudre vous-même ou référez-vous au code source si vous avez des difficultés.
 
-For the test code I made a helper called `mustMakePlayerServer(t *testing.T, store PlayerStore) *PlayerServer` so that I could hide the error noise away from the tests.
+Pour le code de test, j'ai créé un helper appelé `mustMakePlayerServer(t *testing.T, store PlayerStore) *PlayerServer` pour pouvoir cacher le bruit d'erreur des tests.
 
 ```go
 func mustMakePlayerServer(t *testing.T, store PlayerStore) *PlayerServer {
@@ -397,7 +396,7 @@ func mustMakePlayerServer(t *testing.T, store PlayerStore) *PlayerServer {
 }
 ```
 
-Similarly, I created another helper `mustDialWS` so that I could hide nasty error noise when creating the WebSocket connection.
+De même, j'ai créé un autre helper `mustDialWS` pour pouvoir cacher le bruit d'erreur désagréable lors de la création de la connexion WebSocket.
 
 ```go
 func mustDialWS(t *testing.T, url string) *websocket.Conn {
@@ -411,7 +410,7 @@ func mustDialWS(t *testing.T, url string) *websocket.Conn {
 }
 ```
 
-Finally, in our test code we can create a helper to tidy up sending messages
+Enfin, dans notre code de test, nous pouvons créer un helper pour faciliter l'envoi de messages :
 
 ```go
 func writeWSMessage(t testing.TB, conn *websocket.Conn, message string) {
@@ -422,11 +421,11 @@ func writeWSMessage(t testing.TB, conn *websocket.Conn, message string) {
 }
 ```
 
-Now the tests are passing try running the server and declare some winners in `/game`. You should see them recorded in `/league`. Remember that every time we get a winner we _close the connection_, you will need to refresh the page to open the connection again.
+Maintenant que les tests passent, essayez d'exécuter le serveur et déclarez quelques gagnants dans `/game`. Vous devriez les voir enregistrés dans `/league`. N'oubliez pas qu'à chaque fois que nous obtenons un gagnant, nous _fermons la connexion_, vous devrez actualiser la page pour ouvrir à nouveau la connexion.
 
-We've made a trivial web form that lets users record the winner of a game. Let's iterate on it to make it so the user can start a game by providing a number of players and the server will push messages to the client informing them of what the blind value is as time passes.
+Nous avons créé un formulaire web trivial qui permet aux utilisateurs d'enregistrer le gagnant d'un jeu. Itérons dessus pour permettre à l'utilisateur de démarrer une partie en fournissant un nombre de joueurs, et le serveur enverra des messages au client les informant de la valeur de la mise aveugle au fil du temps.
 
-First update `game.html` to update our client side code for the new requirements
+Mettez d'abord à jour `game.html` pour mettre à jour notre code côté client pour les nouvelles exigences :
 
 ```html
 <!DOCTYPE html>
@@ -505,11 +504,11 @@ First update `game.html` to update our client side code for the new requirements
 </html>
 ```
 
-The main changes is bringing in a section to enter the number of players and a section to display the blind value. We have a little logic to show/hide the user interface depending on the stage of the game.
+Les principaux changements sont l'introduction d'une section pour entrer le nombre de joueurs et d'une section pour afficher la valeur de la mise aveugle. Nous avons une petite logique pour afficher/masquer l'interface utilisateur en fonction de l'étape du jeu.
 
-Any message we receive via `conn.onmessage` we assume to be blind alerts and so we set the `blindContainer.innerText` accordingly.
+Tout message que nous recevons via `conn.onmessage` est supposé être des alertes aveugles, nous définissons donc le `blindContainer.innerText` en conséquence.
 
-How do we go about sending the blind alerts? In the previous chapter we introduced the idea of `Game` so our CLI code could call a `Game` and everything else would be taken care of including scheduling blind alerts. This turned out to be a good separation of concern.
+Comment envoyer les alertes aveugles ? Dans le chapitre précédent, nous avons introduit l'idée de `Game` pour que notre code CLI puisse appeler un `Game` et tout le reste serait pris en charge, y compris la programmation des alertes aveugles. Cela s'est avéré être une bonne séparation des préoccupations.
 
 ```go
 type Game interface {
@@ -518,9 +517,9 @@ type Game interface {
 }
 ```
 
-When the user was prompted in the CLI for number of players it would `Start` the game which would kick off the blind alerts and when the user declared the winner they would `Finish`. This is the same requirements we have now, just a different way of getting the inputs; so we should look to re-use this concept if we can.
+Lorsque l'utilisateur était invité dans le CLI à saisir le nombre de joueurs, le système `Start` démarrait le jeu, ce qui lançait les alertes aveugles, et lorsque l'utilisateur déclarait le gagnant, ils `Finish`. Ce sont les mêmes exigences que nous avons maintenant, juste une façon différente d'obtenir les entrées ; nous devrions donc chercher à réutiliser ce concept si nous le pouvons.
 
-Our "real" implementation of `Game` is `TexasHoldem`
+Notre implémentation "réelle" de `Game` est `TexasHoldem` :
 
 ```go
 type TexasHoldem struct {
@@ -529,7 +528,7 @@ type TexasHoldem struct {
 }
 ```
 
-By sending in a `BlindAlerter` `TexasHoldem` can schedule blind alerts to be sent to _wherever_
+En envoyant un `BlindAlerter`, `TexasHoldem` peut programmer des alertes aveugles à envoyer _où que ce soit_ :
 
 ```go
 type BlindAlerter interface {
@@ -537,7 +536,7 @@ type BlindAlerter interface {
 }
 ```
 
-And as a reminder, here is our implementation of the `BlindAlerter` we use in the CLI.
+Et pour rappel, voici notre implémentation du `BlindAlerter` que nous utilisons dans le CLI :
 
 ```go
 func StdOutAlerter(duration time.Duration, amount int) {
@@ -547,11 +546,11 @@ func StdOutAlerter(duration time.Duration, amount int) {
 }
 ```
 
-This works in CLI because we _always want to send the alerts to `os.Stdout`_ but this won't work for our web server. For every request we get a new `http.ResponseWriter` which we then upgrade to `*websocket.Conn`. So we can't know when constructing our dependencies where our alerts need to go.
+Cela fonctionne dans le CLI car nous _voulons toujours envoyer les alertes à `os.Stdout`_, mais cela ne fonctionnera pas pour notre serveur web. Pour chaque requête, nous obtenons un nouveau `http.ResponseWriter` que nous mettons ensuite à niveau vers `*websocket.Conn`. Nous ne pouvons donc pas savoir lors de la construction de nos dépendances où nos alertes doivent aller.
 
-For that reason we need to change `BlindAlerter.ScheduleAlertAt` so that it takes a destination for the alerts so that we can re-use it in our webserver.
+Pour cette raison, nous devons changer `BlindAlerter.ScheduleAlertAt` pour qu'il prenne une destination pour les alertes afin que nous puissions le réutiliser dans notre serveur web.
 
-Open `blind_alerter.go` and add the parameter to `io.Writer`
+Ouvrez `blind_alerter.go` et ajoutez le paramètre à `io.Writer` :
 
 ```go
 type BlindAlerter interface {
@@ -565,7 +564,7 @@ func (a BlindAlerterFunc) ScheduleAlertAt(duration time.Duration, amount int, to
 }
 ```
 
-The idea of a `StdoutAlerter` doesn't fit our new model so just rename it to `Alerter`
+L'idée d'un `StdoutAlerter` ne correspond pas à notre nouveau modèle, donc renommez-le simplement en `Alerter` :
 
 ```go
 func Alerter(duration time.Duration, amount int, to io.Writer) {
@@ -575,11 +574,11 @@ func Alerter(duration time.Duration, amount int, to io.Writer) {
 }
 ```
 
-If you try and compile, it will fail in `TexasHoldem` because it is calling `ScheduleAlertAt` without a destination, to get things compiling again _for now_ hard-code it to `os.Stdout`.
+Si vous essayez de compiler, cela échouera dans `TexasHoldem` car il appelle `ScheduleAlertAt` sans destination, pour que les choses se compilent à nouveau _pour l'instant_, codez en dur `os.Stdout`.
 
-Try and run the tests and they will fail because `SpyBlindAlerter` no longer implements `BlindAlerter`, fix this by updating the signature of `ScheduleAlertAt`, run the tests and we should still be green.
+Essayez d'exécuter les tests et ils échoueront car `SpyBlindAlerter` n'implémente plus `BlindAlerter`, corrigez cela en mettant à jour la signature de `ScheduleAlertAt`, exécutez les tests et nous devrions toujours être au vert.
 
-It doesn't make any sense for `TexasHoldem` to know where to send blind alerts. Let's now update `Game` so that when you start a game you declare _where_ the alerts should go.
+Il n'est pas logique que `TexasHoldem` sache où envoyer les alertes aveugles. Mettons maintenant à jour `Game` pour que lorsque vous commencez une partie, vous déclariez _où_ les alertes doivent aller.
 
 ```go
 type Game interface {
@@ -588,19 +587,19 @@ type Game interface {
 }
 ```
 
-Let the compiler tell you what you need to fix. The change isn't so bad:
+Laissez le compilateur vous dire ce que vous devez corriger. Le changement n'est pas si mauvais :
 
-- Update `TexasHoldem` so it properly implements `Game`
-- In `CLI` when we start the game, pass in our `out` property (`cli.game.Start(numberOfPlayers, cli.out)`)
-- In `TexasHoldem`'s test i use `game.Start(5, io.Discard)` to fix the compilation problem and configure the alert output to be discarded
+- Mettez à jour `TexasHoldem` pour qu'il implémente correctement `Game`
+- Dans `CLI` quand nous commençons le jeu, passez notre propriété `out` (`cli.game.Start(numberOfPlayers, cli.out)`)
+- Dans le test de `TexasHoldem`, j'utilise `game.Start(5, io.Discard)` pour résoudre le problème de compilation et configurer la sortie d'alerte pour être jetée
 
-If you've got everything right, everything should be green! Now we can try and use `Game` within `Server`.
+Si vous avez bien fait les choses, tout devrait être au vert ! Maintenant, nous pouvons essayer d'utiliser `Game` dans `Server`.
 
-## Write the test first
+## Écrivez d'abord le test
 
-The requirements of `CLI` and `Server` are the same! It's just the delivery mechanism is different.
+Les exigences de `CLI` et de `Server` sont les mêmes ! C'est juste le mécanisme de livraison qui est différent.
 
-Let's take a look at our `CLI` test for inspiration.
+Jetons un coup d'œil à notre test `CLI` pour nous inspirer.
 
 ```go
 t.Run("start game with 3 players and finish game with 'Chris' as winner", func(t *testing.T) {
@@ -617,9 +616,9 @@ t.Run("start game with 3 players and finish game with 'Chris' as winner", func(t
 })
 ```
 
-It looks like we should be able to test drive out a similar outcome using `GameSpy`
+Il semble que nous devrions pouvoir aboutir à un résultat similaire en utilisant `GameSpy`.
 
-Replace the old websocket test with the following
+Remplacez l'ancien test websocket par ce qui suit :
 
 ```go
 t.Run("start a game with 3 players and declare Ruth the winner", func(t *testing.T) {
@@ -640,13 +639,13 @@ t.Run("start a game with 3 players and declare Ruth the winner", func(t *testing
 })
 ```
 
-- As discussed we create a spy `Game` and pass it into `mustMakePlayerServer` (be sure to update the helper to support this).
-- We then send the web socket messages for a game.
-- Finally we assert that the game is started and finished with what we expect.
+- Comme discuté, nous créons un espion `Game` et le transmettons à `mustMakePlayerServer` (assurez-vous de mettre à jour l'assistant pour prendre cela en charge).
+- Nous envoyons ensuite les messages websocket pour une partie.
+- Enfin, nous vérifions que le jeu est démarré et terminé avec ce que nous attendons.
 
-## Try to run the test
+## Essayez d'exécuter le test
 
-You'll have a number of compilation errors around `mustMakePlayerServer` in other tests. Introduce an unexported variable `dummyGame` and use it through all the tests that aren't compiling
+Vous aurez un certain nombre d'erreurs de compilation autour de `mustMakePlayerServer` dans d'autres tests. Introduisez une variable non exportée `dummyGame` et utilisez-la dans tous les tests qui ne se compilent pas :
 
 ```go
 var (
@@ -654,7 +653,7 @@ var (
 )
 ```
 
-The final error is where we are trying to pass in `Game` to `NewPlayerServer` but it doesn't support it yet
+La dernière erreur est là où nous essayons de passer `Game` à `NewPlayerServer` mais il ne le supporte pas encore :
 
 ```
 ./server_test.go:21:38: too many arguments in call to "github.com/quii/learn-go-with-tests/WebSockets/v2".NewPlayerServer
@@ -662,15 +661,15 @@ The final error is where we are trying to pass in `Game` to `NewPlayerServer` bu
 	want ("github.com/quii/learn-go-with-tests/WebSockets/v2".PlayerStore)
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Écrivez le minimum de code pour que le test s'exécute et vérifiez la sortie du test échoué
 
-Just add it as an argument for now just to get the test running
+Ajoutez-le simplement comme argument pour l'instant juste pour faire fonctionner le test :
 
 ```go
 func NewPlayerServer(store PlayerStore, game Game) (*PlayerServer, error)
 ```
 
-Finally!
+Enfin !
 
 ```
 === RUN   TestGame/start_a_game_with_3_players_and_declare_Ruth_the_winner
@@ -681,9 +680,9 @@ Finally!
 FAIL
 ```
 
-## Write enough code to make it pass
+## Écrivez suffisamment de code pour le faire passer
 
-We need to add `Game` as a field to `PlayerServer` so that it can use it when it gets requests.
+Nous devons ajouter `Game` comme champ à `PlayerServer` pour qu'il puisse l'utiliser lorsqu'il reçoit des requêtes.
 
 ```go
 type PlayerServer struct {
@@ -694,9 +693,9 @@ type PlayerServer struct {
 }
 ```
 
-(We already have a method called `game` so rename that to `playGame`)
+(Nous avons déjà une méthode appelée `game` donc renommez-la en `playGame`)
 
-Next lets assign it in our constructor
+Ensuite, attribuons-la dans notre constructeur :
 
 ```go
 func NewPlayerServer(store PlayerStore, game Game) (*PlayerServer, error) {
@@ -714,7 +713,7 @@ func NewPlayerServer(store PlayerStore, game Game) (*PlayerServer, error) {
 }
 ```
 
-Now we can use our `Game` within `webSocket`.
+Maintenant, nous pouvons utiliser notre `Game` dans `webSocket`.
 
 ```go
 func (p *PlayerServer) webSocket(w http.ResponseWriter, r *http.Request) {
@@ -729,11 +728,11 @@ func (p *PlayerServer) webSocket(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-Hooray! The tests pass.
+Hourra ! Les tests passent.
 
-We are not going to send the blind messages anywhere _just yet_ as we need to have a think about that. When we call `game.Start` we send in `io.Discard` which will just discard any messages written to it.
+Nous n'allons pas envoyer les messages d'alerte aveugle _pour l'instant_ car nous devons y réfléchir. Quand nous appelons `game.Start`, nous envoyons `io.Discard` qui va simplement jeter tous les messages qui lui sont écrits.
 
-For now start the web server up. You'll need to update the `main.go` to pass a `Game` to the `PlayerServer`
+Pour l'instant, démarrez le serveur web. Vous devrez mettre à jour le `main.go` pour passer un `Game` au `PlayerServer` :
 
 ```go
 func main() {
@@ -761,13 +760,13 @@ func main() {
 }
 ```
 
-Discounting the fact we're not getting blind alerts yet, the app does work! We've managed to re-use `Game` with `PlayerServer` and it has taken care of all the details. Once we figure out how to send our blind alerts through to the web sockets rather than discarding them it _should_ all work.
+Sans tenir compte du fait que nous ne recevons pas encore d'alertes aveugles, l'application fonctionne ! Nous avons réussi à réutiliser `Game` avec `PlayerServer` et il a pris en charge tous les détails. Une fois que nous aurons trouvé comment envoyer nos alertes aveugles à travers les websockets plutôt que de les jeter, _cela devrait_ tout fonctionner.
 
-Before that though, let's tidy up some code.
+Mais avant cela, nettoyons un peu le code.
 
-## Refactor
+## Refactorisation
 
-The way we're using WebSockets is fairly basic and the error handling is fairly naive, so I wanted to encapsulate that in a type just to remove that messiness from the server code. We may wish to revisit it later but for now this'll tidy things up a bit
+La façon dont nous utilisons les WebSockets est assez basique et la gestion des erreurs est assez naïve, j'ai donc voulu encapsuler cela dans un type juste pour supprimer ce désordre du code du serveur. Nous pourrons peut-être le revoir plus tard, mais pour l'instant, cela va un peu nettoyer les choses :
 
 ```go
 type playerServerWS struct {
@@ -793,7 +792,7 @@ func (w *playerServerWS) WaitForMsg() string {
 }
 ```
 
-Now the server code is a bit simplified
+Maintenant, le code du serveur est un peu simplifié :
 
 ```go
 func (p *PlayerServer) webSocket(w http.ResponseWriter, r *http.Request) {
@@ -808,23 +807,23 @@ func (p *PlayerServer) webSocket(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-Once we figure out how to not discard the blind messages we're done.
+Une fois que nous aurons trouvé comment ne pas jeter les messages d'alerte aveugle, nous aurons terminé.
 
-### Let's _not_ write a test!
+### N'écrivons _pas_ de test !
 
-Sometimes when we're not sure how to do something, it's best just to play around and try things out! Make sure your work is committed first because once we've figured out a way we should drive it through a test.
+Parfois, lorsque nous ne sommes pas sûrs de la façon de faire quelque chose, il est préférable de jouer et d'essayer des choses ! Assurez-vous que votre travail est d'abord validé car une fois que nous aurons trouvé un moyen, nous devrions le faire passer par un test.
 
-The problematic line of code we have is
+La ligne de code problématique que nous avons est :
 
 ```go
 p.game.Start(numberOfPlayers, io.Discard) //todo: Don't discard the blinds messages!
 ```
 
-We need to pass in an `io.Writer` for the game to write the blind alerts to.
+Nous devons passer un `io.Writer` pour que le jeu puisse y écrire les alertes aveugles.
 
-Wouldn't it be nice if we could pass in our `playerServerWS` from before? It's our wrapper around our WebSocket so it _feels_ like we should be able to send that to our `Game` to send messages to.
+Ne serait-il pas agréable si nous pouvions passer notre `playerServerWS` d'avant ? C'est notre enveloppe autour de notre WebSocket, donc il _semble_ que nous devrions pouvoir l'envoyer à notre `Game` pour envoyer des messages.
 
-Give it a go:
+Essayez :
 
 ```go
 func (p *PlayerServer) webSocket(w http.ResponseWriter, r *http.Request) {
@@ -837,14 +836,14 @@ func (p *PlayerServer) webSocket(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-The compiler complains
+Le compilateur se plaint :
 
 ```
 ./server.go:71:14: cannot use ws (type *playerServerWS) as type io.Writer in argument to p.game.Start:
 	*playerServerWS does not implement io.Writer (missing Write method)
 ```
 
-It seems the obvious thing to do, would be to make it so `playerServerWS` _does_ implement `io.Writer`. To do so we use the underlying `*websocket.Conn` to use `WriteMessage` to send the message down the websocket
+Il semble que la chose évidente à faire serait de faire en sorte que `playerServerWS` _implémente_ `io.Writer`. Pour ce faire, nous utilisons le `*websocket.Conn` sous-jacent pour utiliser `WriteMessage` pour envoyer le message à travers le websocket :
 
 ```go
 func (w *playerServerWS) Write(p []byte) (n int, err error) {
@@ -858,27 +857,27 @@ func (w *playerServerWS) Write(p []byte) (n int, err error) {
 }
 ```
 
-This seems too easy! Try and run the application and see if it works.
+Cela semble trop facile ! Essayez d'exécuter l'application et voyez si elle fonctionne.
 
-Beforehand edit `TexasHoldem` so that the blind increment time is shorter so you can see it in action
+Auparavant, modifiez `TexasHoldem` pour que le temps d'incrémentation des blinds soit plus court afin que vous puissiez le voir en action :
 
 ```go
-blindIncrement := time.Duration(5+numberOfPlayers) * time.Second // (rather than a minute)
+blindIncrement := time.Duration(5+numberOfPlayers) * time.Second // (plutôt qu'une minute)
 ```
 
-You should see it working! The blind amount increments in the browser as if by magic.
+Vous devriez le voir fonctionner ! Le montant de la mise aveugle s'incrémente dans le navigateur comme par magie.
 
-Now let's revert the code and think how to test it. In order to _implement_ it all we did was pass through to `StartGame` was `playerServerWS` rather than `io.Discard` so that might make you think we should perhaps spy on the call to verify it works.
+Maintenant, revenons au code et réfléchissons à la façon de le tester. Pour _l'implémenter_, tout ce que nous avons fait était de passer à `StartGame` `playerServerWS` plutôt que `io.Discard`, ce qui pourrait vous faire penser que nous devrions peut-être espionner l'appel pour vérifier qu'il fonctionne.
 
-Spying is great and helps us check implementation details but we should always try and favour testing the _real_ behaviour if we can because when you decide to refactor it's often spy tests that start failing because they are usually checking implementation details that you're trying to change.
+L'espionnage est génial et nous aide à vérifier les détails d'implémentation, mais nous devrions toujours essayer de favoriser le test du _vrai_ comportement si nous le pouvons, car lorsque vous décidez de refactoriser, ce sont souvent les tests d'espionnage qui commencent à échouer car ils vérifient généralement les détails d'implémentation que vous essayez de changer.
 
-Our test currently opens a websocket connection to our running server and sends messages to make it do things. Equally we should be able to test the messages our server sends back over the websocket connection.
+Notre test ouvre actuellement une connexion websocket à notre serveur en cours d'exécution et envoie des messages pour lui faire faire des choses. De même, nous devrions pouvoir tester les messages que notre serveur renvoie via la connexion websocket.
 
-## Write the test first
+## Écrivez d'abord le test
 
-We'll edit our existing test.
+Nous allons modifier notre test existant.
 
-Currently, our `GameSpy` does not send any data to `out` when you call `Start`. We should change it so we can configure it to send a canned message and then we can check that message gets sent to the websocket. This should give us confidence that we have configured things correctly whilst still exercising the real behaviour we want.
+Actuellement, notre `GameSpy` n'envoie aucune donnée à `out` lorsque vous appelez `Start`. Nous devrions le modifier pour que nous puissions le configurer pour envoyer un message en conserve, puis nous pouvons vérifier que ce message est envoyé au websocket. Cela devrait nous donner confiance que nous avons configuré les choses correctement tout en exerçant le comportement réel que nous voulons.
 
 ```go
 type GameSpy struct {
@@ -891,9 +890,9 @@ type GameSpy struct {
 }
 ```
 
-Add `BlindAlert` field.
+Ajoutez le champ `BlindAlert`.
 
-Update `GameSpy` `Start` to send the canned message to `out`.
+Mettez à jour `GameSpy` `Start` pour envoyer le message en conserve à `out`.
 
 ```go
 func (g *GameSpy) Start(numberOfPlayers int, out io.Writer) {
@@ -903,9 +902,9 @@ func (g *GameSpy) Start(numberOfPlayers int, out io.Writer) {
 }
 ```
 
-This now means when we exercise `PlayerServer` when it tries to `Start` the game it should end up sending messages through the websocket if things are working right.
+Cela signifie maintenant que lorsque nous exerçons `PlayerServer` lorsqu'il essaie de `Start` le jeu, il devrait finir par envoyer des messages via le websocket si les choses fonctionnent correctement.
 
-Finally, we can update the test
+Enfin, nous pouvons mettre à jour le test :
 
 ```go
 t.Run("start a game with 3 players, send some blind alerts down WS and declare Ruth the winner", func(t *testing.T) {
@@ -934,17 +933,16 @@ t.Run("start a game with 3 players, send some blind alerts down WS and declare R
 })
 ```
 
-- We've added a `wantedBlindAlert` and configured our `GameSpy` to send it to `out` if `Start` is called.
-- We hope it gets sent in the websocket connection so we've added a call to `ws.ReadMessage()` to wait for a message to be sent and then check it's the one we expected.
+- Nous avons ajouté un `wantedBlindAlert` et configuré notre `GameSpy` pour l'envoyer à `out` si `Start` est appelé.
+- Nous espérons qu'il est envoyé dans la connexion websocket, nous avons donc ajouté un appel à `ws.ReadMessage()` pour attendre qu'un message soit envoyé, puis vérifier que c'est celui que nous attendions.
 
-## Try to run the test
+## Essayez d'exécuter le test
 
-You should find the test hangs forever. This is because `ws.ReadMessage()` will block until it gets a message, which it never will.
+Vous devriez constater que le test est bloqué indéfiniment. C'est parce que `ws.ReadMessage()` bloquera jusqu'à ce qu'il obtienne un message, ce qui n'arrivera jamais.
 
+## Écrivez le minimum de code pour que le test s'exécute et vérifiez la sortie du test échoué
 
-## Write the minimal amount of code for the test to run and check the failing test output
-
-We should never have tests that hang so let's introduce a way of handling code that we want to timeout.
+Nous ne devrions jamais avoir de tests qui se bloquent, donc introduisons un moyen de gérer le code que nous voulons temporiser.
 
 ```go
 func within(t testing.TB, d time.Duration, assert func()) {
@@ -965,11 +963,11 @@ func within(t testing.TB, d time.Duration, assert func()) {
 }
 ```
 
-What `within` does is take a function `assert` as an argument and then runs it in a go routine. If/When the function finishes it will signal it is done via the `done` channel.
+Ce que fait `within`, c'est prendre une fonction `assert` comme argument puis l'exécuter dans une go routine. Si/Quand la fonction se termine, elle signalera qu'elle a terminé via le canal `done`.
 
-While that happens we use a `select` statement which lets us wait for a channel to send a message. From here it is a race between the `assert` function and `time.After` which will send a signal when the duration has occurred.
+Pendant ce temps, nous utilisons une instruction `select` qui nous permet d'attendre qu'un canal envoie un message. À partir de là, c'est une course entre la fonction `assert` et `time.After` qui enverra un signal lorsque la durée sera écoulée.
 
-Finally, I made a helper function for our assertion just to make things a bit neater
+Enfin, j'ai créé une fonction d'aide pour notre assertion juste pour rendre les choses un peu plus propres :
 
 ```go
 func assertWebsocketGotMsg(t *testing.T, ws *websocket.Conn, want string) {
@@ -980,7 +978,7 @@ func assertWebsocketGotMsg(t *testing.T, ws *websocket.Conn, want string) {
 }
 ```
 
-Here's how the test reads now
+Voici comment se lit maintenant le test :
 
 ```go
 t.Run("start a game with 3 players, send some blind alerts down WS and declare Ruth the winner", func(t *testing.T) {
@@ -1005,7 +1003,7 @@ t.Run("start a game with 3 players, send some blind alerts down WS and declare R
 })
 ```
 
-Now if you run the test...
+Maintenant, si vous exécutez le test...
 
 ```
 === RUN   TestGame
@@ -1016,9 +1014,9 @@ Now if you run the test...
     	server_test.go:150: got "", want "Blind is 100"
 ```
 
-## Write enough code to make it pass
+## Écrivez suffisamment de code pour le faire passer
 
-Finally, we can now change our server code, so it sends our WebSocket connection to the game when it starts
+Enfin, nous pouvons maintenant changer notre code serveur, pour qu'il envoie notre connexion WebSocket au jeu quand il démarre :
 
 ```go
 func (p *PlayerServer) webSocket(w http.ResponseWriter, r *http.Request) {
@@ -1033,13 +1031,13 @@ func (p *PlayerServer) webSocket(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-## Refactor
+## Refactorisation
 
-The server code was a very small change so there's not a lot to change here but the test code still has a `time.Sleep` call because we have to wait for our server to do its work asynchronously.
+Le code du serveur était un très petit changement, il n'y a donc pas beaucoup à changer ici, mais le code de test contient toujours un appel `time.Sleep` car nous devons attendre que notre serveur fasse son travail de manière asynchrone.
 
-We can refactor our helpers `assertGameStartedWith` and `assertFinishCalledWith` so that they can retry their assertions for a short period before failing.
+Nous pouvons refactoriser nos helpers `assertGameStartedWith` et `assertFinishCalledWith` pour qu'ils puissent réessayer leurs assertions pendant une courte période avant d'échouer.
 
-Here's how you can do it for `assertFinishCalledWith` and you can use the same approach for the other helper.
+Voici comment vous pouvez le faire pour `assertFinishCalledWith` et vous pouvez utiliser la même approche pour l'autre helper :
 
 ```go
 func assertFinishCalledWith(t testing.TB, game *GameSpy, winner string) {
@@ -1055,7 +1053,7 @@ func assertFinishCalledWith(t testing.TB, game *GameSpy, winner string) {
 }
 ```
 
-Here is how `retryUntil` is defined
+Voici comment `retryUntil` est défini :
 
 ```go
 func retryUntil(d time.Duration, f func() bool) bool {
@@ -1069,23 +1067,23 @@ func retryUntil(d time.Duration, f func() bool) bool {
 }
 ```
 
-## Wrapping up
+## Récapitulation
 
-Our application is now complete. A game of poker can be started via a web browser and the users are informed of the blind bet value as time goes by via WebSockets. When the game finishes they can record the winner which is persisted using code we wrote a few chapters ago. The players can find out who is the best (or luckiest) poker player using the website's `/league` endpoint.
+Notre application est maintenant complète. Un jeu de poker peut être lancé via un navigateur web et les utilisateurs sont informés de la valeur de la mise aveugle au fil du temps via WebSockets. Lorsque la partie se termine, ils peuvent enregistrer le gagnant qui est persisté en utilisant le code que nous avons écrit il y a quelques chapitres. Les joueurs peuvent découvrir qui est le meilleur (ou le plus chanceux) joueur de poker en utilisant le point de terminaison `/league` du site web.
 
-Through the journey we have made mistakes but with the TDD flow we have never been very far away from working software. We were free to keep iterating and experimenting.
+Au cours de ce voyage, nous avons commis des erreurs, mais avec le flux TDD, nous n'avons jamais été très loin d'un logiciel fonctionnel. Nous étions libres de continuer à itérer et à expérimenter.
 
-The final chapter will retrospect on the approach, the design we've arrived at and tie up some loose ends.
+Le dernier chapitre fera une rétrospective sur l'approche, la conception à laquelle nous sommes arrivés et réglera certains détails.
 
-We covered a few things in this chapter
+Nous avons couvert plusieurs choses dans ce chapitre :
 
 ### WebSockets
 
-- Convenient way of sending messages between clients and servers that does not require the client to keep polling the server. Both the client and server code we have is very simple.
-- Trivial to test, but you have to be wary of the asynchronous nature of the tests
+- Une façon pratique d'envoyer des messages entre les clients et les serveurs qui ne nécessite pas que le client interroge constamment le serveur. Le code client et serveur que nous avons est très simple.
+- Trivial à tester, mais vous devez faire attention à la nature asynchrone des tests.
 
-### Handling code in tests that can be delayed or never finish
+### Gérer le code dans les tests qui peut être retardé ou ne jamais se terminer
 
-- Create helper functions to retry assertions and add timeouts.
-- We can use go routines to ensure the assertions don't block anything and then use channels to let them signal that they have finished, or not.
-- The `time` package has some helpful functions which also send signals via channels about events in time so we can set timeouts
+- Créez des fonctions d'aide pour réessayer les assertions et ajouter des délais d'expiration.
+- Nous pouvons utiliser des goroutines pour garantir que les assertions ne bloquent rien, puis utiliser des canaux pour leur permettre de signaler qu'elles ont terminé, ou non.
+- Le package `time` contient des fonctions utiles qui envoient également des signaux via des canaux sur des événements dans le temps afin que nous puissions définir des délais d'expiration.
