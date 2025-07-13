@@ -4,7 +4,7 @@
 
 [Dans le chapitre précédent](json.md), nous avons continué à faire évoluer notre application en ajoutant un nouvel endpoint `/league`. En cours de route, nous avons appris à gérer le JSON, à intégrer des types et à faire du routage.
 
-Notre product owner est quelque peu contrariée par le logiciel qui perd les scores lorsque le serveur est redémarré. Cela est dû au fait que notre implémentation du magasin est en mémoire. Elle n'est pas non plus satisfaite que nous n'ayons pas interprété que l'endpoint `/league` devrait renvoyer les joueurs classés par nombre de victoires !
+Notre *product owner* est quelque peu contrariée par le logiciel qui perd les scores lorsque le serveur est redémarré. Cela est dû au fait que notre implémentation du magasin est en mémoire vive (RAM). Elle n'est pas non plus satisfaite que nous n'ayons pas interprété que l'endpoint `/league` devrait renvoyer les joueurs classés par nombre de victoires !
 
 ## Le code jusqu'à présent
 
@@ -397,7 +397,7 @@ Notre test passe maintenant mais il y a quelques problèmes avec ce que nous avo
 - Notre store n'écrit pas les données sur le disque à la fin de chaque opération, donc les données ne persistent pas.
 - Nous ne gérons pas le cas où un nouveau joueur est ajouté à la ligue.
 
-Je me sens à l'aise pour ignorer le point sur la persistance pour l'instant, mais nous devons gérer le cas où un joueur n'existe pas dans la ligue. Continuons à itérer sur notre solution.
+Je pense qu'on peut ignorer le point sur la persistance pour l'instant, mais nous devons gérer le cas où un joueur n'existe pas dans la ligue. Continuons à itérer sur notre solution.
 
 ## Écrivons d'abord le test
 
@@ -454,7 +454,7 @@ Notre `FileSystemStore` ne devrait pas se soucier de la création de fichiers, i
 
 L'interface `io.ReadWriteSeeker` regroupe `io.Reader`, `io.Writer` et `io.Seeker` (facultatif). Cela signifie que nous pouvons découpler notre code des détails d'implémentation de la façon dont les données sont stockées (en mémoire, sur le disque, etc.) et nous donne également la flexibilité de rechercher dans le fichier quand nous en avons besoin.
 
-```
+```go
 type ReadWriteSeeker interface {
     Reader
     Writer

@@ -37,7 +37,7 @@ La convention en Go est de mettre votre code d'application dans le répertoire `
 
 Déplaçons notre serveur existant et la logique de stockage dans le répertoire `pkg/poker`. Ces codes ne devraient plus faire partie du package `main`, renommez-les en package `poker`.
 
-```
+```bash
 mkdir -p cmd/{cli,webserver} pkg/poker
 cp serveur.go pkg/poker
 cp serveur_test.go pkg/poker
@@ -174,7 +174,7 @@ func (cli *CLI) PlayPoker() {}
 
 La compilation échoue toujours car nous n'avons pas de stub `StubPlayerStore` dans notre fichier de test. C'est parce que nous avions des fichiers de test différents qui avaient chacun leur propre version de `StubPlayerStore` et maintenant nous avons mis tout dans un même package.
 
-C'est l'une des irritations du développement Go. Si deux fichiers de test ont des helpers comme `StubPlayerStore`, ils ne peuvent pas le voir les uns les autres. Vous avez alors le choix entre :
+C'est l'une des irritations liées au développement Go. Si deux fichiers de test ont des helpers comme `StubPlayerStore`, ils ne peuvent pas le voir les uns les autres. Vous avez alors le choix entre :
 - Déplacer ces helpers vers un fichier dans le package principal (et les exporter)
 - Déplacer les helpers dans un fichier dans le package `xxx_test`.
 
