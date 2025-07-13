@@ -1,4 +1,4 @@
-# Time (Temps)
+# Le module Time
 
 **[Vous pouvez trouver tout le code de ce chapitre ici](https://github.com/quii/learn-go-with-tests/tree/main/time)**
 
@@ -1008,13 +1008,13 @@ func assertMessagesSentToUser(t testing.TB, stdout *bytes.Buffer, messages ...st
 }
 ```
 
-L'utilisation de la syntaxe vararg (`...string`) est pratique ici car nous devons affirmer sur des quantités variables de messages.
+L'utilisation de la syntaxe *vararg* (`...string`) est pratique ici car nous devons affirmer sur des quantités variables de messages.
 
-Utilisez cet assistant dans les deux tests où nous affirmons sur les messages envoyés à l'utilisateur.
+Utilisez ce helper dans les deux tests où nous affirmons sur les messages envoyés à l'utilisateur.
 
 Il y a un certain nombre de tests qui pourraient être aidés avec des fonctions `assertX`, alors entraînez-vous à la refactorisation en nettoyant nos tests pour qu'ils se lisent bien.
 
-Prenez le temps et réfléchissez à la valeur de certains des tests que nous avons mis en place. Rappelez-vous que nous ne voulons pas plus de tests que nécessaire, pouvez-vous en refactoriser/supprimer certains _et toujours être confiant que tout fonctionne_ ?
+Prenez le temps et réfléchissez à l'intérêt de certains des tests que nous avons mis en place. Rappelez-vous que nous ne voulons pas plus de tests que nécessaire, pouvez-vous en refactoriser/supprimer certains _et toujours être confiant que tout fonctionne_ ?
 
 Voici ce que j'ai proposé
 
@@ -1071,7 +1071,7 @@ Terminez ce chapitre en écrivant un test pour ce scénario et en le faisant pas
 
 ### Un rapide récapitulatif du projet
 
-Au cours des 5 derniers chapitres, nous avons lentement TDD'd une bonne quantité de code
+Au cours des 5 derniers chapitres, nous avons lentement TDD-isé une bonne quantité de code
 
 - Nous avons deux applications, une application en ligne de commande et un serveur web.
 - Ces deux applications s'appuient sur un `PlayerStore` pour enregistrer les gagnants
@@ -1129,7 +1129,7 @@ En faisant cela, les personnes utilisant votre bibliothèque peuvent implémente
 game := poker.NewTexasHoldem(poker.BlindAlerterFunc(poker.StdOutAlerter), store)
 ```
 
-Le point plus large ici est qu'en Go, vous pouvez ajouter des méthodes à des _types_, pas seulement à des structs. C'est une fonctionnalité très puissante, et vous pouvez l'utiliser pour implémenter des interfaces de manière plus pratique.
+Ce que ceci veut dire d'un point de vue plus général est qu'en Go, vous pouvez ajouter des méthodes à des _types_, pas seulement à des structs. C'est une fonctionnalité très puissante, et vous pouvez l'utiliser pour implémenter des interfaces de manière plus pratique.
 
 Considérez que vous pouvez non seulement définir des types de fonctions, mais aussi définir des types autour d'autres types, afin de pouvoir leur ajouter des méthodes.
 

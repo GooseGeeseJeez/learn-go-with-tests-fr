@@ -1071,7 +1071,7 @@ func retryUntil(d time.Duration, f func() bool) bool {
 
 Notre application est maintenant complète. Un jeu de poker peut être lancé via un navigateur web et les utilisateurs sont informés de la valeur de la mise aveugle au fil du temps via WebSockets. Lorsque la partie se termine, ils peuvent enregistrer le gagnant qui est persisté en utilisant le code que nous avons écrit il y a quelques chapitres. Les joueurs peuvent découvrir qui est le meilleur (ou le plus chanceux) joueur de poker en utilisant le point de terminaison `/league` du site web.
 
-Au cours de ce voyage, nous avons commis des erreurs, mais avec le flux TDD, nous n'avons jamais été très loin d'un logiciel fonctionnel. Nous étions libres de continuer à itérer et à expérimenter.
+Au cours du développement de cette application, nous avons commis des erreurs, mais avec le flux TDD, nous n'avons jamais été très loin d'un logiciel fonctionnel. Nous étions libres de continuer à itérer et à expérimenter.
 
 Le dernier chapitre fera une rétrospective sur l'approche, la conception à laquelle nous sommes arrivés et réglera certains détails.
 
