@@ -60,7 +60,7 @@ Peu importe à quel point vous vous considérez artistique, vous êtes peu susce
 
 ### Ce qui fonctionne pour moi
 
-Quand _je_ apprends un nouveau langage de programmation, je commence généralement par expérimenter dans un REPL, mais finalement, j'ai besoin de plus de structure.
+Quand j'apprends un nouveau langage de programmation, je commence généralement par expérimenter dans un REPL, mais finalement, j'ai besoin de plus de structure.
 
 Ce que j'aime faire, c'est explorer des concepts puis solidifier les idées avec des tests. Les tests vérifient que le code que j'écris est correct et documentent la fonctionnalité que j'ai apprise.
 

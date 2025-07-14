@@ -1,4 +1,4 @@
-# Apprendre Go avec les tests
+# Apprendre Go par les tests
 
 <p align="center">
   <img src="red-green-blue-gophers-smaller.png" />
@@ -107,9 +107,9 @@ Si vous avez une telle question, créez une issue sur github et j'essaierai de t
 
 ## Contribuer
 
-* _Ce projet est un travail en cours_ Si vous souhaitez contribuer, n'hésitez pas à me contacter.
+* _Ce projet est un travail en cours_. Si vous souhaitez contribuer, n'hésitez pas à me contacter.
 * Lisez [contributing.md](https://github.com/quii/learn-go-with-tests/tree/842f4f24d1f1c20ba3bb23cbc376c7ca6f7ca79a/contributing.md) pour les directives
-* Des idées ? Créez une issue
+* Des idées ? Créez une _issue_
 
 ## Contexte
 
@@ -170,4 +170,4 @@ En prenant mon expérience d'apprentissage avec un groupe et ma propre façon pe
 
 [Licence MIT](LICENSE.md)
 
-[Le logo est par egonelbre](https://github.com/egonelbre) Quelle star !
+[Le logo est par egonelbre](https://github.com/egonelbre), quelle star !
