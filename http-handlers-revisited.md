@@ -1,26 +1,26 @@
-# HTTP Handlers Revisited
+# Revisite des gestionnaires HTTP
 
-**[You can find all the code here](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/http-handlers-revisited)**
+**[Vous pouvez trouver tout le code ici](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/http-handlers-revisited)**
 
-This book already has a chapter on [testing a HTTP handler](http-server.md) but this will feature a broader discussion on designing them, so they are simple to test.
+Ce livre contient déjà un chapitre sur [le test d'un gestionnaire HTTP](http-server.md), mais celui-ci proposera une discussion plus large sur leur conception, afin qu'ils soient simples à tester.
 
-We'll take a look at a real example and how we can improve how it's designed by applying principles such as single responsibility principle and separation of concerns. These principles can be realised by using [interfaces](structs-methods-and-interfaces.md) and [dependency injection](dependency-injection.md). By doing this we'll show how testing handlers is actually quite trivial.
+Nous examinerons un exemple réel et comment nous pouvons améliorer sa conception en appliquant des principes tels que le principe de responsabilité unique et la séparation des préoccupations. Ces principes peuvent être réalisés en utilisant des [interfaces](structs-methods-and-interfaces.md) et [l'injection de dépendances](dependency-injection.md). En faisant cela, nous montrerons que tester les gestionnaires est en réalité assez trivial.
 
-![Common question in Go community illustrated](amazing-art.png)
+![Question courante dans la communauté Go illustrée](amazing-art.png)
 
-Testing HTTP handlers seems to be a recurring question in the Go community, and I think it points to a wider problem of people misunderstanding how to design them.
+Tester les gestionnaires HTTP semble être une question récurrente dans la communauté Go, et je pense que cela révèle un problème plus large de malcompréhension de leur conception.
 
-So often people's difficulties with testing stems from the design of their code rather than the actual writing of tests. As I stress so often in this book:
+Très souvent, les difficultés que rencontrent les gens avec les tests proviennent de la conception de leur code plutôt que de l'écriture des tests elle-même. Comme je le souligne si souvent dans ce livre :
 
-> If your tests are causing you pain, listen to that signal and think about the design of your code.
+> Si vos tests vous causent de la douleur, écoutez ce signal et réfléchissez à la conception de votre code.
 
-## An example
+## Un exemple
 
-[Santosh Kumar tweeted me](https://twitter.com/sntshk/status/1255559003339284481)
+[Santosh Kumar m'a tweeté](https://twitter.com/sntshk/status/1255559003339284481)
 
-> How do I test a http handler which has mongodb dependency?
+> Comment puis-je tester un gestionnaire http qui a une dépendance à mongodb ?
 
-Here is the code
+Voici le code
 
 ```go
 func Registration(w http.ResponseWriter, r *http.Request) {
@@ -33,16 +33,16 @@ func Registration(w http.ResponseWriter, r *http.Request) {
 	jsonDecoder.DisallowUnknownFields()
 	defer r.Body.Close()
 
-	// check if there is proper json body or error
+	// vérifie s'il y a un corps JSON approprié ou une erreur
 	if err := jsonDecoder.Decode(&user); err != nil {
 		res.Error = err.Error()
-		// return 400 status codes
+		// retourne un code d'état 400
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(res)
 		return
 	}
 
-	// Connect to mongodb
+	// Connexion à mongodb
 	client, _ := mongo.NewClient(options.Client().ApplyURI("mongodb://127.0.0.1:27017"))
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	err := client.Connect(ctx)
@@ -50,15 +50,15 @@ func Registration(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	defer client.Disconnect(ctx)
-	// Check if username already exists in users datastore, if so, 400
-	// else insert user right away
+	// Vérifie si le nom d'utilisateur existe déjà dans le stockage de données des utilisateurs, si c'est le cas, 400
+	// sinon insère l'utilisateur immédiatement
 	collection := client.Database("test").Collection("users")
 	filter := bson.D{{"username", user.Username}}
 	var foundUser model.User
 	err = collection.FindOne(context.TODO(), filter).Decode(&foundUser)
 	if foundUser.Username == user.Username {
 		res.Error = UserExists
-		// return 400 status codes
+		// retourne un code d'état 400
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(res)
 		return
@@ -67,7 +67,7 @@ func Registration(w http.ResponseWriter, r *http.Request) {
 	pass, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		res.Error = err.Error()
-		// return 400 status codes
+		// retourne un code d'état 400
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(res)
 		return
@@ -77,13 +77,13 @@ func Registration(w http.ResponseWriter, r *http.Request) {
 	insertResult, err := collection.InsertOne(context.TODO(), user)
 	if err != nil {
 		res.Error = err.Error()
-		// return 400 status codes
+		// retourne un code d'état 400
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(res)
 		return
 	}
 
-	// return 200
+	// retourne 200
 	w.WriteHeader(http.StatusOK)
 	res.Result = fmt.Sprintf("%s: %s", UserCreated, insertResult.InsertedID)
 	json.NewEncoder(w).Encode(res)
@@ -91,62 +91,62 @@ func Registration(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-Let's just list all the things this one function has to do:
+Énumérons toutes les choses que cette fonction unique doit faire :
 
-1. Write HTTP responses, send headers, status codes, etc.
-2. Decode the request's body into a `User`
-3. Connect to a database (and all the details around that)
-4. Query the database and applying some business logic depending on the result
-5. Generate a password
-6. Insert a record
+1. Écrire des réponses HTTP, envoyer des en-têtes, des codes d'état, etc.
+2. Décoder le corps de la requête en un `User`
+3. Se connecter à une base de données (et tous les détails autour de cela)
+4. Interroger la base de données et appliquer une logique métier en fonction du résultat
+5. Générer un mot de passe
+6. Insérer un enregistrement
 
-This is too much.
+C'est trop.
 
-## What is a HTTP Handler and what should it do ?
+## Qu'est-ce qu'un gestionnaire HTTP et que devrait-il faire ?
 
-Forgetting specific Go details for a moment, no matter what language I've worked in what has always served me well is thinking about the [separation of concerns](https://en.wikipedia.org/wiki/Separation_of_concerns) and the [single responsibility principle](https://en.wikipedia.org/wiki/Single-responsibility_principle).
+En oubliant les détails spécifiques à Go pour un moment, quelle que soit la langue dans laquelle j'ai travaillé, ce qui m'a toujours bien servi, c'est de penser à la [séparation des préoccupations](https://en.wikipedia.org/wiki/Separation_of_concerns) et au [principe de responsabilité unique](https://en.wikipedia.org/wiki/Single-responsibility_principle).
 
-This can be quite tricky to apply depending on the problem you're solving. What exactly _is_ a responsibility?
+Cela peut être assez délicat à appliquer selon le problème que vous résolvez. Qu'est-ce qu'une responsabilité _exactement_ ?
 
-The lines can blur depending on how abstractly you're thinking and sometimes your first guess might not be right.
+Les lignes peuvent devenir floues selon votre niveau d'abstraction de pensée, et parfois votre première intuition peut ne pas être la bonne.
 
-Thankfully with HTTP handlers I feel like I have a pretty good idea what they should do, no matter what project I've worked on:
+Heureusement, avec les gestionnaires HTTP, j'ai une assez bonne idée de ce qu'ils devraient faire, quel que soit le projet sur lequel j'ai travaillé :
 
-1. Accept a HTTP request, parse and validate it.
-2. Call some `ServiceThing` to do `ImportantBusinessLogic` with the data I got from step 1.
-3. Send an appropriate `HTTP` response depending on what `ServiceThing` returns.
+1. Accepter une requête HTTP, l'analyser et la valider.
+2. Appeler un `ServiceChose` pour faire `LogiqueMétierImportante` avec les données que j'ai obtenues à l'étape 1.
+3. Envoyer une réponse `HTTP` appropriée en fonction de ce que `ServiceChose` renvoie.
 
-I'm not saying every HTTP handler _ever_ should have roughly this shape, but 99 times out of 100 that seems to be the case for me.
+Je ne dis pas que chaque gestionnaire HTTP _jamais_ créé devrait avoir à peu près cette forme, mais 99 fois sur 100, c'est ce que je constate.
 
-When you separate these concerns:
+Lorsque vous séparez ces préoccupations :
 
- - Testing handlers becomes a breeze and is focused a small number of concerns.
- - Importantly testing `ImportantBusinessLogic` no longer has to concern itself with `HTTP`, you can test the business logic cleanly.
- - You can use `ImportantBusinessLogic` in other contexts without having to modify it.
- - If `ImportantBusinessLogic` changes what it does, so long as the interface remains the same you don't have to change your handlers.
+ - Tester les gestionnaires devient un jeu d'enfant et se concentre sur un petit nombre de préoccupations.
+ - Plus important encore, tester `LogiqueMétierImportante` n'a plus à se préoccuper de `HTTP`, vous pouvez tester la logique métier proprement.
+ - Vous pouvez utiliser `LogiqueMétierImportante` dans d'autres contextes sans avoir à la modifier.
+ - Si `LogiqueMétierImportante` change ce qu'elle fait, tant que l'interface reste la même, vous n'avez pas à changer vos gestionnaires.
 
-## Go's Handlers
+## Les gestionnaires de Go
 
 [`http.HandlerFunc`](https://golang.org/pkg/net/http/#HandlerFunc)
 
-> The HandlerFunc type is an adapter to allow the use of ordinary functions as HTTP handlers.
+> Le type HandlerFunc est un adaptateur pour permettre l'utilisation de fonctions ordinaires comme gestionnaires HTTP.
 
 `type HandlerFunc func(ResponseWriter, *Request)`
 
-Reader, take a breath and look at the code above. What do you notice?
+Lecteur, prenez une respiration et regardez le code ci-dessus. Qu'est-ce que vous remarquez ?
 
-**It is a function that takes some arguments**
+**C'est une fonction qui prend des arguments**
 
-There's no framework magic, no annotations, no magic beans, nothing.
+Il n'y a pas de magie de framework, pas d'annotations, pas de haricots magiques, rien.
 
-It's just a function, _and we know how to test functions_.
+C'est juste une fonction, _et nous savons comment tester des fonctions_.
 
-It fits in nicely with the commentary above:
+Cela s'inscrit parfaitement dans le commentaire ci-dessus :
 
-- It takes a [`http.Request`](https://golang.org/pkg/net/http/#Request) which is just a bundle of data for us to inspect, parse and validate.
-- > [A `http.ResponseWriter` interface is used by an HTTP handler to construct an HTTP response.](https://golang.org/pkg/net/http/#ResponseWriter)
+- Elle prend un [`http.Request`](https://golang.org/pkg/net/http/#Request) qui n'est qu'un ensemble de données que nous devons inspecter, analyser et valider.
+- > [Une interface `http.ResponseWriter` est utilisée par un gestionnaire HTTP pour construire une réponse HTTP.](https://golang.org/pkg/net/http/#ResponseWriter)
 
-### Super basic example test
+### Exemple de test super basique
 
 ```go
 func Teapot(res http.ResponseWriter, req *http.Request) {
@@ -160,42 +160,42 @@ func TestTeapotHandler(t *testing.T) {
 	Teapot(res, req)
 
 	if res.Code != http.StatusTeapot {
-		t.Errorf("got status %d but wanted %d", res.Code, http.StatusTeapot)
+		t.Errorf("j'ai obtenu le statut %d mais je voulais %d", res.Code, http.StatusTeapot)
 	}
 }
 ```
 
-To test our function, we _call_ it.
+Pour tester notre fonction, nous l'_appelons_.
 
-For our test we pass a `httptest.ResponseRecorder` as our `http.ResponseWriter` argument, and our function will use it to write the `HTTP` response. The recorder will record (or _spy_ on) what was sent, and then we can make our assertions.
+Pour notre test, nous passons un `httptest.ResponseRecorder` comme argument `http.ResponseWriter`, et notre fonction l'utilisera pour écrire la réponse `HTTP`. L'enregistreur enregistrera (ou _espionnera_) ce qui a été envoyé, et ensuite nous pourrons faire nos assertions.
 
-## Calling a `ServiceThing` in our handler
+## Appeler un `ServiceChose` dans notre gestionnaire
 
-A common complaint about TDD tutorials is that they're always "too simple" and not "real world enough". My answer to that is:
+Une plainte courante à propos des tutoriels TDD est qu'ils sont toujours "trop simples" et pas assez "réels". Ma réponse à cela est :
 
-> Wouldn't it be nice if all your code was simple to read and test like the examples you mention?
+> Ne serait-il pas agréable que tout votre code soit simple à lire et à tester comme les exemples que vous mentionnez ?
 
-This is one of the biggest challenges we face but need to keep striving for. It _is possible_ (although not necessarily easy) to design code, so it can be simple to read and test if we practice and apply good software engineering principles.
+C'est l'un des plus grands défis auxquels nous sommes confrontés, mais nous devons continuer à y travailler. Il _est possible_ (bien que pas nécessairement facile) de concevoir du code de manière à ce qu'il soit simple à lire et à tester si nous pratiquons et appliquons de bons principes d'ingénierie logicielle.
 
-Recapping what the handler from earlier does:
+En récapitulant ce que fait le gestionnaire précédent :
 
-1. Write HTTP responses, send headers, status codes, etc.
-2. Decode the request's body into a `User`
-3. Connect to a database (and all the details around that)
-4. Query the database and applying some business logic depending on the result
-5. Generate a password
-6. Insert a record
+1. Écrire des réponses HTTP, envoyer des en-têtes, des codes d'état, etc.
+2. Décoder le corps de la requête en un `User`
+3. Se connecter à une base de données (et tous les détails autour de cela)
+4. Interroger la base de données et appliquer une logique métier en fonction du résultat
+5. Générer un mot de passe
+6. Insérer un enregistrement
 
-Taking the idea of a more ideal separation of concerns I'd want it to be more like:
+En prenant l'idée d'une séparation des préoccupations plus idéale, je voudrais que ce soit plutôt comme :
 
-1. Decode the request's body into a `User`
-2. Call a `UserService.Register(user)` (this is our `ServiceThing`)
-3. If there's an error act on it (the example always sends a `400 BadRequest` which I don't think is right), I'll just have a catch-all handler of a `500 Internal Server Error` _for now_. I must stress that returning `500` for all errors makes for a terrible API! Later on we can make the error handling more sophisticated, perhaps with [error types](error-types.md).
-4. If there's no error, `201 Created` with the ID as the response body (again for terseness/laziness)
+1. Décoder le corps de la requête en un `User`
+2. Appeler un `UserService.Register(user)` (c'est notre `ServiceChose`)
+3. S'il y a une erreur, agir en conséquence (l'exemple envoie toujours un `400 BadRequest`, ce qui je pense n'est pas correct), je vais juste avoir un gestionnaire global de `500 Internal Server Error` _pour l'instant_. Je dois souligner que renvoyer `500` pour toutes les erreurs fait une API terrible ! Plus tard, nous pourrons rendre la gestion des erreurs plus sophistiquée, peut-être avec des [types d'erreur](error-types.md).
+4. S'il n'y a pas d'erreur, `201 Created` avec l'ID comme corps de la réponse (à nouveau par souci de concision/paresse)
 
-For the sake of brevity I won't go over the usual TDD process, check all the other chapters for examples.
+Pour des raisons de brièveté, je ne vais pas revoir le processus TDD habituel, consultez tous les autres chapitres pour des exemples.
 
-### New design
+### Nouvelle conception
 
 ```go
 type UserService interface {
@@ -213,22 +213,22 @@ func NewUserServer(service UserService) *UserServer {
 func (u *UserServer) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
-	// request parsing and validation
+	// analyse et validation de la requête
 	var newUser User
 	err := json.NewDecoder(r.Body).Decode(&newUser)
 
 	if err != nil {
-		http.Error(w, fmt.Sprintf("could not decode user payload: %v", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("impossible de décoder le payload utilisateur : %v", err), http.StatusBadRequest)
 		return
 	}
 
-	// call a service thing to take care of the hard work
+	// appeler un service pour s'occuper du travail difficile
 	insertedID, err := u.service.Register(newUser)
 
-	// depending on what we get back, respond accordingly
+	// selon ce que nous recevons, répondre en conséquence
 	if err != nil {
-		//todo: handle different kinds of errors differently
-		http.Error(w, fmt.Sprintf("problem registering new user: %v", err), http.StatusInternalServerError)
+		//todo: gérer différents types d'erreurs différemment
+		http.Error(w, fmt.Sprintf("problème lors de l'enregistrement du nouvel utilisateur : %v", err), http.StatusInternalServerError)
 		return
 	}
 
@@ -237,17 +237,17 @@ func (u *UserServer) RegisterUser(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-Our `RegisterUser` method matches the shape of `http.HandlerFunc` so we're good to go. We've attached it as a method on a new type `UserServer` which contains a dependency on a `UserService` which is captured as an interface.
+Notre méthode `RegisterUser` correspond à la forme de `http.HandlerFunc`, donc nous sommes prêts. Nous l'avons attachée comme méthode à un nouveau type `UserServer` qui contient une dépendance à un `UserService` qui est capturé comme une interface.
 
-Interfaces are a fantastic way to ensure our `HTTP` concerns are decoupled from any specific implementation; we can just call the method on the dependency, and we don't have to care _how_ a user gets registered.
+Les interfaces sont un moyen fantastique de s'assurer que nos préoccupations `HTTP` sont découplées de toute implémentation spécifique ; nous pouvons simplement appeler la méthode sur la dépendance, et nous n'avons pas à nous soucier de _comment_ un utilisateur est enregistré.
 
-If you wish to explore this approach in more detail following TDD read the [Dependency Injection](dependency-injection.md) chapter and the [HTTP Server chapter of the "Build an application" section](http-server.md).
+Si vous souhaitez explorer cette approche plus en détail en suivant le TDD, lisez le chapitre [Injection de Dépendances](dependency-injection.md) et le [chapitre Serveur HTTP de la section "Construire une application"](http-server.md).
 
-Now that we've decoupled ourselves from any specific implementation detail around registration writing the code for our handler is straightforward and follows the responsibilities described earlier.
+Maintenant que nous nous sommes découplés de tout détail d'implémentation spécifique concernant l'enregistrement, l'écriture du code pour notre gestionnaire est simple et suit les responsabilités décrites précédemment.
 
-### The tests!
+### Les tests !
 
-This simplicity is reflected in our tests.
+Cette simplicité se reflète dans nos tests.
 
 ```go
 type MockUserService struct {
@@ -261,7 +261,7 @@ func (m *MockUserService) Register(user User) (insertedID string, err error) {
 }
 
 func TestRegisterUser(t *testing.T) {
-	t.Run("can register valid users", func(t *testing.T) {
+	t.Run("peut enregistrer des utilisateurs valides", func(t *testing.T) {
 		user := User{Name: "CJ"}
 		expectedInsertedID := "whatever"
 
@@ -280,22 +280,22 @@ func TestRegisterUser(t *testing.T) {
 		assertStatus(t, res.Code, http.StatusCreated)
 
 		if res.Body.String() != expectedInsertedID {
-			t.Errorf("expected body of %q but got %q", res.Body.String(), expectedInsertedID)
+			t.Errorf("corps attendu de %q mais obtenu %q", res.Body.String(), expectedInsertedID)
 		}
 
 		if len(service.UsersRegistered) != 1 {
-			t.Fatalf("expected 1 user added but got %d", len(service.UsersRegistered))
+			t.Fatalf("attendu 1 utilisateur ajouté mais obtenu %d", len(service.UsersRegistered))
 		}
 
 		if !reflect.DeepEqual(service.UsersRegistered[0], user) {
-			t.Errorf("the user registered %+v was not what was expected %+v", service.UsersRegistered[0], user)
+			t.Errorf("l'utilisateur enregistré %+v n'était pas celui attendu %+v", service.UsersRegistered[0], user)
 		}
 	})
 
-	t.Run("returns 400 bad request if body is not valid user JSON", func(t *testing.T) {
+	t.Run("renvoie 400 bad request si le corps n'est pas un JSON utilisateur valide", func(t *testing.T) {
 		server := NewUserServer(nil)
 
-		req := httptest.NewRequest(http.MethodGet, "/", strings.NewReader("trouble will find me"))
+		req := httptest.NewRequest(http.MethodGet, "/", strings.NewReader("les problèmes me trouveront"))
 		res := httptest.NewRecorder()
 
 		server.RegisterUser(res, req)
@@ -303,12 +303,12 @@ func TestRegisterUser(t *testing.T) {
 		assertStatus(t, res.Code, http.StatusBadRequest)
 	})
 
-	t.Run("returns a 500 internal server error if the service fails", func(t *testing.T) {
+	t.Run("renvoie une erreur 500 internal server error si le service échoue", func(t *testing.T) {
 		user := User{Name: "CJ"}
 
 		service := &MockUserService{
 			RegisterFunc: func(user User) (string, error) {
-				return "", errors.New("couldn't add new user")
+				return "", errors.New("impossible d'ajouter un nouvel utilisateur")
 			},
 		}
 		server := NewUserServer(service)
@@ -323,33 +323,33 @@ func TestRegisterUser(t *testing.T) {
 }
 ```
 
-Now our handler isn't coupled to a specific implementation of storage it is trivial for us to write a `MockUserService` to help us write simple, fast unit tests to exercise the specific responsibilities it has.
+Maintenant que notre gestionnaire n'est pas couplé à une implémentation spécifique de stockage, il est trivial pour nous d'écrire un `MockUserService` pour nous aider à écrire des tests unitaires simples et rapides qui exercent les responsabilités spécifiques qu'il a.
 
-### What about the database code? You're cheating!
+### Et le code de la base de données ? Vous trichez !
 
-This is all very deliberate. We don't want HTTP handlers concerned with our business logic, databases, connections, etc.
+Tout ceci est très délibéré. Nous ne voulons pas que les gestionnaires HTTP se préoccupent de notre logique métier, de nos bases de données, de nos connexions, etc.
 
-By doing this we have liberated the handler from messy details, we've _also_ made it easier to test our persistence layer and business logic as it is also no longer coupled to irrelevant HTTP details.
+En faisant cela, nous avons libéré le gestionnaire des détails compliqués, nous avons _aussi_ facilité le test de notre couche de persistance et de notre logique métier car elle n'est plus couplée à des détails HTTP non pertinents.
 
-All we need to do is now implement our `UserService` using whatever database we want to use
+Tout ce que nous devons faire maintenant, c'est implémenter notre `UserService` en utilisant la base de données que nous voulons utiliser
 
 ```go
 type MongoUserService struct {
 }
 
 func NewMongoUserService() *MongoUserService {
-	//todo: pass in DB URL as argument to this function
-	//todo: connect to db, create a connection pool
+	//todo: passer l'URL de la BD en argument à cette fonction
+	//todo: se connecter à la bdd, créer un pool de connexions
 	return &MongoUserService{}
 }
 
 func (m MongoUserService) Register(user User) (insertedID string, err error) {
-	// use m.mongoConnection to perform queries
-	panic("implement me")
+	// utiliser m.mongoConnection pour effectuer des requêtes
+	panic("implémentez-moi")
 }
 ```
 
-We can test this separately and once we're happy in `main` we can snap these two units together for our working application.
+Nous pouvons tester cela séparément et une fois que nous sommes satisfaits dans `main`, nous pouvons assembler ces deux unités pour notre application fonctionnelle.
 
 ```go
 func main() {
@@ -359,20 +359,20 @@ func main() {
 }
 ```
 
-### A more robust and extensible design with little effort
+### Une conception plus robuste et extensible avec peu d'effort
 
-These principles not only make our lives easier in the short-term they make the system easier to extend in the future.
+Ces principes non seulement nous facilitent la vie à court terme, mais rendent également le système plus facile à étendre à l'avenir.
 
-It wouldn't be surprising that further iterations of this system we'd want to email the user a confirmation of registration.
+Il ne serait pas surprenant que dans les futures itérations de ce système, nous souhaitions envoyer à l'utilisateur un e-mail de confirmation d'inscription.
 
-With the old design we'd have to change the handler _and_ the surrounding tests. This is often how parts of code become unmaintainable, more and more functionality creeps in because it's already _designed_ that way; for the "HTTP handler" to handle... everything!
+Avec l'ancienne conception, nous aurions dû modifier le gestionnaire _et_ les tests environnants. C'est souvent ainsi que des parties de code deviennent impossibles à maintenir, de plus en plus de fonctionnalités s'infiltrent car c'est déjà _conçu_ de cette façon ; pour que le "gestionnaire HTTP" gère... tout !
 
-By separating concerns using an interface we don't have to edit the handler _at all_ because it's not concerned with the business logic around registration.
+En séparant les préoccupations à l'aide d'une interface, nous n'avons pas besoin de modifier le gestionnaire _du tout_ car il ne se préoccupe pas de la logique métier autour de l'inscription.
 
-## Wrapping up
+## Conclusion
 
-Testing Go's HTTP handlers is not challenging, but designing good software can be!
+Tester les gestionnaires HTTP de Go n'est pas un défi, mais concevoir un bon logiciel peut l'être !
 
-People make the mistake of thinking HTTP handlers are special and throw out good software engineering practices when writing them which then makes testing them challenging.
+Les gens font l'erreur de penser que les gestionnaires HTTP sont spéciaux et abandonnent les bonnes pratiques d'ingénierie logicielle lorsqu'ils les écrivent, ce qui rend ensuite leur test difficile.
 
-Reiterating again; **Go's http handlers are just functions**. If you write them like you would other functions, with clear responsibilities, and a good separation of concerns you will have no trouble testing them, and your codebase will be healthier for it.
+Répétons-le encore une fois ; **les gestionnaires http de Go sont juste des fonctions**. Si vous les écrivez comme vous écririez d'autres fonctions, avec des responsabilités claires et une bonne séparation des préoccupations, vous n'aurez aucun problème à les tester, et votre base de code sera plus saine.
