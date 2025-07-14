@@ -1,98 +1,99 @@
-# Why unit tests and how to make them work for you
+# Pourquoi faire des tests unitaires et comment les faire fonctionner pour vous
 
-[Here's a link to a video of me chatting about this topic](https://www.youtube.com/watch?v=Kwtit8ZEK7U)
+[Voici un lien vers une vidéo où je discute de ce sujet](https://www.youtube.com/watch?v=Kwtit8ZEK7U)
 
-If you're not into videos, here's wordy version of it.
+Si vous n'aimez pas les vidéos, voici une version écrite.
 
-## Software 
+## Logiciel 
 
-The promise of software is that it can change. This is why it is called _soft_ ware, it is malleable compared to hardware. A great engineering team should be an amazing asset to a company, writing systems that can evolve with a business to keep delivering value. 
+La promesse d'un logiciel (_software_) est qu'il peut changer. C'est pourquoi on l'appelle _soft_ ware, il est malléable par rapport au matériel (_hardware_). Une grande équipe d'ingénierie devrait être un atout incroyable pour une entreprise, en développant des systèmes qui peuvent évoluer avec l'entreprise pour continuer à apporter de la valeur. 
 
-So why are we so bad at it? How many projects do you hear about that outright fail? Or become "legacy" and have to be entirely re-written (and the re-writes often fail too!) 
+Alors pourquoi sommes-nous si mauvais à cela ? Combien de projets entendez-vous parler qui échouent carrément ? Ou qui deviennent "legacy" et doivent être entièrement réécrits (et les réécritures échouent souvent aussi !) 
 
-How does a software system "fail" anyway? Can't it just be changed until it's correct? That's what we're promised!
+Comment un système logiciel peut-il "échouer" de toute façon ? Ne peut-il pas simplement être modifié jusqu'à ce qu'il soit correct ? C'est ce qui nous est promis !
 
-A lot of people are choosing Go to build systems because it has made a number of choices which one hopes will make it more legacy-proof. 
+Beaucoup de gens choisissent Go pour construire des systèmes parce qu'il a fait un certain nombre de choix qui, on l'espère, le rendront plus résistant au vieillissement. 
 
-- Compared to my previous life of Scala where [I described how it has enough rope to hang yourself](http://www.quii.dev/Scala_-_Just_enough_rope_to_hang_yourself), Go has only 25 keywords and _a lot_ of systems can be built from the standard library and a few other small libraries. The hope is that with Go you can write code and come back to it in 6 months time and it'll still make sense.
-- The tooling in respect to testing, benchmarking, linting & shipping is first class compared to most alternatives.
-- The standard library is brilliant.
-- Very fast compilation speed for tight feedback loops
-- The Go backward compatibility promise. It looks like Go will get generics and other features in the future but the designers have promised that even Go code you wrote 5 years ago will still build. I literally spent weeks upgrading a project from Scala 2.8 to 2.10. 
+- Par rapport à ma période passée avec Scala où [je décrivais comment il donne suffisamment de corde pour se pendre](http://www.quii.dev/Scala_-_Just_enough_rope_to_hang_yourself), Go n'a que 25 mots-clés et _beaucoup_ de systèmes peuvent être construits à partir de la bibliothèque standard et de quelques autres petites bibliothèques. L'espoir est qu'avec Go, vous pouvez écrire du code et y revenir dans 6 mois et il aura toujours du sens.
+- Les outils concernant les tests, le benchmarking, le linting et le déploiement sont de première classe par rapport à la plupart des alternatives.
+- La bibliothèque standard est brillante.
+- Vitesse de compilation très rapide pour des boucles de feedback fréquentes
+- La promesse de compatibilité ascendante de Go. Il semble que Go obtiendra des génériques et d'autres fonctionnalités à l'avenir, mais les concepteurs ont promis que même le code Go que vous avez écrit il y a 5 ans continuera à compiler. J'ai littéralement passé des semaines à mettre à niveau un projet de Scala 2.8 à 2.10. 
 
-Even with all these great properties we can still make terrible systems, so we should look to the past and understand lessons in software engineering that apply no matter how shiny (or not) your language is.
+Même avec toutes ces excellentes propriétés, nous pouvons encore créer des systèmes terriblement mauvais, nous devrions donc nous tourner vers le passé et comprendre les leçons de l'ingénierie logicielle qui s'appliquent, peu importe à quel point votre langage est brillant (ou pas).
 
-In 1974 a clever software engineer called [Manny Lehman](https://en.wikipedia.org/wiki/Manny_Lehman_%28computer_scientist%29) wrote [Lehman's laws of software evolution](https://en.wikipedia.org/wiki/Lehman%27s_laws_of_software_evolution).
+En 1974, un ingénieur logiciel intelligent nommé [Manny Lehman](https://en.wikipedia.org/wiki/Manny_Lehman_%28computer_scientist%29) a écrit [les lois de Lehman sur l'évolution des logiciels](https://en.wikipedia.org/wiki/Lehman%27s_laws_of_software_evolution).
 
-> The laws describe a balance between forces driving new developments on one hand, and forces that slow down progress on the other hand.
+> Les lois décrivent un équilibre entre les forces qui stimulent les nouveaux développements d'une part, et les forces qui ralentissent le progrès d'autre part.
 
-These forces seem like important things to understand if we have any hope of not being in an endless cycle of shipping systems that turn into legacy and then get re-written over and over again.
+Ces forces semblent être des éléments importants à comprendre si nous avons un quelconque espoir de ne pas être dans un cycle sans fin de livraison de systèmes qui se transforment en héritage puis sont réécrits encore et encore.
 
-## The Law of Continuous Change
+## La Loi du Changement Continu
 
-> Any software system used in the real-world must change or become less and less useful in the environment
+> Tout système logiciel utilisé dans le monde réel doit changer ou devenir de moins en moins utile dans l'environnement
 
-It feels obvious that a system _has_ to change or it becomes less useful but how often is this ignored? 
+Il semble évident qu'un système _doit_ changer ou il devient moins utile, mais combien de fois cela est-il ignoré ? 
 
-Many teams are incentivised to deliver a project on a particular date and then move on to the next project. If the software is "lucky" there is at least some kind of hand-off to another set of individuals to maintain it, but they didn't write it of course. 
+De nombreuses équipes sont incitées à livrer un projet à une date particulière, puis à passer au projet suivant. Si le logiciel a de la "chance", il y a au moins une sorte de transfert à un autre ensemble d'individus pour le maintenir, mais ils ne l'ont pas écrit, bien sûr. 
 
-People often concern themselves with trying to pick a framework which will help them "deliver quickly" but not focusing on the longevity of the system in terms of how it needs to evolve.
+Les gens se préoccupent souvent d'essayer de choisir un framework qui les aidera à "livrer rapidement", mais ne se concentrent pas sur la longévité du système en termes d'évolution nécessaire.
 
-Even if you're an incredible software engineer, you will still fall victim to not knowing the future needs of your system. As the business changes some of the brilliant code you wrote is now no longer relevant.
+Même si vous êtes un ingénieur logiciel incroyable, vous serez toujours victime de ne pas connaître les besoins futurs de votre système. Au fur et à mesure que l'entreprise change, une partie du code brillant que vous avez écrit n'est plus pertinente.
 
-Lehman was on a roll in the 70s because he gave us another law to chew on.
+Lehman était en feu dans les années 70 car il nous a donné une autre loi à méditer.
 
-## The Law of Increasing Complexity
+## La Loi de la Complexité Croissante
 
-> As a system evolves, its complexity increases unless work is done to reduce it
+> Au fur et à mesure qu'un système évolue, sa complexité augmente à moins qu'un travail ne soit effectué pour la réduire
 
-What he's saying here is we can't have software teams as blind feature factories, piling more and more features on to software in the hope it will survive in the long run. 
+Ce qu'il dit ici, c'est que nous ne pouvons pas avoir des équipes logicielles comme des usines de fonctionnalités aveugles, empilant de plus en plus de fonctionnalités sur un logiciel dans l'espoir qu'il survivra à long terme. 
 
-We **have** to keep managing the complexity of the system as the knowledge of our domain changes. 
+Nous **devons** continuer à gérer la complexité du système à mesure que la connaissance de notre domaine change. 
 
 ## Refactoring
 
-There are _many_ facets of software engineering that keeps software malleable, such as:
+Il existe _de nombreuses_ facettes de l'ingénierie logicielle qui maintiennent le logiciel malléable, telles que :
 
-- Developer empowerment
-- Generally "good" code. Sensible separation of concerns, etc etc
-- Communication skills
+- L'autonomisation des développeurs
+- Code généralement "bon". Séparation sensée des préoccupations, etc.
+- Compétences en communication
 - Architecture
-- Observability
-- Deployability
-- Automated tests
-- Feedback loops
+- Observabilité
+- Déployabilité
+- Tests automatisés
+- Boucles de feedback
 
-I am going to focus on refactoring. It's a phrase that gets thrown around a lot "we need to refactor this" - said to a developer on their first day of programming without a second thought. 
+Je vais me concentrer sur le refactoring. C'est une expression qui est souvent utilisée "nous devons refactoriser ceci" - dit à un développeur dès son premier jour de programmation sans y réfléchir à deux fois. 
 
-Where does the phrase come from? How is refactoring just different from writing code?
+D'où vient cette expression ? En quoi le refactoring est-il différent de l'écriture de code ?
 
-I know that I and many others have _thought_ we were doing refactoring but we were mistaken
+Je sais que moi et beaucoup d'autres avons _pensé_ faire du refactoring mais nous nous sommes trompés
 
-[Martin Fowler describes how people are getting it wrong](https://martinfowler.com/bliki/RefactoringMalapropism.html)
+[Martin Fowler décrit comment les gens se trompent](https://martinfowler.com/bliki/RefactoringMalapropism.html)
 
-> However the term "refactoring" is often used when it's not appropriate. If somebody talks about a system being broken for a couple of days while they are refactoring, you can be pretty sure they are not refactoring.
+> Cependant, le terme "refactoring" est souvent utilisé lorsqu'il n'est pas approprié. Si quelqu'un parle d'un système qui est en panne pendant quelques jours pendant qu'il refactorise, vous pouvez être à peu près sûr qu'il ne fait pas de refactoring.
 
-So what is it?
+Alors qu'est-ce que c'est ?
 
 ### Factorisation
 
-When learning maths at school you probably learned about factorisation. Here's a very simple example
+Lorsque vous avez appris les mathématiques à l'école, vous avez probablement appris la factorisation. Voici un exemple très simple
 
-Calculate `1/2 + 1/4`
+Calculez `1/2 + 1/4`
 
-To do this you _factorise_ the denominators, turning the expression into 
+Pour ce faire, vous _factorisez_ les dénominateurs, transformant l'expression en 
 
-`2/4 + 1/4` which you can then turn into `3/4`. 
+`2/4 + 1/4` que vous pouvez ensuite transformer en `3/4`. 
 
-We can take some important lessons from this. When we _factorise the expression_ we have **not changed the meaning of the expression**. Both of them equal `3/4` but we have made it easier for us to work with; by changing `1/2` to `2/4` it fits into our "domain" easier. 
+Nous pouvons en tirer des leçons importantes. Lorsque nous _factorisons l'expression_, nous n'avons **pas changé la signification de l'expression**. Les deux égalent `3/4` mais nous l'avons rendue plus facile à manipuler ; en changeant `1/2` en `2/4`, elle s'intègre plus facilement dans notre "domaine". 
 
-When you refactor your code, you are trying to find ways of making your code easier to understand and "fit" into your current understanding of what the system needs to do. Crucially **you should not be changing behaviour**. 
+Lorsque vous refactorisez votre code, vous essayez de trouver des moyens de le rendre plus facile à comprendre et à "s'adapter" à votre compréhension actuelle de ce que le système doit faire. Crucialement, **vous ne devriez pas changer le comportement**. 
 
-#### An example in Go
+#### Un exemple en Go
 
-Here is a function which greets `name` in a particular `language`
+Voici une fonction qui salue `name` dans une `language` particulière
 
+```go
     func Hello(name, language string) string {
     
       if language == "es" {
@@ -103,189 +104,193 @@ Here is a function which greets `name` in a particular `language`
          return "Bonjour, " + name
       }
       
-      // imagine dozens more languages
+      // imaginez des dizaines d'autres langues
     
       return "Hello, " + name
     }
+```
 
-Having dozens of `if` statements doesn't feel good and we have a duplication of concatenating a language specific greeting with `, ` and the `name.` So I'll refactor the code.
+Avoir des dizaines d'instructions `if` ne semble pas bon et nous avons une duplication de la concaténation d'une salutation spécifique à la langue avec `, ` et le `name`. Je vais donc refactoriser le code.
 
-    func Hello(name, language string) string {
-      	return fmt.Sprintf(
-      		"%s, %s",
-      		greeting(language),
-      		name,
-      	)
+```go
+func Hello(name, language string) string {
+   	return fmt.Sprintf(
+  		"%s, %s",
+  		greeting(language),
+  		name,
+   	)
+}
+
+var greetings = map[string]string {
+    "es": "Hola",
+    "fr": "Bonjour",
+    //etc..
+}
+
+func greeting(language string) string {
+    greeting, exists := greetings[language]
+    
+    if exists {
+        return greeting
     }
     
-    var greetings = map[string]string {
-      "es": "Hola",
-      "fr": "Bonjour",
-      //etc..
-    }
-    
-    func greeting(language string) string {
-      greeting, exists := greetings[language]
-      
-      if exists {
-         return greeting
-      }
-      
-      return "Hello"
-    }
+    return "Hello"
+}
+```
 
-The nature of this refactor isn't actually important, what's important is I haven't changed behaviour. 
+La nature de ce refactoring n'est pas vraiment importante, ce qui est important c'est que je n'ai pas changé le comportement. 
 
-When refactoring you can do whatever you like, add interfaces, new types, functions, methods etc. The only rule is you don't change behaviour
+Lorsque vous refactorisez, vous pouvez faire ce que vous voulez, ajouter des interfaces, de nouveaux types, des fonctions, des méthodes, etc. La seule règle est que vous ne changez pas le comportement
 
-### When refactoring code you must not be changing behaviour
+### Lorsque vous refactorisez du code, vous ne devez pas changer le comportement
 
-This is very important. If you are changing behaviour at the same time you are doing _two_ things at once. As software engineers we learn to break systems up into different files/packages/functions/etc because we know trying to understand a big blob of stuff is hard. 
+C'est très important. Si vous changez le comportement en même temps, vous faites _deux_ choses à la fois. En tant qu'ingénieurs logiciels, nous apprenons à décomposer les systèmes en différents fichiers/packages/fonctions/etc car nous savons qu'essayer de comprendre un gros bloc de choses est difficile. 
 
-We don't want to have to be thinking about lots of things at once because that's when we make mistakes. I've witnessed so many refactoring endeavours fail because the developers are biting off more than they can chew.  
+Nous ne voulons pas avoir à penser à beaucoup de choses à la fois car c'est à ce moment-là que nous faisons des erreurs. J'ai été témoin de nombreuses tentatives de refactoring qui ont échoué parce que les développeurs en prennent plus qu'ils ne peuvent en mâcher.  
 
-When I was doing factorisations in maths classes with pen and paper I would have to manually check that I hadn't changed the meaning of the expressions in my head. How do we know we aren't changing behaviour when refactoring when working with code, especially on a system that is non-trivial?
+Lorsque je faisais des factorisations dans les cours de mathématiques avec un crayon et du papier, je devais vérifier manuellement que je n'avais pas changé le sens des expressions dans ma tête. Comment savons-nous que nous ne changeons pas le comportement lors du refactoring lorsque nous travaillons avec du code, en particulier sur un système qui n'est pas trivial ?
 
-Those who choose not to write tests will typically be reliant on manual testing. For anything other than a small project this will be a tremendous time-sink and does not scale in the long run. 
+Ceux qui choisissent de ne pas écrire de tests dépendront généralement des tests manuels. Pour tout projet autre qu'un petit projet, cela sera un énorme gouffre de temps et ne s'adaptera pas à long terme. 
  
-**In order to safely refactor you need unit tests** because they provide
+**Pour refactoriser en toute sécurité, vous avez besoin de tests unitaires** car ils fournissent
 
-- Confidence you can reshape code without worrying about changing behaviour
-- Documentation for humans as to how the system should behave
-- Much faster and more reliable feedback than manual testing
+- La confiance que vous pouvez remodeler le code sans vous soucier de changer le comportement
+- De la documentation pour les humains sur la façon dont le système devrait se comporter
+- Un feedback beaucoup plus rapide et fiable que les tests manuels
 
-#### An example in Go
+#### Un exemple en Go
 
-A unit test for our `Hello` function could look like this
+Un test unitaire pour notre fonction `Hello` pourrait ressembler à ceci
+```go
+func TestHello(t *testing.T) {
+    got := Hello("Chris", es)
+    want := "Hola, Chris"
 
-    func TestHello(t *testing.T) {
-      got := Hello(“Chris”, es)
-      want := "Hola, Chris"
-    
-      if got != want {
-         t.Errorf("got %q want %q", got, want)
-      }
+    if got != want {
+        t.Errorf("got %q want %q", got, want)
     }
+}
+```
 
-At the command line I can run `go test` and get immediate feedback as to whether my refactoring efforts have altered behaviour. In practice it's best to learn the magic button to run your tests within your editor/IDE. 
+En ligne de commande, je peux exécuter `go test` et obtenir un feedback immédiat pour savoir si mes efforts de refactoring ont modifié le comportement. En pratique, il est préférable d'apprendre le bouton magique pour exécuter vos tests dans votre éditeur/IDE. 
 
-You want to get in to a state where you are doing 
+Vous voulez arriver à un état où vous faites 
 
-- Small refactor
-- Run tests
-- Repeat
+- Petit refactoring
+- Exécuter les tests
+- Répéter
 
-All within a very tight feedback loop so you don't go down rabbit holes and make mistakes.
+Le tout dans une boucle de feedback très serrée pour ne pas vous perdre dans des détails et faire des erreurs.
 
-Having a project where all your key behaviours are unit tested and give you feedback well under a second is a very empowering safety net to do bold refactoring when you need to. This helps us manage the incoming force of complexity that Lehman describes.
+Avoir un projet où tous vos comportements clés sont testés unitairement et vous donnent un feedback bien en dessous d'une seconde est un filet de sécurité très puissant pour faire des refactoring audacieux lorsque vous en avez besoin. Cela nous aide à gérer la force entrante de complexité que Lehman décrit.
 
-## If unit tests are so great, why is there sometimes resistance to writing them?
+## Si les tests unitaires sont si géniaux, pourquoi y a-t-il parfois une résistance à les écrire ?
 
-On the one hand you have people (like me) saying that unit tests are important for the long term health of your system because they ensure you can keep refactoring with confidence. 
+D'un côté, vous avez des personnes (comme moi) qui disent que les tests unitaires sont importants pour la santé à long terme de votre système car ils garantissent que vous pouvez continuer à refactoriser en toute confiance. 
 
-On the other you have people describing experiences of unit tests actually _hindering_ refactoring.
+De l'autre, vous avez des personnes qui décrivent des expériences où les tests unitaires _entravent_ en réalité le refactoring.
 
-Ask yourself, how often do you have to change your tests when refactoring? Over the years I have been on many projects with very good test coverage and yet the engineers are reluctant to refactor because of the perceived effort of changing tests.
+Demandez-vous, combien de fois devez-vous changer vos tests lors du refactoring ? Au fil des ans, j'ai participé à de nombreux projets avec une très bonne couverture de tests et pourtant les ingénieurs sont réticents à refactoriser en raison de l'effort perçu pour changer les tests.
 
-This is the opposite of what we are promised!
+C'est l'opposé de ce qui nous est promis !
 
-### Why is this happening?
+### Pourquoi cela se produit-il ?
 
-Imagine you were asked to develop a square and we thought the best way to accomplish that would be stick two triangles together. 
+Imaginez qu'on vous demande de développer un carré et que nous pensions que la meilleure façon d'y parvenir serait de coller deux triangles ensemble. 
 
-![Two right-angled triangles to form a square](https://i.imgur.com/ela7SVf.jpg)
+![Deux triangles rectangles pour former un carré](https://i.imgur.com/ela7SVf.jpg)
 
-We write our unit tests around our square to make sure the sides are equal and then we write some tests around our triangles. We want to make sure our triangles render correctly so we assert that the angles sum up to 180 degrees, perhaps check we make 2 of them, etc etc. Test coverage is really important and writing these tests is pretty easy so why not? 
+Nous écrivons nos tests unitaires autour de notre carré pour nous assurer que les côtés sont égaux, puis nous écrivons des tests autour de nos triangles. Nous voulons nous assurer que nos triangles sont correctement rendus, alors nous affirmons que la somme des angles est de 180 degrés, peut-être vérifions-nous que nous en faisons 2, etc. La couverture de test est vraiment importante et écrire ces tests est assez facile alors pourquoi pas ? 
 
-A few weeks later The Law of Continuous Change strikes our system and a new developer makes some changes. She now believes it would be better if squares were formed with 2 rectangles instead of 2 triangles. 
+Quelques semaines plus tard, la Loi du Changement Continu frappe notre système et une nouvelle développeuse fait des changements. Elle croit maintenant qu'il serait préférable que les carrés soient formés de 2 rectangles au lieu de 2 triangles. 
 
-![Two rectangles to form a square](https://i.imgur.com/1G6rYqD.jpg)
+![Deux rectangles pour former un carré](https://i.imgur.com/1G6rYqD.jpg)
 
-She tries to do this refactor and gets mixed signals from a number of failing tests. Has she actually broken important behaviours here? She now has to dig through these triangle tests and try and understand what's going on. 
+Elle essaie de faire ce refactoring et reçoit des signaux contradictoires de la part d'un certain nombre de tests qui échouent. A-t-elle réellement cassé des comportements importants ici ? Elle doit maintenant fouiller dans ces tests de triangles et essayer de comprendre ce qui se passe. 
 
-_It's not actually important that the square was formed out of triangles_ but **our tests have falsely elevated the importance of our implementation details**. 
+_Ce n'est pas vraiment important que le carré ait été formé à partir de triangles_, mais **nos tests ont faussement élevé l'importance de nos détails d'implémentation**. 
 
-## Favour testing behaviour rather than implementation detail
+## Préférez tester le comportement plutôt que les détails d'implémentation
 
-When I hear people complaining about unit tests it is often because the tests are at the wrong abstraction level. They're testing implementation details, overly spying on collaborators and mocking too much. 
+Quand j'entends des gens se plaindre des tests unitaires, c'est souvent parce que les tests sont au mauvais niveau d'abstraction. Ils testent les détails d'implémentation, espionnent excessivement les collaborateurs et simulent trop. 
 
-I believe it stems from a misunderstanding of what unit tests are and chasing vanity metrics (test coverage). 
+Je crois que cela provient d'une mauvaise compréhension de ce que sont les tests unitaires et de la poursuite vaine d'augmentation de certaines métriques (couverture de test). 
 
-If I am saying just test behaviour, should we not just only write system/black-box tests? These kind of tests do have lots of value in terms of verifying key user journeys but they are typically expensive to write and slow to run. For that reason they're not too helpful for _refactoring_ because the feedback loop is slow. In addition black box tests don't tend to help you very much with root causes compared to unit tests. 
+Si je dis simplement de tester le comportement, ne devrions-nous pas simplement écrire des tests système/boîte noire ? Ces types de tests ont beaucoup de valeur en termes de vérification des parcours utilisateurs clés, mais ils sont généralement coûteux à écrire et lents à exécuter. Pour cette raison, ils ne sont pas très utiles pour le _refactoring_ car la boucle de feedback est lente. De plus, les tests de boîte noire ne vous aident généralement pas beaucoup avec les causes racines par rapport aux tests unitaires. 
 
-So what _is_ the right abstraction level?
+Alors quel est le bon niveau d'abstraction ?
 
-## Writing effective unit tests is a design problem
+## Écrire des tests unitaires efficaces est un problème de conception
 
-Forgetting about tests for a moment, it is desirable to have within your system self-contained, decoupled "units" centered around key concepts in your domain. 
+En oubliant les tests un instant, il est souhaitable d'avoir au sein de votre système des "unités" autonomes et découplées centrées autour des concepts clés de votre domaine. 
 
-I like to imagine these units as simple Lego bricks which have coherent APIs that I can combine with other bricks to make bigger systems. Underneath these APIs there could be dozens of things (types, functions et al) collaborating to make them work how they need to.
+J'aime imaginer ces unités comme de simples briques Lego qui ont des API cohérentes que je peux combiner avec d'autres briques pour créer des systèmes plus grands. Sous ces API, il pourrait y avoir des dizaines de choses (types, fonctions, etc.) collaborant pour les faire fonctionner comme elles en ont besoin.
 
-For instance if you were writing a bank in Go, you might have an "account" package. It will present an API that does not leak implementation detail and is easy to integrate with.
+Par exemple, si vous écriviez une banque en Go, vous pourriez avoir un package "account". Il présentera une API qui ne laisse pas fuir les détails d'implémentation et qui est facile à intégrer.
 
-If you have these units that follow these properties you can write unit tests against their public APIs. _By definition_ these tests can only be testing useful behaviour. Underneath these units I am free to refactor the implementation as much as I need to and the tests for the most part should not get in the way.
+Si vous avez ces unités qui suivent ces propriétés, vous pouvez écrire des tests unitaires contre leurs API publiques. _Par définition_, ces tests ne peuvent tester que des comportements utiles. Sous ces unités, je suis libre de refactoriser l'implémentation autant que j'en ai besoin et les tests ne devraient pas, pour la plupart, se mettre en travers du chemin.
 
-### Are these unit tests?
+### Est-ce que ce sont des tests unitaires ?
 
-**YES**. Unit tests are against "units" like I described. They were _never_ about only being against a single class/function/whatever.
+**OUI**. Les tests unitaires sont contre des "unités" comme je l'ai décrit. Ils n'ont _jamais_ été uniquement contre une seule classe/fonction/quoi que ce soit.
 
-## Bringing these concepts together
+## Rassembler ces concepts
 
-We've covered
+Nous avons couvert
 
-- Refactoring
-- Unit tests
-- Unit design
+- Le refactoring
+- Les tests unitaires
+- La conception d'unité
 
-What we can start to see is that these facets of software design reinforce each other. 
+Ce que nous pouvons commencer à voir, c'est que ces facettes de la conception logicielle se renforcent mutuellement. 
 
 ### Refactoring
 
-- Gives us signals about our unit tests. If we have to do manual checks, we need more tests. If tests are wrongly failing then our tests are at the wrong abstraction level (or have no value and should be deleted).
-- Helps us handle the complexities within and between our units.
+- Nous donne des signaux sur nos tests unitaires. Si nous devons faire des vérifications manuelles, nous avons besoin de plus de tests. Si les tests échouent à tort, alors nos tests sont au mauvais niveau d'abstraction (ou n'ont aucune valeur et devraient être supprimés).
+- Nous aide à gérer les complexités au sein et entre nos unités.
 
-### Unit tests
+### Tests unitaires
 
-- Give a safety net to refactor.
-- Verify and document the behaviour of our units.
+- Donnent un filet de sécurité pour refactoriser.
+- Vérifient et documentent le comportement de nos unités.
 
-### (Well designed) units
+### Unités (bien conçues)
 
-- Easy to write _meaningful_ unit tests.
-- Easy to refactor.
+- Faciles à écrire des tests unitaires _significatifs_.
+- Faciles à refactoriser.
 
-Is there a process to help us arrive at a point where we can constantly refactor our code to manage complexity and keep our systems malleable?
+Existe-t-il un processus pour nous aider à arriver à un point où nous pouvons constamment refactoriser notre code pour gérer la complexité et garder nos systèmes malléables ?
 
-## Why Test Driven Development (TDD)
+## Pourquoi faire du Développement Piloté par les Tests (TDD)
 
-Some people might take Lehman's quotes about how software has to change and overthink elaborate designs, wasting lots of time upfront trying to create the "perfect" extensible system and end up getting it wrong and going nowhere. 
+Certaines personnes pourraient prendre les citations de Lehman sur la façon dont le logiciel doit changer et réfléchir de manière excessive à des conceptions élaborées, perdant beaucoup de temps au départ en essayant de créer le système extensible "parfait" et finir par se tromper et n'aller nulle part. 
 
-This is the bad old days of software where an analyst team would spend 6 months writing a requirements document and an architect team would spend another 6 months coming up with a design and a few years later the whole project fails.
+Ce sont les mauvais vieux jours du logiciel où une équipe d'analystes passerait 6 mois à écrire un document d'exigences et une équipe d'architectes passerait 6 autres mois à concevoir un design, et quelques années plus tard, l'ensemble du projet échoue.
 
-I say bad old days but this still happens! 
+Je dis les mauvais vieux jours, mais cela se produit encore ! 
 
-Agile teaches us that we need to work iteratively, starting small and evolving the software so that we get fast feedback on the design of our software and how it works with real users;  TDD enforces this approach.
+L'Agile nous enseigne que nous devons travailler de manière itérative, en commençant petit et en faisant évoluer le logiciel afin d'obtenir un feedback rapide sur la conception de notre logiciel et sur la façon dont il fonctionne avec de vrais utilisateurs ; le TDD impose cette approche.
 
-TDD addresses the laws that Lehman talks about and other lessons hard learned through history by encouraging a methodology of constantly refactoring and delivering iteratively.
+Le TDD aborde les lois dont parle Lehman et d'autres leçons durement apprises à travers l'histoire en encourageant une méthodologie de refactoring constant et de livraison itérative.
 
-### Small steps
+### Petits pas
 
-- Write a small test for a small amount of desired behaviour
-- Check the test fails with a clear error (red)
-- Write the minimal amount of code to make the test pass (green)
-- Refactor
-- Repeat
+- Écrire un petit test pour une petite quantité de comportement souhaité
+- Vérifier que le test échoue avec une erreur claire (rouge)
+- Écrire la quantité minimale de code pour faire passer le test (vert)
+- Refactoriser
+- Répéter
 
-As you become proficient, this way of working will become natural and fast.
+Au fur et à mesure que vous devenez compétent, cette façon de travailler deviendra naturelle et rapide.
 
-You'll come to expect this feedback loop to not take very long and feel uneasy if you're in a state where the system isn't "green" because it indicates you may be down a rabbit hole. 
+Vous vous attendrez à ce que cette boucle de feedback ne prenne pas beaucoup de temps et vous vous sentirez mal à l'aise si vous êtes dans un état où le système n'est pas "vert", car cela indique que vous êtes peut-être dans un terrier de lapin. 
 
-You'll always be driving small & useful functionality comfortably backed by the feedback from your tests.
+Vous conduirez toujours de petites fonctionnalités utiles confortablement soutenues par le feedback de vos tests.
 
-## Wrapping up 
+## Résumé 
 
-- The strength of software is that we can change it. _Most_ software will require change over time in unpredictable ways; but don't try and over-engineer because it's too hard to predict the future.
-- Instead we need to make it so we can keep our software malleable. In order to change software we have to refactor it as it evolves or it will turn into a mess
-- A good test suite can help you refactor quicker and in a less stressful manner
-- Writing good unit tests is a design problem so think about structuring your code so you have meaningful units that you can integrate together like Lego bricks.
-- TDD can help and force you to design well factored software iteratively, backed by tests to help future work as it arrives.
+- La force du logiciel est que nous pouvons le changer. _La plupart_ des logiciels nécessiteront des changements au fil du temps de manière imprévisible ; mais n'essayez pas de sur-ingénierer car il est trop difficile de prédire l'avenir.
+- Au lieu de cela, nous devons faire en sorte que nous puissions garder notre logiciel malléable. Pour changer un logiciel, nous devons le refactoriser à mesure qu'il évolue, sinon il se transformera en désordre.
+- Une bonne suite de tests peut vous aider à refactoriser plus rapidement et de manière moins stressante.
+- Écrire de bons tests unitaires est un problème de conception, alors pensez à structurer votre code pour avoir des unités significatives que vous pouvez intégrer ensemble comme des briques Lego.
+- Le TDD peut vous aider et vous forcer à concevoir un logiciel bien factorisé de manière itérative, soutenu par des tests pour aider les travaux futurs à mesure qu'ils arrivent.
