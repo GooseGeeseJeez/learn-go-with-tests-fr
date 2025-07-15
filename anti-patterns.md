@@ -1,133 +1,133 @@
-# TDD Anti-patterns
+# Anti-patterns de TDD
 
-From time to time it's necessary to review your TDD techniques and remind yourself of behaviours to avoid.
+De temps à autre, il est nécessaire de revoir vos techniques de TDD et de vous rappeler des comportements à éviter.
 
-The TDD process is conceptually simple to follow, but as you do it you'll find it challenging your design skills. **Don't mistake this for TDD being hard, it's design that's hard!**
+Le processus TDD est conceptuellement simple à suivre, mais en le pratiquant, vous constaterez qu'il met à l'épreuve vos compétences en conception. **Ne confondez pas cela avec le fait que le TDD est difficile, c'est la conception qui est difficile !**
 
-This chapter lists a number of TDD and testing anti-patterns, and how to remedy them.
+Ce chapitre énumère un certain nombre d'anti-patterns de TDD et de tests, et comment y remédier.
 
-## Not doing TDD at all
+## Ne pas faire de TDD du tout
 
-Of course, it is possible to write great software without TDD but, a lot of problems I've seen with the design of code and the quality of tests would be very difficult to arrive at if a disciplined approach to TDD had been used.
+Bien sûr, il est possible d'écrire d'excellents logiciels sans TDD mais, beaucoup de problèmes que j'ai vus avec la conception du code et la qualité des tests seraient très difficiles à rencontrer si une approche disciplinée du TDD avait été utilisée.
 
-One of the strengths of TDD is that it gives you a formal process to break down problems, understand what you're trying to achieve (red), get it done (green), then have a good think about how to make it right (blue/refactor).
+L'une des forces du TDD est qu'il vous donne un processus formel pour décomposer les problèmes, comprendre ce que vous essayez d'accomplir (rouge), y parvenir (vert), puis réfléchir sérieusement à la façon de le faire correctement (bleu/refactoring).
 
-Without this, the process is often ad-hoc and loose, which _can_ make engineering more difficult than it _could_ be.
+Sans cela, le processus est souvent ad hoc et lâche, ce qui _peut_ rendre l'ingénierie plus difficile qu'elle ne _pourrait_ l'être.
 
-## Misunderstanding the constraints of the refactoring step
+## Mauvaise compréhension des contraintes de l'étape de refactoring
 
-I have been in a number of workshops, mobbing or pairing sessions where someone has made a test pass and is in the refactoring stage. After some thought, they think it would be good to abstract away some code into a new struct; a budding pedant yells:
+J'ai participé à plusieurs ateliers, sessions de mobbing ou de pairing où quelqu'un a fait passer un test et se trouve dans la phase de refactoring. Après réflexion, cette personne pense qu'il serait bon d'abstraire une partie du code dans une nouvelle structure ; un pédant en herbe s'écrie :
 
-> You're not allowed to do this! You should write a test for this first, we're doing TDD!
+> Vous n'êtes pas autorisé à faire cela ! Vous devriez d'abord écrire un test pour cela, nous faisons du TDD !
 
-This seems to be a common misunderstanding. **You can do whatever you like to the code when the tests are green**, the only thing you're not allowed to do is **add or change behaviour**.
+Cela semble être un malentendu courant. **Vous pouvez faire ce que vous voulez avec le code lorsque les tests sont verts**, la seule chose que vous n'êtes pas autorisé à faire est **d'ajouter ou de modifier le comportement**.
 
-The point of these tests are to give you the _freedom to refactor_, find the right abstractions and make the code easier to change and understand.
+L'intérêt de ces tests est de vous donner la _liberté de refactoriser_, de trouver les bonnes abstractions et de rendre le code plus facile à modifier et à comprendre.
 
-## Having tests that won't fail (or, evergreen tests)
+## Avoir des tests qui ne peuvent pas échouer (ou, des tests toujours verts)
 
-It's astonishing how often this comes up. You start debugging or changing some tests and realise: there are no scenarios where this test can fail. Or at least, it won't fail in the way the test is _supposed_ to be protecting against.
+Il est étonnant de voir combien de fois cela se produit. Vous commencez à déboguer ou à modifier certains tests et vous réalisez : il n'y a aucun scénario où ce test peut échouer. Ou du moins, il n'échouera pas de la manière dont le test est _censé_ protéger.
 
-This is _next to impossible_ with TDD if you're following **the first step**,
+C'est _presque impossible_ avec TDD si vous suivez **la première étape**,
 
-> Write a test, see it fail
+> Écrivez un test, voyez-le échouer
 
-This is almost always done when developers write tests _after_ code is written, and/or chasing test coverage rather than creating a useful test suite.
+Cela se produit presque toujours lorsque les développeurs écrivent des tests _après_ que le code a été écrit, et/ou cherchent la couverture de tests plutôt que de créer une suite de tests utile.
 
-## Useless assertions
+## Assertions inutiles
 
-Ever worked on a system, and you've broken a test, then you see this?
+Avez-vous déjà travaillé sur un système, et vous avez cassé un test, puis vous voyez ceci ?
 
-> `false was not equal to true`
+> `false n'était pas égal à true`
 
-I know that false is not equal to true. This is not a helpful message; it doesn't tell me what I've broken. This is a symptom of not following the TDD process and not reading the failure error message.
+Je sais que false n'est pas égal à true. Ce n'est pas un message utile ; il ne me dit pas ce que j'ai cassé. C'est un symptôme du non-respect du processus TDD et de la non-lecture du message d'erreur d'échec.
 
-Going back to the drawing board,
+Revenons à la base,
 
-> Write a test, see it fail (and don't be ashamed of the error message)
+> Écrivez un test, voyez-le échouer (et n'ayez pas honte du message d'erreur)
 
-## Asserting on irrelevant detail
+## Affirmation sur des détails non pertinents
 
-An example of this is making an assertion on a complex object, when in practice all you care about in the test is the value of one of the fields.
+Un exemple de ceci est de faire une assertion sur un objet complexe, alors qu'en pratique tout ce qui vous intéresse dans le test est la valeur de l'un des champs.
 
 ```go
-// not this, now your test is tightly coupled to the whole object
+// pas ceci, maintenant votre test est étroitement couplé à l'ensemble de l'objet
 if !cmp.Equal(complexObject, want) {
 	t.Error("got %+v, want %+v", complexObject, want)
 }
 
-// be specific, and loosen the coupling
+// soyez spécifique, et relâchez le couplage
 got := complexObject.fieldYouCareAboutForThisTest
 if got != want {
 	t.Error("got %q, want %q", got, want)
 }
 ```
 
-Additional assertions not only make your test more difficult to read by creating 'noise' in your documentation, but also needlessly couples the test with data it doesn't care about. This means if you happen to change the fields for your object, or the way they behave you may get unexpected compilation problems or failures with your tests.
+Des assertions supplémentaires non seulement rendent votre test plus difficile à lire en créant du 'bruit' dans votre documentation, mais couplent également inutilement le test avec des données dont il ne se soucie pas. Cela signifie que si vous changez les champs de votre objet, ou la façon dont ils se comportent, vous pourriez rencontrer des problèmes de compilation inattendus ou des échecs avec vos tests.
 
-This is an example of not following the red stage strictly enough.
+C'est un exemple de non-respect suffisamment strict de l'étape rouge.
 
-- Letting an existing design influence how you write your test **rather than thinking of the desired behaviour**
-- Not giving enough consideration to the failing test's error message
+- Laisser une conception existante influencer la façon dont vous écrivez votre test **plutôt que de penser au comportement souhaité**
+- Ne pas accorder suffisamment d'attention au message d'erreur du test en échec
 
-## Lots of assertions within a single scenario for unit tests
+## De nombreuses assertions au sein d'un même scénario pour les tests unitaires
 
-Many assertions can make tests difficult to read and challenging to debug when they fail.
+De nombreuses assertions peuvent rendre les tests difficiles à lire et à déboguer lorsqu'ils échouent.
 
-They often creep in gradually, especially if test setup is complicated because you're reluctant to replicate the same horrible setup to assert on something else. Instead of this you should fix the problems in your design which are making it difficult to assert on new things.
+Elles s'introduisent souvent progressivement, surtout si la configuration du test est compliquée, car vous êtes réticent à reproduire la même configuration horrible pour affirmer quelque chose d'autre. Au lieu de cela, vous devriez résoudre les problèmes dans votre conception qui rendent difficile l'affirmation sur de nouvelles choses.
 
-A helpful rule of thumb is to aim to make one assertion per test. In Go, take advantage of subtests to clearly delineate between assertions on the occasions where you need to. This is also a handy technique to separate assertions on behaviour vs implementation detail.
+Une règle pratique utile est de viser une seule assertion par test. En Go, profitez des sous-tests pour délimiter clairement entre les assertions dans les cas où vous en avez besoin. C'est aussi une technique pratique pour séparer les assertions sur le comportement des détails d'implémentation.
 
-For other tests where setup or execution time may be a constraint (e.g an acceptance test driving a web browser), you need to weigh up the pros and cons of slightly trickier to debug tests against test execution time.
+Pour d'autres tests où le temps de configuration ou d'exécution peut être une contrainte (par exemple un test d'acceptation pilotant un navigateur web), vous devez peser le pour et le contre entre des tests légèrement plus difficiles à déboguer et le temps d'exécution des tests.
 
-## Not listening to your tests
+## Ne pas écouter vos tests
 
-[Dave Farley in his video "When TDD goes wrong"](https://www.youtube.com/watch?v=UWtEVKVPBQ0&feature=youtu.be) points out,
+[Dave Farley dans sa vidéo "When TDD goes wrong"](https://www.youtube.com/watch?v=UWtEVKVPBQ0&feature=youtu.be) souligne,
 
-> TDD gives you the fastest feedback possible on your design
+> Le TDD vous donne le feedback le plus rapide possible sur votre conception
 
-From my own experience, a lot of developers are trying to practice TDD but frequently ignore the signals coming back to them from the TDD process. So they're still stuck with fragile, annoying systems, with a poor test suite.
+D'après ma propre expérience, beaucoup de développeurs essaient de pratiquer le TDD mais ignorent fréquemment les signaux qui leur reviennent du processus TDD. Ils sont donc toujours coincés avec des systèmes fragiles et ennuyeux, avec une suite de tests médiocre.
 
-Simply put, if testing your code is difficult, then _using_ your code is difficult too. Treat your tests as the first user of your code and then you'll see if your code is pleasant to work with or not.
+En termes simples, si tester votre code est difficile, alors _utiliser_ votre code l'est aussi. Traitez vos tests comme le premier utilisateur de votre code et vous verrez si votre code est agréable à utiliser ou non.
 
-I've emphasised this a lot in the book, and I'll say it again **listen to your tests**.
+J'ai beaucoup insisté sur ce point dans le livre, et je le répète **écoutez vos tests**.
 
-### Excessive setup, too many test doubles, etc.
+### Configuration excessive, trop de doublures de test, etc.
 
-Ever looked at a test with 20, 50, 100, 200 lines of setup code before anything interesting in the test happens? Do you then have to change the code and revisit the mess and wish you had a different career?
+Avez-vous déjà regardé un test avec 20, 50, 100, 200 lignes de code de configuration avant que quelque chose d'intéressant ne se produise dans le test ? Devez-vous ensuite modifier le code et revisiter ce désordre en souhaitant avoir une carrière différente ?
 
-What are the signals here? _Listen_, complicated tests `==` complicated code. Why is your code complicated? Does it have to be?
+Quels sont les signaux ici ? _Écoutez_, des tests compliqués `==` code compliqué. Pourquoi votre code est-il compliqué ? Doit-il l'être ?
 
-- When you have lots of test doubles in your tests, that means the code you're testing has lots of dependencies - which means your design needs work.
-- If your test is reliant on setting up various interactions with mocks, that means your code is making lots of interactions with its dependencies. Ask yourself whether these interactions could be simpler.
+- Lorsque vous avez beaucoup de doublures de test dans vos tests, cela signifie que le code que vous testez a beaucoup de dépendances - ce qui signifie que votre conception a besoin de travail.
+- Si votre test dépend de la configuration de diverses interactions avec des mocks, cela signifie que votre code fait beaucoup d'interactions avec ses dépendances. Demandez-vous si ces interactions pourraient être plus simples.
 
-#### Leaky interfaces
+#### Interfaces qui fuient
 
-If you have declared an `interface` that has many methods, that points to a leaky abstraction. Think about how you could define that collaboration with a more consolidated set of methods, ideally one.
+Si vous avez déclaré une `interface` qui a de nombreuses méthodes, cela indique une abstraction qui fuit. Réfléchissez à la façon dont vous pourriez définir cette collaboration avec un ensemble plus consolidé de méthodes, idéalement une seule.
 
-#### Interface pollution
+#### Pollution d'interface
 
-As a Go proverb says, *the bigger the interface, the weaker the abstraction*. If you expose a huge interface to the users of your package, you force them to create in their tests a stub/mock that matches the entire API, providing an implementation also for methods they do not use (sometimes, they just panic to make clear that they should not be used). This situation is an anti-pattern known as [interface pollution](https://rakyll.org/interface-pollution/) and this is the reason why the standard library offers you just tiny little interfaces. 
+Comme le dit un proverbe Go, *plus l'interface est grande, plus l'abstraction est faible*. Si vous exposez une interface énorme aux utilisateurs de votre package, vous les forcez à créer dans leurs tests un stub/mock qui correspond à l'ensemble de l'API, fournissant une implémentation également pour les méthodes qu'ils n'utilisent pas (parfois, ils provoquent simplement une panique pour indiquer clairement qu'elles ne devraient pas être utilisées). Cette situation est un anti-pattern connu sous le nom de [pollution d'interface](https://rakyll.org/interface-pollution/) et c'est la raison pour laquelle la bibliothèque standard ne vous offre que de toutes petites interfaces. 
 
-Instead, you should expose from your package a bare struct with all relevant methods exported, leaving to the clients of your API the freedom to declare their own interfaces abstracting over the subset of the methods they need: e.g [go-redis](https://github.com/redis/go-redis) exposes a struct (`redis.Client`) to the API clients.
+Au lieu de cela, vous devriez exposer depuis votre package une structure nue avec toutes les méthodes pertinentes exportées, laissant aux clients de votre API la liberté de déclarer leurs propres interfaces en abstrayant le sous-ensemble des méthodes dont ils ont besoin : par exemple [go-redis](https://github.com/redis/go-redis) expose une structure (`redis.Client`) aux clients de l'API.
 
-Generally speaking, you should expose an interface to the clients only when:
-- the interface consists of a small and coherent set of functions.
-- the interface and its implementation need to be decoupled (e.g. because users can choose among multiple implementations or they need to mock an external dependency).
+En général, vous ne devriez exposer une interface aux clients que lorsque :
+- l'interface consiste en un ensemble petit et cohérent de fonctions.
+- l'interface et son implémentation doivent être découplées (par exemple, parce que les utilisateurs peuvent choisir parmi plusieurs implémentations ou qu'ils ont besoin de simuler une dépendance externe).
 
-#### Think about the types of test doubles you use
+#### Réfléchissez aux types de doublures de test que vous utilisez
 
-- Mocks are sometimes helpful, but they're extremely powerful and therefore easy to misuse. Try giving yourself the constraint of using stubs instead.
-- Verifying implementation detail with spies is sometimes helpful, but try to avoid it. Remember your implementation detail is usually not important, and you don't want your tests coupled to them if possible. Look to couple your tests to **useful behaviour rather than incidental details**.
-- [Read my posts on naming test doubles](https://quii.dev/Start_naming_your_test_doubles_correctly) if the taxonomy of test doubles is a little unclear
+- Les mocks sont parfois utiles, mais ils sont extrêmement puissants et donc faciles à mal utiliser. Essayez de vous imposer la contrainte d'utiliser des stubs à la place.
+- Vérifier les détails d'implémentation avec des espions est parfois utile, mais essayez de l'éviter. Rappelez-vous que les détails d'implémentation ne sont généralement pas importants, et vous ne voulez pas que vos tests y soient couplés si possible. Cherchez à coupler vos tests à **un comportement utile plutôt qu'à des détails accessoires**.
+- [Lisez mes articles sur la dénomination des doublures de test](https://quii.dev/Start_naming_your_test_doubles_correctly) si la taxonomie des doublures de test n'est pas très claire
 
-#### Consolidate dependencies
+#### Consolider les dépendances
 
-Here is some code for a `http.HandlerFunc` to handle new user registrations for a website.
+Voici du code pour un `http.HandlerFunc` pour gérer les nouvelles inscriptions d'utilisateurs pour un site web.
 
 ```go
 type User struct {
-	// Some user fields
+	// Quelques champs d'utilisateur
 }
 
 type UserStore interface {
@@ -141,35 +141,35 @@ type Emailer interface {
 
 func NewRegistrationHandler(userStore UserStore, emailer Emailer) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		// extract out the user from the request body (handle error)
-		// check user exists (handle duplicates, errors)
-		// store user (handle errors)
-		// compose and send confirmation email (handle error)
-		// if we got this far, return 2xx response
+		// extraire l'utilisateur du corps de la requête (gérer l'erreur)
+		// vérifier si l'utilisateur existe (gérer les doublons, les erreurs)
+		// stocker l'utilisateur (gérer les erreurs)
+		// composer et envoyer un e-mail de confirmation (gérer l'erreur)
+		// si nous sommes arrivés jusqu'ici, renvoyer une réponse 2xx
 	}
 }
 ```
 
-At first pass it's reasonable to say the design isn't so bad. It only has 2 dependencies!
+À première vue, il est raisonnable de dire que la conception n'est pas si mauvaise. Elle n'a que 2 dépendances !
 
-Re-evaluate the design by considering the handler's responsibilities:
+Réévaluez la conception en considérant les responsabilités du gestionnaire :
 
-- Parse the request body into a `User` :white_check_mark:
-- Use `UserStore` to check if the user exists :question:
-- Use `UserStore` to store the user :question:
-- Compose an email :question:
-- Use `Emailer` to send the email :question:
-- Return an appropriate http response, depending on success, errors, etc :white_check_mark:
+- Analyser le corps de la requête en un `User` :white_check_mark:
+- Utiliser `UserStore` pour vérifier si l'utilisateur existe :question:
+- Utiliser `UserStore` pour stocker l'utilisateur :question:
+- Composer un e-mail :question:
+- Utiliser `Emailer` pour envoyer l'e-mail :question:
+- Renvoyer une réponse HTTP appropriée, selon le succès, les erreurs, etc. :white_check_mark:
 
-To exercise this code, you're going to have to write many tests with varying degrees of test double setups, spies, etc
+Pour exercer ce code, vous allez devoir écrire de nombreux tests avec des configurations de doublures de test, des espions, etc., à des degrés divers.
 
-- What if the requirements expand? Translations for the emails? Sending an SMS confirmation too? Does it make sense to you that you have to change a HTTP handler to accommodate this change?
-- Does it feel right that the important rule of "we should send an email" resides within a HTTP handler?
-    - Why do you have to go through the ceremony of creating HTTP requests and reading responses to verify that rule?
+- Et si les exigences s'élargissent ? Des traductions pour les e-mails ? Envoi d'une confirmation par SMS également ? Cela a-t-il un sens pour vous de devoir modifier un gestionnaire HTTP pour accommoder ce changement ?
+- Est-ce que cela vous semble correct que la règle importante "nous devrions envoyer un e-mail" réside dans un gestionnaire HTTP ?
+    - Pourquoi devez-vous passer par la cérémonie de création de requêtes HTTP et de lecture de réponses pour vérifier cette règle ?
 
-**Listen to your tests**. Writing tests for this code in a TDD fashion should quickly make you feel uncomfortable (or at least, make the lazy developer in you be annoyed). If it feels painful, stop and think.
+**Écoutez vos tests**. Écrire des tests pour ce code à la manière TDD devrait rapidement vous mettre mal à l'aise (ou du moins, faire en sorte que le développeur paresseux en vous soit agacé). Si cela vous semble pénible, arrêtez-vous et réfléchissez.
 
-What if the design was like this instead?
+Et si la conception était plutôt comme ceci ?
 
 ```go
 type UserService interface {
@@ -178,31 +178,31 @@ type UserService interface {
 
 func NewRegistrationHandler(userService UserService) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		// parse user
-		// register user
-		// check error, send response
+		// analyser l'utilisateur
+		// enregistrer l'utilisateur
+		// vérifier l'erreur, envoyer la réponse
 	}
 }
 ```
 
-- Simple to test the handler ✅
-- Changes to the rules around registration are isolated away from HTTP, so they are also simpler to test ✅
+- Le gestionnaire est simple à tester ✅
+- Les changements aux règles autour de l'enregistrement sont isolés loin de HTTP, donc ils sont aussi plus simples à tester ✅
 
-## Violating encapsulation
+## Violation de l'encapsulation
 
-Encapsulation is very important. There's a reason we don't make everything in a package exported (or public). We want coherent APIs with a small surface area to avoid tight coupling.
+L'encapsulation est très importante. Il y a une raison pour laquelle nous ne rendons pas tout dans un package exporté (ou public). Nous voulons des API cohérentes avec une petite surface pour éviter un couplage étroit.
 
-People will sometimes be tempted to make a function or method public in order to test something. By doing this you make your design worse and send confusing messages to maintainers and users of your code.
+Les gens seront parfois tentés de rendre une fonction ou une méthode publique afin de tester quelque chose. En faisant cela, vous rendez votre conception pire et envoyez des messages confus aux mainteneurs et aux utilisateurs de votre code.
 
-A result of this can be developers trying to debug a test and then eventually realising the function being tested is _only called from tests_. Which is obviously **a terrible outcome, and a waste of time**.
+Un résultat de ceci peut être des développeurs essayant de déboguer un test et se rendant finalement compte que la fonction testée est _uniquement appelée à partir des tests_. Ce qui est évidemment **un résultat terrible, et une perte de temps**.
 
-In Go, consider your default position for writing tests as _from the perspective of a consumer of your package_. You can make this a compile-time constraint by having your tests live in a test package e.g `package gocoin_test`. If you do this, you'll only have access to the exported members of the package so it won't be possible to couple yourself to implementation detail.
+En Go, considérez votre position par défaut pour écrire des tests comme _du point de vue d'un consommateur de votre package_. Vous pouvez en faire une contrainte de compilation en ayant vos tests dans un package de test, par exemple `package gocoin_test`. Si vous faites cela, vous n'aurez accès qu'aux membres exportés du package, il ne sera donc pas possible de vous coupler aux détails d'implémentation.
 
-## Complicated table tests
+## Tests de table compliqués
 
-Table tests are a great way of exercising a number of different scenarios when the test setup is the same, and you only wish to vary the inputs.
+Les tests de table sont un excellent moyen d'exercer un certain nombre de scénarios différents lorsque la configuration du test est la même, et que vous souhaitez uniquement faire varier les entrées.
 
-_But_ they can be messy to read and understand when you try to shoehorn other kinds of tests under the name of having one, glorious table.
+_Mais_ ils peuvent être désordonnés à lire et à comprendre lorsque vous essayez d'insérer d'autres types de tests au nom d'avoir une table glorieuse.
 
 ```go
 cases := []struct {
@@ -216,25 +216,25 @@ cases := []struct {
 }{}
 ```
 
-**Don't be afraid to break out of your table and write new tests** rather than adding new fields and booleans to the table `struct`.
+**N'ayez pas peur de sortir de votre table et d'écrire de nouveaux tests** plutôt que d'ajouter de nouveaux champs et booléens à la structure de la table.
 
-A thing to bear in mind when writing software is,
+Une chose à garder à l'esprit lors de l'écriture de logiciels est,
 
-> [Simple is not easy](https://www.infoq.com/presentations/Simple-Made-Easy/)
+> ["Simple" ne veut pas dire "facile"](https://www.infoq.com/presentations/Simple-Made-Easy/)
 
-"Just" adding a field to a table might be easy, but it can make things far from simple.
+"Juste" ajouter un champ à une table peut être facile, mais cela peut rendre les choses loin d'être simples.
 
-## Summary
+## Résumé
 
-Most problems with unit tests can normally be traced to:
+La plupart des problèmes avec les tests unitaires peuvent normalement être retracés à :
 
-- Developers not following the TDD process
-- Poor design
+- Les développeurs ne suivent pas le processus TDD
+- Une mauvaise conception
 
-So, learn about good software design!
+Alors, apprenez à bien concevoir des logiciels !
 
-The good news is TDD can help you _improve your design skills_ because as stated in the beginning:
+La bonne nouvelle est que le TDD peut vous aider à _améliorer vos compétences en conception_ car comme indiqué au début :
 
-**TDD's main purpose is to provide feedback on your design.** For the millionth time, listen to your tests, they are reflecting your design back at you.
+**L'objectif principal du TDD est de fournir un feedback sur votre conception.** Pour la millionième fois, écoutez vos tests, ils reflètent votre conception.
 
-Be honest about the quality of your tests by listening to the feedback they give you, and you'll become a better developer for it.
+Soyez honnête sur la qualité de vos tests en écoutant le feedback qu'ils vous donnent, et vous deviendrez un meilleur développeur pour cela.
