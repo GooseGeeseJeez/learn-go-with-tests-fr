@@ -1,58 +1,58 @@
 # Table of contents
 
-* [Learn Go with Tests](gb-readme.md)
+* [Apprendre Go par les tests](gb-readme.md)
 
-## Go fundamentals
+## Fondamentaux de Go
 
-* [Install Go](install-go.md)
-* [Hello, World](hello-world.md)
-* [Integers](integers.md)
-* [Iteration](iteration.md)
-* [Arrays and slices](arrays-and-slices.md)
-* [Structs, methods & interfaces](structs-methods-and-interfaces.md)
-* [Pointers & errors](pointers-and-errors.md)
-* [Maps](maps.md)
-* [Dependency Injection](dependency-injection.md)
+* [Installez Go](install-go.md)
+* [Bonjour, Monde](hello-world.md)
+* [Entiers](integers.md)
+* [Itération](iteration.md)
+* [Arrays (listes) et *slices*](arrays-and-slices.md)
+* [Structures, méthodes & interfaces](structs-methods-and-interfaces.md)
+* [Pointeurs & erreurs](pointers-and-errors.md)
+* [Maps (dictionnaires)](maps.md)
+* [Injection de dépendances](dependency-injection.md)
 * [Mocking](mocking.md)
-* [Concurrency](concurrency.md)
+* [Concurrence](concurrency.md)
 * [Select](select.md)
-* [Reflection](reflection.md)
-* [Sync](sync.md)
-* [Context](context.md)
-* [Intro to property based tests](roman-numerals.md)
-* [Maths](math.md)
-* [Reading files](reading-files.md)
-* [Templating](html-templates.md)
-* [Generics](generics.md)
-* [Revisiting arrays and slices with generics](revisiting-arrays-and-slices-with-generics.md)
+* [Réflexion](reflection.md)
+* [Synchronisation](sync.md)
+* [Contextes](context.md)
+* [Introduction aux tests basés sur des propriétés](roman-numerals.md)
+* [Mathématiques](math.md)
+* [Lecture de fichiers](reading-files.md)
+* [Les Templates](html-templates.md)
+* [Génériques](generics.md)
+* [Revisiter les arrays et les slices à l'aide des Génériques](revisiting-arrays-and-slices-with-generics.md)
 
-## Testing fundamentals
+## Fondamentaux du testing
 
-* [Introduction to acceptance tests](intro-to-acceptance-tests.md)
-* [Scaling acceptance tests](scaling-acceptance-tests.md)
-* [Working without mocks](working-without-mocks.md)
-* [Refactoring Checklist](refactoring-checklist.md)
+* [Introduction aux tests d'acceptation](intro-to-acceptance-tests.md)
+* [Scaling des tests d'acceptation](scaling-acceptance-tests.md)
+* [Travailler sans mocks](working-without-mocks.md)
+* [Checklist de Refactorisation](refactoring-checklist.md)
 
 ## Build an application
 
-* [Intro](app-intro.md)
-* [HTTP server](http-server.md)
-* [JSON, routing and embedding](json.md)
-* [IO and sorting](io.md)
-* [Command line & package structure](command-line.md)
-* [Time](time.md)
+* [Introduction](app-intro.md)
+* [Serveur HTTP](http-server.md)
+* [JSON, routing et embedding](json.md)
+* [IO et tri](io.md)
+* [Ligne de commande et structure de package](command-line.md)
+* [Le Module Time](time.md)
 * [WebSockets](websockets.md)
 
 ## Questions and answers
 
 * [OS Exec](os-exec.md)
-* [Error types](error-types.md)
-* [Context-aware Reader](context-aware-reader.md)
-* [Revisiting HTTP Handlers](http-handlers-revisited.md)
+* [Types d'erreurs](error-types.md)
+* [Readers sensibles au `context`e](context-aware-reader.md)
+* [Revisite des gestionnaires HTTP](http-handlers-revisited.md)
 
 ## Meta
 
-* [Why unit tests and how to make them work for you](why.md)
+* [Pourquoi faire des tests unitaires et comment les faire marcher pour vous](why.md)
 * [Anti-patterns](anti-patterns.md)
-* [Contributing](contributing.md)
-* [Chapter Template](template.md)
+* [Contribution](contributing.md)
+* [Modèle de chapitre](template.md)
